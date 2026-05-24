@@ -1,0 +1,37 @@
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:4000/api',
+});
+
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+export const authAPI = {
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+};
+
+export const scheduleAPI = {
+  recommend: (data) => api.post('/schedule/recommend', data),
+  getMy: (semester) => api.get(`/schedule/my?semester=${semester}`),
+  save: (data) => api.post('/schedule/save', data),
+};
+
+export const coursesAPI = {
+  getAll: (params) => api.get('/courses', { params }),
+  getRequirements: () => api.get('/courses/requirements'),
+};
+
+export const chatAPI = {
+  send: (data) => api.post('/chat', data),
+};
+
+export const trackerAPI = {
+  get: () => api.get('/tracker'),
+};
+
+export default api;
