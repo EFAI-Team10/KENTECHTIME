@@ -22,6 +22,7 @@ router.post('/register', async (req, res) => {
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, user });
   } catch (err) {
+    console.error('Register Error:', err);
     if (err.code === '23505') {
       return res.status(409).json({ error: '이미 가입된 이메일입니다.' });
     }
@@ -48,6 +49,7 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, email: user.email, name: user.name, grade: user.grade } });
   } catch (err) {
+    console.error('Login Error:', err);
     res.status(500).json({ error: '서버 오류' });
   }
 });
