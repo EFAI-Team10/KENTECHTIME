@@ -25,10 +25,10 @@ export default function Chat({ semester, onScheduleUpdate }) {
 
     try {
       const res = await chatAPI.send({ message: input, currentSchedule, semester });
-      const { intent, plans } = res.data;
+      const { reply, plans } = res.data;
       setMessages(prev => [
         ...prev,
-        { role: 'assistant', content: `요청 처리 완료: ${intent.action} "${intent.target}". 시간표를 업데이트했습니다.` },
+        { role: 'assistant', content: reply || '시간표를 업데이트했습니다.' },
       ]);
       if (onScheduleUpdate && plans?.length) onScheduleUpdate(plans[0]);
     } catch {

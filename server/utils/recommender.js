@@ -61,6 +61,40 @@ function applyHardConstraints(courses, preferences = {}) {
   });
 }
 
+// LLM intent를 과목 목록에 실제 적용
+function applyIntent(courses, intent) {
+  if (!intent) return courses;
+  let result = [...courses];
+
+  // 특정 과목코드 제거
+  if (intent.remove_codes?.length) {
+    result = result.filter(c => !intent.remove_codes.includes(c.code));
+  }
+
+  // 특정 요일 수업 제외
+  if (intent.exclude_days?.length) {
+    result = result.filter(c =>
+      !(c.timeslots || []).some(s => intent.exclude_days.includes(s.day))
+    );
+  }
+
+  // 특정 시간 이전 수업 제외 (예: "09:30" → 9:30 이전 수업 제외)
+  if (intent.exclude_before) {
+    result = result.filter(c =>
+      !(c.timeslots || []).some(s => s.start < intent.exclude_before)
+    );
+  }
+
+  // 특정 과목 우선 배치 (맨 앞으로 이동)
+  if (intent.include_codes?.length) {
+    const prioritized = result.filter(c => intent.include_codes.includes(c.code));
+    const rest = result.filter(c => !intent.include_codes.includes(c.code));
+    result = [...prioritized, ...rest];
+  }
+
+  return result;
+}
+
 function buildPlan(candidates, maxCredits = 21) {
   const plan = [];
   let totalCredits = 0;
@@ -75,10 +109,13 @@ function buildPlan(candidates, maxCredits = 21) {
   return plan;
 }
 
-async function generateRecommendations(userId, semester, preferences = {}, n = 3) {
+async function generateRecommendations(userId, semester, preferences = {}, n = 3, intent = null) {
   const required = await getRequiredCourses(userId, semester);
   const eligible = await checkPrerequisites(userId, required);
-  const filtered = applyHardConstraints(eligible, preferences);
+  let filtered = applyHardConstraints(eligible, preferences);
+
+  // LLM intent 적용
+  filtered = applyIntent(filtered, intent);
 
   return Array.from({ length: n }, (_, i) => {
     const rotated = [...filtered.slice(i * 2), ...filtered.slice(0, i * 2)];
