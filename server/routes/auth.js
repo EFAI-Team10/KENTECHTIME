@@ -34,6 +34,10 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email.endsWith('@kentech.ac.kr')) {
+    return res.status(400).json({ error: '@kentech.ac.kr 이메일만 허용됩니다.' });
+  }
+
   try {
     const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (result.rowCount === 0) {

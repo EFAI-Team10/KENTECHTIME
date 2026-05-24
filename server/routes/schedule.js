@@ -42,7 +42,7 @@ router.post('/save', authMiddleware, async (req, res) => {
     );
     for (const courseId of courseIds) {
       await db.query(
-        'INSERT INTO planned_schedules (user_id, course_id, semester) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
+        'INSERT INTO planned_schedules (user_id, course_id, semester) VALUES ($1, $2, $3) ON CONFLICT (user_id, course_id, semester) DO NOTHING',
         [req.userId, courseId, semester]
       );
     }

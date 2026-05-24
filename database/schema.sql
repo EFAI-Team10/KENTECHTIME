@@ -21,8 +21,8 @@ CREATE TABLE courses (
 );
 
 CREATE TABLE prerequisites (
-  course_id   INTEGER REFERENCES courses(id),
-  required_id INTEGER REFERENCES courses(id),
+  course_id   INTEGER REFERENCES courses(id) ON DELETE CASCADE,
+  required_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
   PRIMARY KEY (course_id, required_id)
 );
 
@@ -58,3 +58,11 @@ CREATE TABLE reviews (
   created_at TIMESTAMP DEFAULT NOW(),
   UNIQUE (user_id, course_id)
 );
+
+-- 성능 인덱스
+CREATE INDEX IF NOT EXISTS idx_completed_courses_user_id  ON completed_courses(user_id);
+CREATE INDEX IF NOT EXISTS idx_planned_schedules_user_id  ON planned_schedules(user_id);
+CREATE INDEX IF NOT EXISTS idx_planned_schedules_semester  ON planned_schedules(semester);
+CREATE INDEX IF NOT EXISTS idx_courses_semester            ON courses(semester);
+CREATE INDEX IF NOT EXISTS idx_courses_category            ON courses(category);
+CREATE INDEX IF NOT EXISTS idx_prerequisites_course_id    ON prerequisites(course_id);

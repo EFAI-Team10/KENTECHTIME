@@ -62,7 +62,17 @@ ${courseListText}
       response_format: { type: 'json_object' },
     });
 
-    const intent = JSON.parse(completion.choices[0].message.content);
+    let intent;
+    try {
+      intent = JSON.parse(completion.choices[0].message.content);
+    } catch {
+      return res.status(500).json({ error: 'LLM 응답 파싱 실패. 다시 시도해주세요.' });
+    }
+
+    if (!intent.action) {
+      return res.status(500).json({ error: 'LLM 응답 형식 오류. 다시 시도해주세요.' });
+    }
+
     const plans = await generateRecommendations(req.userId, semester, {}, 3, intent);
     res.json({ intent, plans, reply: intent.reply });
   } catch (err) {

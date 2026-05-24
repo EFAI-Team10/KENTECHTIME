@@ -28,6 +28,7 @@ export const coursesAPI = {
 };
 
 export const usersAPI = {
+  getMe: () => api.get('/users/me'),
   savePreferences: (data) => api.post('/users/preferences', data),
   getPreferences: () => api.get('/users/preferences'),
 };

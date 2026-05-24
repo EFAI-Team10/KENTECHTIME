@@ -61,7 +61,7 @@ router.post('/completed', authMiddleware, async (req, res) => {
     await db.query('DELETE FROM completed_courses WHERE user_id = $1', [req.userId]);
     for (const c of courses) {
       await db.query(
-        'INSERT INTO completed_courses (user_id, course_id, semester, grade) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
+        'INSERT INTO completed_courses (user_id, course_id, semester, grade) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id, course_id) DO NOTHING',
         [req.userId, c.course_id, c.semester || '2025-fall', c.grade || 'P']
       );
     }

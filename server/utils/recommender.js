@@ -117,10 +117,15 @@ async function generateRecommendations(userId, semester, preferences = {}, n = 3
   // LLM intent 적용
   filtered = applyIntent(filtered, intent);
 
-  return Array.from({ length: n }, (_, i) => {
-    const rotated = [...filtered.slice(i * 2), ...filtered.slice(0, i * 2)];
-    return buildPlan(rotated);
-  });
+  const plans = [];
+  for (let i = 0; i < n; i++) {
+    // 이전 플랜에서 이미 선택된 과목은 후순위로 밀어 Plan A/B/C가 다양해지도록
+    const usedCodes = new Set(plans.flatMap(p => p.map(c => c.code)));
+    const fresh = filtered.filter(c => !usedCodes.has(c.code));
+    const reused = filtered.filter(c => usedCodes.has(c.code));
+    plans.push(buildPlan([...fresh, ...reused]));
+  }
+  return plans;
 }
 
 module.exports = { generateRecommendations };

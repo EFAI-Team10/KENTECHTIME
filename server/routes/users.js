@@ -36,4 +36,18 @@ router.get('/preferences', authMiddleware, async (req, res) => {
   }
 });
 
+// GET /api/users/me — 새로고침 시 유저 정보 복원용
+router.get('/me', authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      'SELECT id, email, name, grade, student_id FROM users WHERE id = $1',
+      [req.userId]
+    );
+    if (result.rowCount === 0) return res.status(404).json({ error: '유저 없음' });
+    res.json({ user: result.rows[0] });
+  } catch (err) {
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
 module.exports = router;
