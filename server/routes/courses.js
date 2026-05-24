@@ -54,4 +54,21 @@ router.get('/requirements', authMiddleware, async (req, res) => {
   }
 });
 
+// POST /api/courses/completed
+router.post('/completed', authMiddleware, async (req, res) => {
+  const { courses } = req.body; // [{ course_id, semester, grade }]
+  try {
+    await db.query('DELETE FROM completed_courses WHERE user_id = $1', [req.userId]);
+    for (const c of courses) {
+      await db.query(
+        'INSERT INTO completed_courses (user_id, course_id, semester, grade) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
+        [req.userId, c.course_id, c.semester || '2025-fall', c.grade || 'P']
+      );
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
 module.exports = router;

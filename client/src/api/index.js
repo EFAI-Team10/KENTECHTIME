@@ -24,6 +24,12 @@ export const scheduleAPI = {
 export const coursesAPI = {
   getAll: (params) => api.get('/courses', { params }),
   getRequirements: () => api.get('/courses/requirements'),
+  saveCompleted: (courses) => api.post('/courses/completed', { courses }),
+};
+
+export const usersAPI = {
+  savePreferences: (data) => api.post('/users/preferences', data),
+  getPreferences: () => api.get('/users/preferences'),
 };
 
 export const chatAPI = {

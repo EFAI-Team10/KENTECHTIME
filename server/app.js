@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
 
@@ -7,6 +7,7 @@ const scheduleRoutes = require('./routes/schedule');
 const coursesRoutes = require('./routes/courses');
 const chatRoutes = require('./routes/chat');
 const trackerRoutes = require('./routes/tracker');
+const usersRoutes = require('./routes/users');
 
 // 배치 스케줄러 초기화
 require('./scheduler/tracker');
@@ -21,6 +22,7 @@ app.use('/api/schedule', scheduleRoutes);
 app.use('/api/courses', coursesRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/tracker', trackerRoutes);
+app.use('/api/users', usersRoutes);
 
 app.get('/health', (_, res) => res.json({ status: 'ok' }));
 
