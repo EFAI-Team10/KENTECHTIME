@@ -1,0 +1,45 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f7fb;
+}
+
+.auth-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  width: 360px;
+  text-align: center;
+}
+
+.auth-card h1 {
+  margin: 0 0 8px;
+  font-size: 28px;
+}
+
+.auth-card .subtitle {
+  color: #666;
+  margin: 0 0 24px;
+  font-size: 14px;
+}
+
+.auth-card .auth-hint {
+  color: #888;
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+
+.google-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.auth-card .error {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 12px;
+}
