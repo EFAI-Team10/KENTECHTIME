@@ -4,7 +4,9 @@ CREATE TABLE users (
   name          VARCHAR(50),
   student_id    VARCHAR(20),
   grade         INTEGER,
-  password_hash VARCHAR(255) NOT NULL,
+  semester      INTEGER,
+  google_sub    VARCHAR(255) UNIQUE,
+  password_hash VARCHAR(255),
   role          VARCHAR(20) DEFAULT 'student',
   created_at    TIMESTAMP DEFAULT NOW()
 );
