@@ -16,7 +16,7 @@ CREATE TABLE courses (
   credits       INTEGER,
   track         VARCHAR(50),
   category      VARCHAR(10),
-  semester      VARCHAR(10),
+  semester      VARCHAR(20),
   target_grade  INTEGER,
   timeslots     JSONB
 );
@@ -30,7 +30,7 @@ CREATE TABLE prerequisites (
 CREATE TABLE completed_courses (
   user_id   INTEGER REFERENCES users(id),
   course_id INTEGER REFERENCES courses(id),
-  semester  VARCHAR(10),
+  semester  VARCHAR(20),
   grade     VARCHAR(5),
   PRIMARY KEY (user_id, course_id)
 );
@@ -46,7 +46,7 @@ CREATE TABLE user_preferences (
 CREATE TABLE planned_schedules (
   user_id   INTEGER REFERENCES users(id),
   course_id INTEGER REFERENCES courses(id),
-  semester  VARCHAR(10),
+  semester  VARCHAR(20),
   PRIMARY KEY (user_id, course_id, semester)
 );
 

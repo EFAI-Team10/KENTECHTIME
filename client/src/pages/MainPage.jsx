@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import TimetableGrid from '../components/Timetable/TimetableGrid';
 import Dashboard from '../components/Dashboard/Dashboard';
 import Chat from '../components/Chat/Chat';
@@ -74,6 +75,11 @@ export default function MainPage() {
       <header className="main-header">
         <span className="logo">KENTECHTIME</span>
         <div className="header-right">
+          {user && user.role === 'admin' && (
+            <Link to="/admin" className="admin-link-btn" style={{ marginRight: '16px', color: '#6366f1', textDecoration: 'none', fontWeight: 'bold' }}>
+              관리자 콘솔
+            </Link>
+          )}
           {user && <span className="username">{user.name}</span>}
           <button className="logout-btn" onClick={logout}>로그아웃</button>
           <button className="withdraw-btn" onClick={openWithdrawModal}>회원 탈퇴</button>
