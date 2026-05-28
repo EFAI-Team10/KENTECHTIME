@@ -5,6 +5,7 @@ CREATE TABLE users (
   student_id    VARCHAR(20),
   grade         INTEGER,
   password_hash VARCHAR(255) NOT NULL,
+  role          VARCHAR(20) DEFAULT 'student',
   created_at    TIMESTAMP DEFAULT NOW()
 );
 

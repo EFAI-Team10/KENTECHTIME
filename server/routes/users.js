@@ -40,7 +40,7 @@ router.get('/preferences', authMiddleware, async (req, res) => {
 router.get('/me', authMiddleware, async (req, res) => {
   try {
     const result = await db.query(
-      'SELECT id, email, name, grade, student_id FROM users WHERE id = $1',
+      'SELECT id, email, name, grade, student_id, role FROM users WHERE id = $1',
       [req.userId]
     );
     if (result.rowCount === 0) return res.status(404).json({ error: '유저 없음' });
