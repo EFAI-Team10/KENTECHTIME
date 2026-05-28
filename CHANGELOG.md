@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## 2026-05-28
+
+### feat: Google OAuth 인증으로 전환 (`feat/google-oauth`)
+
+이메일/비밀번호 인증을 Google OAuth로 완전 대체했습니다. `@kentech.ac.kr` Google Workspace 계정만 허용합니다.
+
+**주요 변경 사항:**
+
+| 파일 | 내용 |
+|------|------|
+| `database/schema.sql` | `google_sub` 컬럼 추가, `semester` 컬럼 추가, `password_hash` nullable로 변경 |
+| `server/utils/googleVerify.js` | Google ID Token 검증 유틸리티 (hd 클레임 + 이메일 도메인 이중 검증) |
+| `server/routes/auth.js` | `POST /api/auth/google`, `POST /api/auth/google/register` 신규 (기존 register/login 제거) |
+| `server/routes/users.js` | `DELETE /api/users/me` — 비밀번호 대신 Google ID Token 재인증으로 변경 |
+| `client/src/index.js` | `GoogleOAuthProvider`로 App 래핑 |
+| `client/src/api/index.js` | `authAPI.googleLogin`, `authAPI.googleRegister`, `deleteAccount(id_token)` |
+| `client/src/pages/AuthPage.jsx` | `<GoogleLogin>` 단일 진입점 |
+| `client/src/pages/OnboardingPage.jsx` | 3단계 온보딩 (기본 정보 → 기수강 과목 → 선호도), 최종 단계에서 일괄 저장 |
+| `client/src/App.jsx` | `/auth`, `/onboarding` 라우트 추가; `/login`, `/register` → `/auth` 리다이렉트 |
+| `client/src/pages/MainPage.jsx` | 회원 탈퇴 모달 — 비밀번호 입력 → Google 재인증 버튼으로 교체 |
+
+**필요 환경 변수 (신규):**
+- `server/.env`: `GOOGLE_CLIENT_ID=<OAuth Client ID>`
+- `client/.env`: `REACT_APP_GOOGLE_CLIENT_ID=<OAuth Client ID>`
+
+**DB 마이그레이션 (Supabase에서 수동 실행):**
+```sql
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS google_sub VARCHAR(255) UNIQUE,
+  ADD COLUMN IF NOT EXISTS semester   INTEGER;
+ALTER TABLE users
+  ALTER COLUMN password_hash DROP NOT NULL;
+```
+
+---
+
 ## 2026-05-25
 
 ### feat: 3단계 회원가입 플로우 (`ff8fe0a`)
