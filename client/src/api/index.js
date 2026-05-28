@@ -31,6 +31,7 @@ export const usersAPI = {
   getMe: () => api.get('/users/me'),
   savePreferences: (data) => api.post('/users/preferences', data),
   getPreferences: () => api.get('/users/preferences'),
+  deleteAccount: (password) => api.delete('/users/me', { data: { password } }),
 };
 
 export const chatAPI = {
