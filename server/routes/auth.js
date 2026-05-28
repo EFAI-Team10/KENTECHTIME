@@ -15,11 +15,11 @@ router.post('/register', async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await db.query(
-      'INSERT INTO users (email, name, student_id, grade, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name',
+      'INSERT INTO users (email, name, student_id, grade, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, role',
       [email, name, student_id, grade, hashedPassword]
     );
     const user = result.rows[0];
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
     res.status(201).json({ token, user });
   } catch (err) {
     console.error('Register Error:', err);
@@ -50,8 +50,8 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-    res.json({ token, user: { id: user.id, email: user.email, name: user.name, grade: user.grade } });
+    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    res.json({ token, user: { id: user.id, email: user.email, name: user.name, grade: user.grade, role: user.role } });
   } catch (err) {
     console.error('Login Error:', err);
     res.status(500).json({ error: '서버 오류' });
