@@ -280,8 +280,38 @@ REACT_APP_GOOGLE_CLIENT_ID=<같은 값>
 
 ---
 
-## 10. 작업 후 정리
+## 10. 회원 탈퇴 기능 통합 (`feat/account-deletion` 머지 반영)
 
-- `bcryptjs` 의존성이 다른 곳에서 안 쓰이면 `server/package.json`에서 제거
+팀원이 main에 머지한 회원 탈퇴 기능(`08b3fbf`)은 현재 **비밀번호 재확인** 방식이라 Google OAuth 가입자(`password_hash IS NULL`)에게서 동작하지 않는다. 재인증 메커니즘만 교체하고 나머지(모달 UI, 트랜잭션 삭제 순서)는 그대로 활용한다.
+
+### 10.1 백엔드 변경
+**`DELETE /api/users/me`** (`server/routes/users.js`)
+- 요청 본문: `{ password }` → `{ id_token }`
+- `bcrypt.compare` 제거 → `googleVerify(id_token)` 호출
+- 반환된 `sub`이 `req.userId`로 조회한 사용자의 `google_sub`와 일치하는지 확인
+- 불일치 시 `403 Forbidden`
+- 트랜잭션 삭제 순서(`reviews → planned_schedules → completed_courses → user_preferences → users`) 유지
+
+### 10.2 프론트엔드 변경
+**`MainPage.jsx` 탈퇴 모달**
+- 비밀번호 input 제거
+- "Google로 재인증 후 탈퇴" 버튼 (`<GoogleLogin>` 또는 동등한 컴포넌트로 새 ID Token 획득)
+- `usersAPI.deleteAccount(idToken)` 호출
+- 모달 텍스트: "탈퇴를 진행하려면 Google 계정으로 다시 인증하세요." 추가
+
+**`client/src/api/index.js`**
+- `usersAPI.deleteAccount(password)` 시그니처 → `usersAPI.deleteAccount(idToken)`
+- 요청 본문 키: `password` → `id_token`
+
+### 10.3 정당성
+- 비밀번호 재입력의 본래 의도("지금 이 순간 진짜 본인 맞나")를 Google 재인증이 동일하게 달성함 (업계 표준: Vercel, Linear 등 OAuth-only 서비스 패턴)
+- `googleVerify` 헬퍼를 한 곳에 두고 가입·로그인·탈퇴에 모두 재사용 → 코드 중복 없음
+- soft delete / 사유 설문 / 데이터 다운로드는 학교 프로젝트 스코프 외 — 제외
+
+---
+
+## 11. 작업 후 정리
+
+- `bcryptjs` 의존성이 다른 곳에서 안 쓰이면 `server/package.json`에서 제거 (auth.js·users.js 둘 다 안 쓰게 되므로 제거 가능)
 - README의 회원가입 섹션 갱신
 - CHANGELOG에 항목 추가
