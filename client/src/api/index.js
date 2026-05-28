@@ -11,8 +11,8 @@ api.interceptors.request.use(config => {
 });
 
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
-  login: (data) => api.post('/auth/login', data),
+  googleLogin: (id_token) => api.post('/auth/google', { id_token }),
+  googleRegister: (payload) => api.post('/auth/google/register', payload),
 };
 
 export const scheduleAPI = {
@@ -31,7 +31,7 @@ export const usersAPI = {
   getMe: () => api.get('/users/me'),
   savePreferences: (data) => api.post('/users/preferences', data),
   getPreferences: () => api.get('/users/preferences'),
-  deleteAccount: (password) => api.delete('/users/me', { data: { password } }),
+  deleteAccount: (id_token) => api.delete('/users/me', { data: { id_token } }),
 };
 
 export const chatAPI = {
