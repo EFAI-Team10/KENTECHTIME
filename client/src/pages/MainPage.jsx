@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { GoogleLogin } from '@react-oauth/google';
 import TimetableGrid from '../components/Timetable/TimetableGrid';
 import Dashboard from '../components/Dashboard/Dashboard';
 import Chat from '../components/Chat/Chat';
@@ -13,7 +14,6 @@ export default function MainPage() {
   const [selectedPlan, setSelectedPlan] = useState(0);
   const [loading, setLoading] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawPassword, setWithdrawPassword] = useState('');
   const [withdrawError, setWithdrawError] = useState('');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
 
@@ -40,11 +40,17 @@ export default function MainPage() {
     setCurrentSchedule(plans[i]);
   };
 
-  const handleWithdraw = async () => {
+  const handleWithdrawSuccess = async (credentialResponse) => {
     setWithdrawError('');
     setWithdrawLoading(true);
+    const idToken = credentialResponse?.credential;
+    if (!idToken) {
+      setWithdrawError('Google 인증 응답이 비어있습니다.');
+      setWithdrawLoading(false);
+      return;
+    }
     try {
-      await usersAPI.deleteAccount(withdrawPassword);
+      await usersAPI.deleteAccount(idToken);
       logout();
     } catch (err) {
       setWithdrawError(err.response?.data?.error || '탈퇴 처리 중 오류가 발생했습니다.');
@@ -53,8 +59,11 @@ export default function MainPage() {
     }
   };
 
+  const handleWithdrawError = () => {
+    setWithdrawError('Google 재인증이 취소되었거나 실패했습니다.');
+  };
+
   const openWithdrawModal = () => {
-    setWithdrawPassword('');
     setWithdrawError('');
     setShowWithdrawModal(true);
   };
@@ -85,26 +94,17 @@ export default function MainPage() {
           <div className="withdraw-modal" onClick={(e) => e.stopPropagation()}>
             <h3>회원 탈퇴</h3>
             <p>탈퇴하면 시간표, 수강 기록, 선호도 등 모든 데이터가 <strong>영구 삭제</strong>됩니다.</p>
-            <p>계속하려면 비밀번호를 입력하세요.</p>
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={withdrawPassword}
-              onChange={(e) => setWithdrawPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleWithdraw()}
-              className="withdraw-password-input"
-              autoFocus
-            />
+            <p>계속하려면 Google 계정으로 다시 인증해주세요.</p>
             {withdrawError && <p className="withdraw-error">{withdrawError}</p>}
+            <div className="withdraw-google-wrapper">
+              {withdrawLoading ? (
+                <p>처리 중...</p>
+              ) : (
+                <GoogleLogin onSuccess={handleWithdrawSuccess} onError={handleWithdrawError} />
+              )}
+            </div>
             <div className="withdraw-modal-btns">
               <button onClick={() => setShowWithdrawModal(false)} disabled={withdrawLoading}>취소</button>
-              <button
-                className="confirm-withdraw-btn"
-                onClick={handleWithdraw}
-                disabled={withdrawLoading || !withdrawPassword}
-              >
-                {withdrawLoading ? '처리 중...' : '탈퇴 확인'}
-              </button>
             </div>
           </div>
         </div>
