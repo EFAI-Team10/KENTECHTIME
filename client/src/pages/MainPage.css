@@ -106,3 +106,102 @@
   color: white !important;
   border-color: #27AE60 !important;
 }
+
+.withdraw-btn {
+  padding: 6px 14px;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  background: white;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.withdraw-btn:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.withdraw-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  width: 380px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.withdraw-modal h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #e74c3c;
+}
+
+.withdraw-modal p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.withdraw-password-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 8px 0 4px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.withdraw-password-input:focus {
+  border-color: #e74c3c;
+}
+
+.withdraw-error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.withdraw-modal-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.withdraw-modal-btns button {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.withdraw-modal-btns button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirm-withdraw-btn {
+  background: #e74c3c !important;
+  color: white !important;
+  border-color: #e74c3c !important;
+}
+
+.confirm-withdraw-btn:disabled {
+  background: #f1a89a !important;
+  border-color: #f1a89a !important;
+}
