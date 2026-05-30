@@ -14,6 +14,7 @@ export default function MainPage() {
   const router = useRouter();
   const { semester, currentSchedule, setCurrentSchedule, user, token, logout } = useStore();
 
+  const [mounted, setMounted] = useState(false);
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -22,9 +23,14 @@ export default function MainPage() {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (!token) { router.replace('/auth'); return; }
     loadRecommendations();
-  }, [token]);
+  }, [mounted, token]);
 
   const loadRecommendations = async () => {
     setLoading(true);
@@ -86,7 +92,7 @@ export default function MainPage() {
     setWithdrawError('Google 재인증이 취소되었거나 실패했습니다.');
   };
 
-  if (!token) return null;
+  if (!mounted) return null;
 
   return (
     <div className="main-page">

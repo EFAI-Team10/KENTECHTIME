@@ -11,8 +11,6 @@
 
 // CommonJS + dotenv (Next.js 앱 번들 밖에서 실행되는 스크립트)
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
-
 const fs = require('fs');
 const XLSX = require('xlsx');
 const { createClient } = require('@supabase/supabase-js');

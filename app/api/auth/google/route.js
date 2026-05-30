@@ -20,18 +20,23 @@ export async function POST(request) {
   const supabase = getSupabaseAdmin();
 
   // Match by google_sub first, fall back to email (handles pre-OAuth admin accounts)
-  let { data: user } = await supabase
+  let { data: user, error: err1 } = await supabase
     .from('users')
     .select('id, email, name, role, semester, student_id, google_sub')
     .eq('google_sub', payload.sub)
     .maybeSingle();
 
+  if (err1) console.error('[auth/google] google_sub lookup error:', err1);
+
   if (!user) {
-    const { data: byEmail } = await supabase
+    const { data: byEmail, error: err2 } = await supabase
       .from('users')
       .select('id, email, name, role, semester, student_id, google_sub')
       .eq('email', payload.email)
       .maybeSingle();
+
+    if (err2) console.error('[auth/google] email lookup error:', err2);
+    console.log('[auth/google] lookup by email:', payload.email, '→ found:', !!byEmail);
 
     if (byEmail) {
       await supabase.from('users').update({ google_sub: payload.sub }).eq('id', byEmail.id);
