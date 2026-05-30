@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authAPI, coursesAPI, usersAPI } from '../api';
-import useStore from '../store';
-import './RegisterPage.css';
+'use client';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { authAPI, coursesAPI } from '@/lib/api-client';
+import useStore from '@/lib/store';
+import './onboarding.css';
 
 const STEPS = ['기본 정보', '기수강 과목', '선호도'];
 const TRACKS = ['AI', '신소재', '에너지그리드', '공통'];
@@ -14,20 +15,23 @@ const DAYS = [
   { value: 'FRI', label: '금' },
 ];
 
-export default function RegisterPage() {
+export default function OnboardingPage() {
+  const router = useRouter();
+  const { setToken, setUser } = useStore();
+
+  const [idToken, setIdToken] = useState(null);
+  const [googleProfile, setGoogleProfile] = useState(null);
+
   const [step, setStep] = useState(0);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Step 1
-  const [form, setForm] = useState({ email: '', name: '', student_id: '', grade: '', password: '' });
+  const [form, setForm] = useState({ name: '', student_id: '', semester: '' });
 
-  // Step 2
   const [allCourses, setAllCourses] = useState([]);
   const [selectedCourseIds, setSelectedCourseIds] = useState(new Set());
   const [courseSearch, setCourseSearch] = useState('');
 
-  // Step 3
   const [prefs, setPrefs] = useState({
     preferred_tracks: [],
     avoid_morning: false,
@@ -35,59 +39,59 @@ export default function RegisterPage() {
     preferred_gap: 60,
   });
 
-  const { setToken, setUser } = useStore();
-  const navigate = useNavigate();
+  useEffect(() => {
+    const raw = sessionStorage.getItem('authState');
+    if (!raw) { router.replace('/auth'); return; }
+    try {
+      const { idToken: t, googleProfile: p } = JSON.parse(raw);
+      setIdToken(t);
+      setGoogleProfile(p);
+      setForm(f => ({ ...f, name: p?.name || '' }));
+    } catch {
+      router.replace('/auth');
+    }
+  }, [router]);
 
   useEffect(() => {
-    if (step === 1) {
-      coursesAPI.getAll().then(res => setAllCourses(res.data.courses)).catch(() => {});
+    if (step === 1 && allCourses.length === 0) {
+      coursesAPI.getAll().then(res => setAllCourses(res.data.courses || [])).catch(() => {});
     }
-  }, [step]);
+  }, [step, allCourses.length]);
 
-  // Step 1 제출 → 회원가입 API
-  const handleRegister = async (e) => {
+  const handleStep1Next = (e) => {
     e.preventDefault();
+    setError('');
+    if (!form.name.trim() || !form.student_id.trim() || !form.semester) {
+      setError('이름·학번·학기차를 모두 입력해주세요.');
+      return;
+    }
+    setStep(1);
+  };
+
+  const handleStep2Next = () => setStep(2);
+
+  const handleFinish = async () => {
     setError('');
     setLoading(true);
     try {
-      const res = await authAPI.register(form);
+      const res = await authAPI.googleRegister({
+        id_token: idToken,
+        name: form.name.trim(),
+        student_id: form.student_id.trim(),
+        semester: Number(form.semester),
+        completed_course_ids: [...selectedCourseIds],
+        preferences: prefs,
+      });
+      sessionStorage.removeItem('authState');
       setToken(res.data.token);
       setUser(res.data.user);
-      setStep(1);
+      router.push('/');
     } catch (err) {
-      setError(err.response?.data?.error || '회원가입에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Step 2 제출 → 기수강 과목 저장
-  const handleSaveCourses = async () => {
-    setLoading(true);
-    try {
-      const courses = [...selectedCourseIds].map(id => ({ course_id: id }));
-      await coursesAPI.saveCompleted(courses);
-      setStep(2);
-    } catch {
-      setError('과목 저장에 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Step 3 제출 → 선호도 저장 후 메인 이동
-  const handleSavePrefs = async () => {
-    setLoading(true);
-    try {
-      await usersAPI.savePreferences({
-        preferred_tracks: prefs.preferred_tracks,
-        avoid_morning: prefs.avoid_morning,
-        day_off: prefs.day_off,
-        preferred_gap: prefs.preferred_gap,
-      });
-      navigate('/');
-    } catch {
-      setError('선호도 저장에 실패했습니다.');
+      const msg = err.response?.data?.error || '가입에 실패했습니다.';
+      setError(msg);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setTimeout(() => router.replace('/auth'), 1500);
+      }
     } finally {
       setLoading(false);
     }
@@ -104,10 +108,7 @@ export default function RegisterPage() {
   const togglePrefArray = (key, value) => {
     setPrefs(prev => {
       const arr = prev[key];
-      return {
-        ...prev,
-        [key]: arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value],
-      };
+      return { ...prev, [key]: arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value] };
     });
   };
 
@@ -119,35 +120,31 @@ export default function RegisterPage() {
     return acc;
   }, {});
 
+  if (!idToken) return null;
+
   return (
     <div className="auth-page">
       <div className="register-card">
-        {/* 스테퍼 */}
         <div className="stepper">
           {STEPS.map((label, i) => (
-            <React.Fragment key={i}>
+            <div key={i} style={{ display: 'contents' }}>
               <div className={`step-item ${i <= step ? 'active' : ''} ${i < step ? 'done' : ''}`}>
                 <div className="step-circle">{i < step ? '✓' : i + 1}</div>
                 <span className="step-label">{label}</span>
               </div>
               {i < STEPS.length - 1 && <div className={`step-line ${i < step ? 'done' : ''}`} />}
-            </React.Fragment>
+            </div>
           ))}
         </div>
 
         {error && <p className="error">{error}</p>}
 
-        {/* Step 1: 기본 정보 */}
         {step === 0 && (
-          <form onSubmit={handleRegister}>
+          <form onSubmit={handleStep1Next}>
             <h2>기본 정보 입력</h2>
-            <input
-              type="email"
-              placeholder="학교 이메일 (@kentech.ac.kr)"
-              value={form.email}
-              onChange={e => setForm({ ...form, email: e.target.value })}
-              required
-            />
+            {googleProfile?.email && (
+              <p className="step-desc">{googleProfile.email}로 가입을 진행합니다.</p>
+            )}
             <input
               type="text"
               placeholder="이름"
@@ -160,27 +157,22 @@ export default function RegisterPage() {
               placeholder="학번"
               value={form.student_id}
               onChange={e => setForm({ ...form, student_id: e.target.value })}
-            />
-            <select value={form.grade} onChange={e => setForm({ ...form, grade: e.target.value })} required>
-              <option value="">학년 선택</option>
-              {[1, 2, 3, 4].map(g => <option key={g} value={g}>{g}학년</option>)}
-            </select>
-            <input
-              type="password"
-              placeholder="비밀번호 (8자 이상)"
-              value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })}
-              minLength={8}
               required
             />
-            <button type="submit" disabled={loading}>
-              {loading ? '처리 중...' : '다음'}
-            </button>
-            <p className="auth-link">이미 계정이 있으신가요? <Link to="/login">로그인</Link></p>
+            <select
+              value={form.semester}
+              onChange={e => setForm({ ...form, semester: e.target.value })}
+              required
+            >
+              <option value="">학기차 선택</option>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(s => (
+                <option key={s} value={s}>{s}학기차</option>
+              ))}
+            </select>
+            <button type="submit" disabled={loading}>다음</button>
           </form>
         )}
 
-        {/* Step 2: 기수강 과목 */}
         {step === 1 && (
           <div className="step-content">
             <h2>기수강 과목 선택</h2>
@@ -193,7 +185,10 @@ export default function RegisterPage() {
               onChange={e => setCourseSearch(e.target.value)}
             />
             {allCourses.length === 0 ? (
-              <p className="empty-msg">아직 개설 과목 데이터가 없습니다.<br />관리자가 추가한 후 마이페이지에서 설정할 수 있습니다.</p>
+              <p className="empty-msg">
+                아직 개설 과목 데이터가 없습니다.<br />
+                관리자가 추가한 후 마이페이지에서 설정할 수 있습니다.
+              </p>
             ) : (
               <div className="course-list">
                 {['VC', 'EF', 'EL'].map(cat => coursesByCategory[cat].length > 0 && (
@@ -216,14 +211,12 @@ export default function RegisterPage() {
             )}
             <div className="step-footer">
               <span className="selected-count">선택: {selectedCourseIds.size}과목</span>
-              <button onClick={handleSaveCourses} disabled={loading}>
-                {loading ? '저장 중...' : '다음'}
-              </button>
+              <button className="btn-secondary" onClick={() => setStep(0)}>이전</button>
+              <button onClick={handleStep2Next}>다음</button>
             </div>
           </div>
         )}
 
-        {/* Step 3: 선호도 */}
         {step === 2 && (
           <div className="step-content">
             <h2>선호도 설정</h2>
@@ -291,8 +284,8 @@ export default function RegisterPage() {
 
             <div className="step-footer">
               <button className="btn-secondary" onClick={() => setStep(1)}>이전</button>
-              <button onClick={handleSavePrefs} disabled={loading}>
-                {loading ? '저장 중...' : '완료'}
+              <button onClick={handleFinish} disabled={loading}>
+                {loading ? '가입 중...' : '완료'}
               </button>
             </div>
           </div>

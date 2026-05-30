@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const db = require('../models/db');
+const { verifyIdToken, GoogleAuthError } = require('../utils/googleVerify');
 const authMiddleware = require('../middleware/auth');
 
 // POST /api/users/preferences
@@ -51,17 +51,29 @@ router.get('/me', authMiddleware, async (req, res) => {
   }
 });
 
-// DELETE /api/users/me — 회원 탈퇴 (비밀번호 확인 후 모든 데이터 삭제)
+// DELETE /api/users/me — 회원 탈퇴 (Google 재인증 후 모든 데이터 삭제)
 router.delete('/me', authMiddleware, async (req, res) => {
-  const { password } = req.body;
-  if (!password) return res.status(400).json({ error: '비밀번호를 입력해주세요.' });
+  const { id_token } = req.body;
+  if (!id_token) return res.status(400).json({ error: 'Google 재인증이 필요합니다.' });
+
+  let payload;
+  try {
+    payload = await verifyIdToken(id_token);
+  } catch (err) {
+    if (err instanceof GoogleAuthError) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    console.error('Google verify error:', err);
+    return res.status(500).json({ error: '서버 오류' });
+  }
 
   try {
-    const result = await db.query('SELECT password_hash FROM users WHERE id = $1', [req.userId]);
+    const result = await db.query('SELECT google_sub FROM users WHERE id = $1', [req.userId]);
     if (result.rowCount === 0) return res.status(404).json({ error: '유저 없음' });
 
-    const valid = await bcrypt.compare(password, result.rows[0].password_hash);
-    if (!valid) return res.status(401).json({ error: '비밀번호가 올바르지 않습니다.' });
+    if (result.rows[0].google_sub !== payload.sub) {
+      return res.status(403).json({ error: '본인 계정으로 재인증해주세요.' });
+    }
 
     await db.query('BEGIN');
     try {

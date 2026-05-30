@@ -1,16 +1,29 @@
 {
-  "name": "kentechtime-root",
-  "version": "1.0.0",
+  "name": "kentechtime",
+  "version": "2.0.0",
   "private": true,
   "scripts": {
-    "install:client": "npm install --prefix client",
-    "install:server": "npm install --prefix server",
-    "install:all": "npm run install:client && npm run install:server",
-    "dev:client": "npm start --prefix client",
-    "dev:server": "npm run dev --prefix server",
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\""
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@react-oauth/google": "^0.13.5",
+    "@supabase/supabase-js": "^2.45.0",
+    "google-auth-library": "^10.6.2",
+    "jsonwebtoken": "^9.0.2",
+    "openai": "^4.52.0",
+    "axios": "^1.7.2",
+    "zustand": "^4.5.4",
+    "recharts": "^2.12.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.2.5"
   }
 }

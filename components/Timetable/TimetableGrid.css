@@ -1,0 +1,19 @@
+.timetable-grid { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: white; }
+
+.timetable-header,
+.timetable-row { display: grid; grid-template-columns: 60px repeat(5, 1fr); }
+
+.timetable-header { background: #f5f5f5; font-weight: 600; }
+
+.time-col, .day-col, .cell {
+  padding: 6px 4px;
+  border: 1px solid #eee;
+  min-height: 40px;
+  font-size: 11px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell.occupied { color: white; font-weight: 500; border-radius: 2px; overflow: hidden; }

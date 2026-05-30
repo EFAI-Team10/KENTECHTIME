@@ -1,0 +1,187 @@
+.main-page {
+  min-height: 100vh;
+  background: #f0f4f8;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 32px;
+  background: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #4A90D9;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.username {
+  color: #555;
+  font-size: 14px;
+}
+
+.logout-btn {
+  padding: 6px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.main-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.schedule-section {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+.plan-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.plan-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.plan-tabs button {
+  padding: 7px 18px;
+  border: 1.5px solid #4A90D9;
+  border-radius: 6px;
+  background: white;
+  color: #4A90D9;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.plan-tabs button.active {
+  background: #4A90D9;
+  color: white;
+}
+
+.action-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btns button {
+  padding: 7px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.action-btns button:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.save-btn {
+  background: #27AE60 !important;
+  color: white !important;
+  border-color: #27AE60 !important;
+}
+
+.withdraw-btn {
+  padding: 6px 14px;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  background: white;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.withdraw-btn:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.withdraw-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  width: 380px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.withdraw-modal h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #e74c3c;
+}
+
+.withdraw-modal p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.withdraw-error {
+  color: #e74c3c;
+  font-size: 13px;
+  margin: 4px 0 0;
+}
+
+.withdraw-modal-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.withdraw-modal-btns button {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.withdraw-modal-btns button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.withdraw-google-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0;
+}
