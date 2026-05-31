@@ -56,7 +56,7 @@ BEGIN
     day_off          = EXCLUDED.day_off;
 
   RETURN QUERY
-    SELECT u.id, u.email, u.name, u.role, u.semester, u.student_id
+    SELECT u.id, u.email::TEXT, u.name::TEXT, u.role::TEXT, u.semester, u.student_id::TEXT
     FROM users u WHERE u.id = v_user_id;
 END;
 $$;
