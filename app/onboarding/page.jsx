@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI, coursesAPI } from '@/lib/api-client';
 import { parseGradeData, CONSOLE_COMMAND } from '@/lib/gradeParser';
@@ -32,6 +32,13 @@ export default function OnboardingPage() {
   const [allCourses, setAllCourses] = useState([]);
   const [selectedCourseIds, setSelectedCourseIds] = useState(new Set());
   const [courseSearch, setCourseSearch] = useState('');
+
+  const bookmarkletRef = useRef(null);
+  useEffect(() => {
+    if (bookmarkletRef.current) {
+      bookmarkletRef.current.setAttribute('href', `javascript:${CONSOLE_COMMAND}`);
+    }
+  }, []);
 
   const [prefs, setPrefs] = useState({
     preferred_tracks: [],
@@ -278,9 +285,20 @@ export default function OnboardingPage() {
                     </div>
                     <div className="guide-step-item">
                       <span className="guide-num">2</span>
-                      <span><b>F12</b> → Console 탭에 아래 코드 붙여넣고 Enter</span>
+                      <span>아래 버튼을 <b>북마크 바로 드래그</b> (한 번만) — 또는 클릭하면 F12 커맨드 복사</span>
                     </div>
-                    <code className="console-command" onClick={() => { navigator.clipboard.writeText(CONSOLE_COMMAND); alert('복사되었습니다.'); }} title="클릭하면 복사">여기를 클릭해서 복사</code>
+                    <div className="bookmarklet-row">
+                      <a
+                        ref={bookmarkletRef}
+                        href="#"
+                        className="bookmarklet-drag-btn"
+                        onClick={e => { e.preventDefault(); navigator.clipboard.writeText(CONSOLE_COMMAND); alert('콘솔 커맨드가 복사되었습니다.\nF12 → Console에 붙여넣으세요.'); }}
+                        title="북마크 바로 드래그해서 설치하거나, 클릭해서 F12 커맨드 복사"
+                      >
+                        📎 포털 성적 가져오기
+                      </a>
+                      <span className="bookmarklet-hint">← 북마크 바로 드래그</span>
+                    </div>
                     <div className="guide-step-item">
                       <span className="guide-num">3</span>
                       <span>추출 완료 후 화면 우측 하단 <b>파란 버튼</b>을 클릭해서 복사</span>
