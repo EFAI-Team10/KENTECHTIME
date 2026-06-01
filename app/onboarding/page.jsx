@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI, coursesAPI } from '@/lib/api-client';
-import { parseGradeData, CONSOLE_COMMAND } from '@/lib/gradeParser';
+import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import useStore from '@/lib/store';
 import './onboarding.css';
 
@@ -32,13 +32,6 @@ export default function OnboardingPage() {
   const [allCourses, setAllCourses] = useState([]);
   const [selectedCourseIds, setSelectedCourseIds] = useState(new Set());
   const [courseSearch, setCourseSearch] = useState('');
-
-  const bookmarkletRef = useRef(null);
-  useEffect(() => {
-    if (bookmarkletRef.current) {
-      bookmarkletRef.current.setAttribute('href', `javascript:${CONSOLE_COMMAND}`);
-    }
-  }, []);
 
   const [prefs, setPrefs] = useState({
     preferred_tracks: [],
@@ -288,16 +281,10 @@ export default function OnboardingPage() {
                       <span>아래 버튼을 <b>북마크 바로 드래그</b> (한 번만) — 또는 클릭하면 F12 커맨드 복사</span>
                     </div>
                     <div className="bookmarklet-row">
-                      <a
-                        ref={bookmarkletRef}
-                        href="#"
-                        className="bookmarklet-drag-btn"
-                        onClick={e => { e.preventDefault(); navigator.clipboard.writeText(CONSOLE_COMMAND); alert('콘솔 커맨드가 복사되었습니다.\nF12 → Console에 붙여넣으세요.'); }}
-                        title="북마크 바로 드래그해서 설치하거나, 클릭해서 F12 커맨드 복사"
-                      >
-                        📎 포털 성적 가져오기
-                      </a>
-                      <span className="bookmarklet-hint">← 북마크 바로 드래그</span>
+                      <span dangerouslySetInnerHTML={{ __html:
+                        `<a href="${BOOKMARKLET_HREF_HTML}" class="bookmarklet-drag-btn" title="북마크 바로 드래그해서 설치">📎 포털 성적 가져오기</a>`
+                      }} />
+                      <span className="bookmarklet-hint">← 북마크 바로 드래그 (한 번만)</span>
                     </div>
                     <div className="guide-step-item">
                       <span className="guide-num">3</span>

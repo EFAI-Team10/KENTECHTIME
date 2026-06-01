@@ -1,8 +1,8 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { coursesAPI } from '@/lib/api-client';
-import { parseGradeData, CONSOLE_COMMAND } from '@/lib/gradeParser';
+import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import './Dashboard.css';
 
 // 졸업요건 학점 (학사편람 기준)
@@ -33,13 +33,6 @@ export default function Dashboard() {
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const bookmarkletRef = useRef(null);
-
-  useEffect(() => {
-    if (bookmarkletRef.current) {
-      bookmarkletRef.current.setAttribute('href', `javascript:${CONSOLE_COMMAND}`);
-    }
-  }, []);
 
   const loadRequirements = () => {
     coursesAPI.getRequirements()
@@ -350,16 +343,10 @@ export default function Dashboard() {
                     <p className="guide-step"><span>1</span> KIS 포털 → 사용자서비스 → 성적 → <b>전체성적조회</b> → 조회</p>
                     <p className="guide-step"><span>2</span> 아래 버튼을 <b>북마크 바로 드래그</b>해서 설치 (한 번만) — 또는 클릭하면 F12 커맨드 복사</p>
                     <div className="bookmarklet-row">
-                      <a
-                        ref={bookmarkletRef}
-                        href="#"
-                        className="bookmarklet-drag-btn"
-                        onClick={e => { e.preventDefault(); navigator.clipboard.writeText(CONSOLE_COMMAND); alert('콘솔 커맨드가 복사되었습니다.\nF12 → Console에 붙여넣으세요.'); }}
-                        title="북마크 바로 드래그해서 설치하거나, 클릭해서 F12 커맨드 복사"
-                      >
-                        📎 포털 성적 가져오기
-                      </a>
-                      <span className="bookmarklet-hint">← 북마크 바로 드래그</span>
+                      <span dangerouslySetInnerHTML={{ __html:
+                        `<a href="${BOOKMARKLET_HREF_HTML}" class="bookmarklet-drag-btn" title="북마크 바로 드래그해서 설치">📎 포털 성적 가져오기</a>`
+                      }} />
+                      <span className="bookmarklet-hint">← 북마크 바로 드래그 (한 번만)</span>
                     </div>
                     <p className="guide-step"><span>3</span> 포털 전체성적조회 페이지에서 북마클릿 클릭 <span className="guide-note">(F12 방식: 콘솔에 붙여넣기 후 Enter)</span></p>
                     <p className="guide-step"><span>4</span> 화면 우측 하단 <b>파란 버튼</b> 클릭 → 복사 후 아래에 붙여넣고 "분석"<br/><span className="guide-note">타대 계절학기 과목도 자동으로 감지됩니다.</span></p>
