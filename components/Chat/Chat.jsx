@@ -25,7 +25,7 @@ export default function Chat({ semester, onScheduleUpdate }) {
     setLoading(true);
 
     try {
-      const res = await chatAPI.send({ message: input, currentSchedule, semester });
+      const res = await chatAPI.send({ message: input, currentSchedule, semester, history: messages });
       const { reply, plans } = res.data;
       setMessages(prev => [
         ...prev,
