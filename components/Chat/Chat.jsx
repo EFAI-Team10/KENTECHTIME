@@ -4,10 +4,12 @@ import { chatAPI } from '@/lib/api-client';
 import useStore from '@/lib/store';
 import './Chat.css';
 
+const INITIAL_MESSAGES = [
+  { role: 'assistant', content: '안녕하세요! 시간표 수정 요청을 입력해주세요. (예: "목요일 오전 수업은 빼줘")' },
+];
+
 export default function Chat({ semester, onScheduleUpdate }) {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: '안녕하세요! 시간표 수정 요청을 입력해주세요. (예: "목요일 오전 수업은 빼줘")' },
-  ]);
+  const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const currentSchedule = useStore(s => s.currentSchedule);
@@ -42,9 +44,20 @@ export default function Chat({ semester, onScheduleUpdate }) {
     }
   };
 
+  const resetChat = () => {
+    if (loading) return;
+    setMessages(INITIAL_MESSAGES);
+    setInput('');
+  };
+
   return (
     <div className="chat-container">
-      <h3 className="chat-title">AI 시간표 도우미</h3>
+      <div className="chat-header">
+        <h3 className="chat-title">AI 시간표 도우미</h3>
+        <button className="chat-new-btn" onClick={resetChat} disabled={loading} title="새 대화">
+          새 대화
+        </button>
+      </div>
       <div className="chat-messages">
         {messages.map((msg, i) => (
           <div key={i} className={`message ${msg.role}`}>
