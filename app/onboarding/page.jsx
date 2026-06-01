@@ -77,14 +77,15 @@ export default function OnboardingPage() {
   const handleStep2Next = () => setStep(2);
 
   const handlePortalAnalyze = () => {
-    const { kentech, external } = parseGradeData(pasteText);
-    if (kentech.length === 0 && external.length === 0) {
+    const { toImport, external } = parseGradeData(pasteText);
+    if (toImport.length === 0 && external.length === 0) {
       setError('과목코드를 찾을 수 없습니다. 전체성적조회 페이지에서 콘솔 커맨드를 실행했는지 확인해주세요.');
       return;
     }
-    const matched = allCourses.filter(c => kentech.includes(c.code));
+    const importCodes = new Set(toImport.map(i => i.code));
+    const matched = allCourses.filter(c => importCodes.has(c.code));
     const matchedCodes = new Set(matched.map(c => c.code));
-    const unmatched = kentech.filter(code => !matchedCodes.has(code));
+    const unmatched = [...importCodes].filter(code => !matchedCodes.has(code));
     setPortalPreview({ matched, unmatched, external });
     setError('');
   };
