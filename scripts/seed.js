@@ -128,7 +128,7 @@ async function seed() {
         records.push({
           code:         String(code).trim(),
           name:         String(name).trim(),
-          credits:      parseInt(row[col.credits], 10) || 0,
+          credits:      parseFloat(row[col.credits]) || 0,
           track:        null,
           category:     row[col.category] ? String(row[col.category]).trim() : 'EL',
           semester:     fileInfo.semester,

@@ -267,3 +267,147 @@
   font-size: 15px;
   margin: 8px 0 20px;
 }
+
+/* 탭 */
+.import-tabs {
+  display: flex;
+  border-bottom: 2px solid #eee;
+  margin-bottom: 18px;
+  gap: 0;
+}
+
+.import-tab {
+  padding: 8px 18px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  cursor: pointer;
+  color: #888;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  font-weight: 500;
+}
+
+.import-tab.active {
+  color: #4A90D9;
+  border-bottom-color: #4A90D9;
+}
+
+.import-tab:hover:not(.active) {
+  color: #555;
+}
+
+/* 기타 직접 입력 폼 */
+.ext-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ext-form-desc {
+  font-size: 13px;
+  color: #555;
+  margin: 0;
+  line-height: 1.6;
+  background: #f8f9fa;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid #4A90D9;
+}
+
+.ext-example {
+  color: #4A90D9;
+  font-weight: 500;
+}
+
+.ext-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.ext-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.ext-field input,
+.ext-field select {
+  padding: 8px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.ext-field input:focus,
+.ext-field select:focus {
+  border-color: #4A90D9;
+}
+
+.ext-row {
+  display: flex;
+  gap: 12px;
+}
+
+.required {
+  color: #e74c3c;
+}
+
+.unmatched-hint {
+  font-size: 12px;
+  color: #4A90D9;
+  margin: 4px 0 6px;
+  background: #eef4fd;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.external-label { color: #E67E22; margin-top: 12px; }
+
+.ext-badge {
+  background: #fff3e0;
+  color: #E67E22;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.ext-code-text {
+  font-size: 11px;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.ext-name-text {
+  flex: 1;
+  font-size: 13px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ext-fill-btn {
+  padding: 2px 10px;
+  font-size: 12px;
+  border: 1px solid #E67E22;
+  border-radius: 6px;
+  color: #E67E22;
+  background: white;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ext-fill-btn:hover { background: #E67E22; color: white; }
+
+.ext-notice {
+  font-size: 11px;
+  color: #aaa;
+  margin: 6px 0 0;
+  text-align: right;
+}

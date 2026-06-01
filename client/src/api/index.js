@@ -25,10 +25,12 @@ export const coursesAPI = {
   getAll: (params) => api.get('/courses', { params }),
   getRequirements: () => api.get('/courses/requirements'),
   saveCompleted: (courses) => api.post('/courses/completed', { courses }),
+  getCompleted: () => api.get('/courses/completed'),
   uploadCourses: (formData) => api.post('/courses/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   importByCodes: (codes) => api.post('/courses/import-by-codes', { codes }),
+  addExternal: (data) => api.post('/courses/external', data),
 };
 
 export const usersAPI = {

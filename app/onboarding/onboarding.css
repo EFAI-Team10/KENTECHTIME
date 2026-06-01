@@ -320,3 +320,58 @@
   font-size: 13px;
   margin-bottom: 8px;
 }
+
+/* 입력 방식 선택 */
+.input-mode-select { display: flex; flex-direction: column; gap: 10px; }
+
+.mode-btn {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border: 1.5px solid #ddd; border-radius: 10px;
+  background: white; cursor: pointer; text-align: left; transition: all 0.2s;
+}
+.mode-btn:hover { border-color: #4A90D9; background: #f0f7ff; }
+.mode-btn .mode-icon { font-size: 22px; }
+.mode-btn .mode-title { font-size: 14px; font-weight: 700; color: #2c3e50; }
+.mode-btn .mode-desc  { font-size: 12px; color: #888; margin-top: 2px; }
+
+/* 포털 가이드 */
+.portal-guide {
+  background: #f8f9fa; border-radius: 8px; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #444;
+}
+.guide-step-item { display: flex; align-items: flex-start; gap: 8px; line-height: 1.6; }
+.guide-num {
+  background: #4A90D9; color: white; width: 18px; height: 18px;
+  border-radius: 50%; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+}
+.guide-url { font-size: 12px; color: #4A90D9; font-weight: 500; }
+.console-command {
+  display: block; background: #1e1e1e; color: #a8d8a8;
+  font-size: 10px; padding: 10px 12px; border-radius: 6px;
+  word-break: break-all; white-space: pre-wrap; line-height: 1.5; cursor: pointer;
+}
+.console-command:hover { opacity: 0.85; }
+.paste-area {
+  width: 100%; border: 1.5px solid #ddd; border-radius: 8px;
+  padding: 10px; font-size: 13px; resize: vertical;
+  box-sizing: border-box; outline: none; font-family: monospace;
+}
+.paste-area:focus { border-color: #4A90D9; }
+
+/* 포털 미리보기 */
+.portal-preview {
+  max-height: 260px; overflow-y: auto; border: 1px solid #eee;
+  border-radius: 8px; padding: 12px;
+}
+.preview-label { font-size: 13px; font-weight: 600; margin: 0 0 6px; }
+.matched-label   { color: #27AE60; }
+.unmatched-label { color: #e74c3c; margin-top: 10px; }
+.external-label  { color: #E67E22; margin-top: 10px; }
+.preview-list { list-style: none; padding: 0; margin: 0 0 4px; display: flex; flex-direction: column; gap: 5px; }
+.preview-list li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.code-badge { background: #e8f0fb; color: #4A90D9; padding: 2px 7px; border-radius: 4px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+.ext-badge  { background: #fff3e0; color: #E67E22; }
+.course-name-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.credits-badge { color: #aaa; font-size: 11px; flex-shrink: 0; }
+.unmatched-codes { font-size: 12px; color: #aaa; margin: 0; word-break: break-all; }

@@ -4,6 +4,7 @@ import TimetableGrid from '../components/Timetable/TimetableGrid';
 import Dashboard from '../components/Dashboard/Dashboard';
 import Chat from '../components/Chat/Chat';
 import Tracker from '../components/Tracker/Tracker';
+import SettingsModal from '../components/Settings/SettingsModal';
 import { scheduleAPI, usersAPI } from '../api';
 import useStore from '../store';
 import './MainPage.css';
@@ -13,6 +14,7 @@ export default function MainPage() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawError, setWithdrawError] = useState('');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
@@ -89,10 +91,13 @@ export default function MainPage() {
             </Link>
           )}
           {user && <span className="username">{user.name}</span>}
+          <button className="settings-btn" onClick={() => setShowSettings(true)}>설정</button>
           <button className="logout-btn" onClick={logout}>로그아웃</button>
           <button className="withdraw-btn" onClick={openWithdrawModal}>회원 탈퇴</button>
         </div>
       </header>
+
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
 
       {showWithdrawModal && (
         <div className="modal-overlay" onClick={() => setShowWithdrawModal(false)}>

@@ -98,7 +98,7 @@ async function seed() {
 
         if (!code || !name) continue;
 
-        const credits = parseInt(row[colMap.credits], 10) || 0;
+        const credits = parseFloat(row[colMap.credits]) || 0;
         const category = row[colMap.category] || 'EL';
         const rawGrade = row[colMap.grade];
         const targetGrade = parseGrade(rawGrade);

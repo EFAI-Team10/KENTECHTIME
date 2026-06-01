@@ -1,8 +1,28 @@
-/**
- * 한글 시간표 문자열을 JSONB 형식의 timeslots 배열로 변환하는 유틸리티
- * 예: "월요일 12:00~14:00 / 목요일 12:00~14:00"
- *     => [{"day": "MON", "start": "12:00", "end": "14:00"}, {"day": "THU", "start": "12:00", "end": "14:00"}]
- */
+const PREFIX_TO_CATEGORY = {
+  EF: 'EF',
+  EL: 'EL',
+  EN: 'EN',
+  ES: 'ESP',
+  FR: 'FR',
+  GR: 'GR',
+  HA: 'HASS',
+  IR: 'IR',
+  MN: 'MN',
+  RC: 'RC',
+  VC: 'VC',
+  CA: 'CAPS',
+};
+
+function getCategoryFromCode(code) {
+  if (!code) return 'EL';
+  const fullPrefix = String(code).match(/^[A-Z]+/)?.[0] ?? '';
+  for (let len = fullPrefix.length; len >= 1; len--) {
+    const mapped = PREFIX_TO_CATEGORY[fullPrefix.slice(0, len)];
+    if (mapped) return mapped;
+  }
+  return 'EL';
+}
+
 function parseTimeslots(timetableStr) {
   if (!timetableStr || typeof timetableStr !== 'string') return [];
   if (timetableStr.trim() === '시간미정' || timetableStr.trim() === '') return [];
@@ -49,4 +69,4 @@ function parseTimeslots(timetableStr) {
   return slots;
 }
 
-module.exports = { parseTimeslots };
+module.exports = { parseTimeslots, getCategoryFromCode };
