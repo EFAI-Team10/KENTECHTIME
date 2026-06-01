@@ -325,6 +325,37 @@
   opacity: 0.85;
 }
 
+.bookmarklet-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 4px;
+}
+
+.bookmarklet-drag-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: grab;
+  user-select: none;
+  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  transition: background 0.15s;
+}
+
+.bookmarklet-drag-btn:hover {
+  background: #1d4ed8;
+}
+
+.bookmarklet-hint {
+  font-size: 12px;
+  color: #888;
+}
+
 .paste-area {
   width: 100%;
   border: 1.5px solid #ddd;
