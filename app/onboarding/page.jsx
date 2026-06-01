@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authAPI, coursesAPI } from '@/lib/api-client';
+import { parseGradeData, CONSOLE_COMMAND } from '@/lib/gradeParser';
 import useStore from '@/lib/store';
 import './onboarding.css';
 
@@ -52,6 +53,11 @@ export default function OnboardingPage() {
     }
   }, [router]);
 
+  // 기수강 과목 입력 방식
+  const [inputMode, setInputMode] = useState('choose'); // 'choose' | 'portal' | 'manual'
+  const [pasteText, setPasteText] = useState('');
+  const [portalPreview, setPortalPreview] = useState(null);
+
   useEffect(() => {
     if (step === 1 && allCourses.length === 0) {
       coursesAPI.getAll().then(res => setAllCourses(res.data.courses || [])).catch(() => {});
@@ -69,6 +75,24 @@ export default function OnboardingPage() {
   };
 
   const handleStep2Next = () => setStep(2);
+
+  const handlePortalAnalyze = () => {
+    const { kentech, external } = parseGradeData(pasteText);
+    if (kentech.length === 0 && external.length === 0) {
+      setError('과목코드를 찾을 수 없습니다. 전체성적조회 페이지에서 콘솔 커맨드를 실행했는지 확인해주세요.');
+      return;
+    }
+    const matched = allCourses.filter(c => kentech.includes(c.code));
+    const matchedCodes = new Set(matched.map(c => c.code));
+    const unmatched = kentech.filter(code => !matchedCodes.has(code));
+    setPortalPreview({ matched, unmatched, external });
+    setError('');
+  };
+
+  const handlePortalConfirm = () => {
+    setSelectedCourseIds(new Set(portalPreview.matched.map(c => c.id)));
+    setStep(2);
+  };
 
   const handleFinish = async () => {
     setError('');
@@ -175,45 +199,134 @@ export default function OnboardingPage() {
 
         {step === 1 && (
           <div className="step-content">
-            <h2>기수강 과목 선택</h2>
-            <p className="step-desc">이전에 수강 완료한 과목을 모두 선택해주세요.</p>
-            <input
-              className="search-input"
-              type="text"
-              placeholder="과목명 또는 코드 검색..."
-              value={courseSearch}
-              onChange={e => setCourseSearch(e.target.value)}
-            />
-            {allCourses.length === 0 ? (
-              <p className="empty-msg">
-                아직 개설 과목 데이터가 없습니다.<br />
-                관리자가 추가한 후 마이페이지에서 설정할 수 있습니다.
-              </p>
-            ) : (
-              <div className="course-list">
-                {['VC', 'EF', 'EL'].map(cat => coursesByCategory[cat].length > 0 && (
-                  <div key={cat} className="course-category">
-                    <h3 className={`cat-title cat-${cat}`}>{cat}</h3>
-                    {coursesByCategory[cat].map(course => (
-                      <label key={course.id} className={`course-item ${selectedCourseIds.has(course.id) ? 'checked' : ''}`}>
-                        <input
-                          type="checkbox"
-                          checked={selectedCourseIds.has(course.id)}
-                          onChange={() => toggleCourse(course.id)}
-                        />
-                        <span className="course-name">{course.name}</span>
-                        <span className="course-meta">{course.code} · {course.credits}학점</span>
-                      </label>
-                    ))}
+            <h2>기수강 과목 입력</h2>
+            <p className="step-desc">이전에 수강 완료한 과목을 입력해주세요.</p>
+
+            {inputMode === 'choose' && (
+              <div className="input-mode-select">
+                <button className="mode-btn" onClick={() => { setInputMode('portal'); setPortalPreview(null); setPasteText(''); }}>
+                  <span className="mode-icon">🖥️</span>
+                  <div>
+                    <div className="mode-title">포털에서 자동 가져오기</div>
+                    <div className="mode-desc">KIS 포털 성적 데이터를 복사해 붙여넣기</div>
                   </div>
-                ))}
+                </button>
+                <button className="mode-btn" onClick={() => setInputMode('manual')}>
+                  <span className="mode-icon">✏️</span>
+                  <div>
+                    <div className="mode-title">직접 선택하기</div>
+                    <div className="mode-desc">체크박스로 수강한 과목을 직접 선택</div>
+                  </div>
+                </button>
               </div>
             )}
-            <div className="step-footer">
-              <span className="selected-count">선택: {selectedCourseIds.size}과목</span>
-              <button className="btn-secondary" onClick={() => setStep(0)}>이전</button>
-              <button onClick={handleStep2Next}>다음</button>
-            </div>
+
+            {inputMode === 'portal' && (
+              portalPreview ? (
+                <>
+                  <div className="portal-preview">
+                    {portalPreview.matched.length > 0 && (
+                      <>
+                        <p className="preview-label matched-label">인식된 KENTECH 과목 ({portalPreview.matched.length}개)</p>
+                        <ul className="preview-list">
+                          {portalPreview.matched.map(c => (
+                            <li key={c.id}>
+                              <span className="code-badge">{c.code}</span>
+                              <span className="course-name-text">{c.name}</span>
+                              <span className="credits-badge">{c.credits}학점</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                    {portalPreview.unmatched.length > 0 && (
+                      <>
+                        <p className="preview-label unmatched-label">DB 미등록 코드 ({portalPreview.unmatched.length}개)</p>
+                        <p className="unmatched-codes">{portalPreview.unmatched.join(', ')}</p>
+                      </>
+                    )}
+                    {portalPreview.external.length > 0 && (
+                      <>
+                        <p className="preview-label external-label">타대 과목 ({portalPreview.external.length}개) — 가입 후 별도 등록</p>
+                        <ul className="preview-list">
+                          {portalPreview.external.map((c, i) => (
+                            <li key={i}>
+                              <span className="code-badge ext-badge">{c.category}</span>
+                              <span className="course-name-text">{c.name || c.code}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </div>
+                  <div className="step-footer">
+                    <button className="btn-secondary" onClick={() => setPortalPreview(null)}>다시 붙여넣기</button>
+                    <button className="btn-secondary" onClick={() => setInputMode('choose')}>방식 변경</button>
+                    <button onClick={handlePortalConfirm} disabled={portalPreview.matched.length === 0}>
+                      확인 ({portalPreview.matched.length}개)
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="portal-guide">
+                    <div className="guide-step-item">
+                      <span className="guide-num">1</span>
+                      <div>KIS 포털 → 사용자서비스 → 성적 → <b>전체성적조회</b> → 조회<br/>
+                        <span className="guide-url">https://kis.kentech.ac.kr/main.do</span>
+                      </div>
+                    </div>
+                    <div className="guide-step-item">
+                      <span className="guide-num">2</span>
+                      <span><b>F12</b> → Console 탭에 아래 코드 붙여넣고 Enter</span>
+                    </div>
+                    <code className="console-command" onClick={() => { navigator.clipboard.writeText(CONSOLE_COMMAND); alert('복사되었습니다.'); }} title="클릭하면 복사">여기를 클릭해서 복사</code>
+                    <div className="guide-step-item">
+                      <span className="guide-num">3</span>
+                      <span>추출 완료 후 화면 우측 하단 <b>파란 버튼</b>을 클릭해서 복사</span>
+                    </div>
+                    <div className="guide-step-item">
+                      <span className="guide-num">4</span>
+                      <span>복사된 내용을 아래에 붙여넣고 <b>분석</b></span>
+                    </div>
+                  </div>
+                  <textarea className="paste-area" placeholder="콘솔 실행 후 복사된 내용을 여기에 붙여넣으세요..." value={pasteText} onChange={e => setPasteText(e.target.value)} rows={5} />
+                  <div className="step-footer">
+                    <button className="btn-secondary" onClick={() => setInputMode('choose')}>이전</button>
+                    <button onClick={handlePortalAnalyze} disabled={!pasteText.trim()}>분석</button>
+                  </div>
+                </>
+              )
+            )}
+
+            {inputMode === 'manual' && (
+              <>
+                <input className="search-input" type="text" placeholder="과목명 또는 코드 검색..." value={courseSearch} onChange={e => setCourseSearch(e.target.value)} />
+                {allCourses.length === 0 ? (
+                  <p className="empty-msg">아직 개설 과목 데이터가 없습니다.<br/>관리자가 추가한 후 마이페이지에서 설정할 수 있습니다.</p>
+                ) : (
+                  <div className="course-list">
+                    {['VC', 'EF', 'EL'].map(cat => coursesByCategory[cat].length > 0 && (
+                      <div key={cat} className="course-category">
+                        <h3 className={`cat-title cat-${cat}`}>{cat}</h3>
+                        {coursesByCategory[cat].map(course => (
+                          <label key={course.id} className={`course-item ${selectedCourseIds.has(course.id) ? 'checked' : ''}`}>
+                            <input type="checkbox" checked={selectedCourseIds.has(course.id)} onChange={() => toggleCourse(course.id)} />
+                            <span className="course-name">{course.name}</span>
+                            <span className="course-meta">{course.code} · {course.credits}학점</span>
+                          </label>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="step-footer">
+                  <span className="selected-count">선택: {selectedCourseIds.size}과목</span>
+                  <button className="btn-secondary" onClick={() => setInputMode('choose')}>이전</button>
+                  <button onClick={handleStep2Next}>다음</button>
+                </div>
+              </>
+            )}
           </div>
         )}
 

@@ -6,6 +6,7 @@ import TimetableGrid from '@/components/Timetable/TimetableGrid';
 import Dashboard from '@/components/Dashboard/Dashboard';
 import Chat from '@/components/Chat/Chat';
 import Tracker from '@/components/Tracker/Tracker';
+import SettingsModal from '@/components/Settings/SettingsModal';
 import { scheduleAPI, usersAPI } from '@/lib/api-client';
 import useStore from '@/lib/store';
 import './main.css';
@@ -18,6 +19,7 @@ export default function MainPage() {
   const [plans, setPlans] = useState([]);
   const [selectedPlan, setSelectedPlan] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawError, setWithdrawError] = useState('');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
@@ -96,10 +98,12 @@ export default function MainPage() {
 
   return (
     <div className="main-page">
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <header className="main-header">
         <span className="logo">KENTECHTIME</span>
         <div className="header-right">
           {user && <span className="username">{user.name}</span>}
+          <button className="settings-btn" onClick={() => setShowSettings(true)}>설정</button>
           <button className="logout-btn" onClick={() => { logout(); router.replace('/auth'); }}>로그아웃</button>
           <button className="withdraw-btn" onClick={openWithdrawModal}>회원 탈퇴</button>
         </div>

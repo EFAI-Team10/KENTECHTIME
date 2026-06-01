@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import * as XLSX from 'xlsx';
 import { getSupabaseAdmin } from '@/lib/server/supabase';
 import { requireAuth, errorJson, AuthError } from '@/lib/server/auth';
-import { parseTimeslots } from '@/lib/server/parser';
+import { parseTimeslots, getCategoryFromCode } from '@/lib/server/parser';
 
 function parseGrade(gradeStr) {
   if (!gradeStr) return 0;
@@ -84,7 +84,9 @@ export async function POST(request) {
       name:         String(name).trim(),
       credits:      parseInt(row[colMap.credits], 10) || 0,
       track:        null,
-      category:     row[colMap.category] ? String(row[colMap.category]).trim() : 'EL',
+      category:     (colMap.category !== -1 && row[colMap.category])
+                      ? String(row[colMap.category]).trim()
+                      : getCategoryFromCode(code),
       semester,
       target_grade: parseGrade(row[colMap.grade]),
       timeslots:    parseTimeslots(row[colMap.timetable]),

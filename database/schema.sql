@@ -15,7 +15,7 @@ CREATE TABLE courses (
   id            SERIAL PRIMARY KEY,
   code          VARCHAR(20) UNIQUE NOT NULL,
   name          VARCHAR(100) NOT NULL,
-  credits       INTEGER,
+  credits       NUMERIC(4,1),
   track         VARCHAR(50),
   category      VARCHAR(10),
   semester      VARCHAR(20),

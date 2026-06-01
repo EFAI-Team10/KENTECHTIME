@@ -5,7 +5,7 @@ const XLSX = require('xlsx');
 const db = require('../models/db');
 const authMiddleware = require('../middleware/auth');
 const adminMiddleware = require('../middleware/admin');
-const { parseTimeslots } = require('../utils/parser');
+const { parseTimeslots, getCategoryFromCode } = require('../utils/parser');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -55,6 +55,22 @@ router.get('/requirements', authMiddleware, async (req, res) => {
     });
 
     res.json({ earned, required: { VC: 8, EF: 28, EL: 40, total: 128 } });
+  } catch (err) {
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+// GET /api/courses/completed — 현재 수강이력 조회
+router.get('/completed', authMiddleware, async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT c.id, c.code, c.name, c.credits, c.category, cc.semester, cc.grade
+       FROM completed_courses cc
+       JOIN courses c ON cc.course_id = c.id
+       WHERE cc.user_id = $1`,
+      [req.userId]
+    );
+    res.json({ courses: result.rows });
   } catch (err) {
     res.status(500).json({ error: '서버 오류' });
   }
@@ -129,7 +145,9 @@ router.post('/upload', authMiddleware, adminMiddleware, upload.single('file'), a
       if (!code || !name) continue;
 
       const credits = parseInt(row[colMap.credits], 10) || 0;
-      const category = row[colMap.category] || 'EL';
+      const category = (colMap.category !== -1 && row[colMap.category])
+        ? String(row[colMap.category]).trim()
+        : getCategoryFromCode(code);
       const rawGrade = row[colMap.grade];
       const targetGrade = parseGrade(rawGrade);
       const timetableStr = row[colMap.timetable];
@@ -195,6 +213,38 @@ router.post('/import-by-codes', authMiddleware, async (req, res) => {
     res.json({ success: true, matched, unmatched });
   } catch (err) {
     console.error('Import error:', err);
+    res.status(500).json({ error: '서버 오류' });
+  }
+});
+
+// POST /api/courses/external — 타대 계절학기 등 외부 과목 직접 등록
+router.post('/external', authMiddleware, async (req, res) => {
+  const { name, source, credits, category } = req.body;
+  if (!name || !source || !credits || !category) {
+    return res.status(400).json({ error: 'name, source, credits, category는 필수입니다.' });
+  }
+
+  const code = `EXT-${req.userId}-${Date.now().toString(36).toUpperCase()}`;
+
+  try {
+    const courseResult = await db.query(
+      `INSERT INTO courses (code, name, credits, category, semester, track, target_grade, timeslots)
+       VALUES ($1, $2, $3, $4, 'external', NULL, 0, '[]')
+       RETURNING id`,
+      [code, name.trim(), parseInt(credits, 10), category]
+    );
+    const courseId = courseResult.rows[0].id;
+
+    await db.query(
+      `INSERT INTO completed_courses (user_id, course_id, semester, grade)
+       VALUES ($1, $2, $3, 'P')
+       ON CONFLICT (user_id, course_id) DO NOTHING`,
+      [req.userId, courseId, source.trim()]
+    );
+
+    res.json({ success: true, code });
+  } catch (err) {
+    console.error('External course error:', err);
     res.status(500).json({ error: '서버 오류' });
   }
 });

@@ -29,6 +29,22 @@
   font-size: 14px;
 }
 
+.settings-btn {
+  padding: 6px 14px;
+  border: 1px solid #4A90D9;
+  border-radius: 6px;
+  background: white;
+  color: #4A90D9;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.settings-btn:hover {
+  background: #4A90D9;
+  color: white;
+}
+
 .logout-btn {
   padding: 6px 14px;
   border: 1px solid #ddd;
