@@ -28,6 +28,7 @@ export const coursesAPI = {
   uploadCourses: (formData) => api.post('/courses/upload', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
+  importByCodes: (codes) => api.post('/courses/import-by-codes', { codes }),
 };
 
 export const usersAPI = {

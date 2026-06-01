@@ -7,7 +7,10 @@ const { generateRecommendations } = require('../utils/recommender');
 
 // POST /api/chat
 router.post('/', authMiddleware, async (req, res) => {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: 'https://factchat-cloud.mindlogic.ai/v1/api/openai',
+  });
   const { message, currentSchedule, semester } = req.body;
 
   try {
@@ -54,7 +57,7 @@ ${courseListText}
 }`;
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5-mini',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: message },

@@ -119,7 +119,6 @@ router.post('/upload', authMiddleware, adminMiddleware, upload.single('file'), a
     }
 
     let count = 0;
-    // 0번 행은 헤더, 1번 행은 부가 정보이므로 2번 행부터 데이터
     for (let i = 2; i < rows.length; i++) {
       const row = rows[i];
       if (!row || row.length === 0) continue;
@@ -151,7 +150,7 @@ router.post('/upload', authMiddleware, adminMiddleware, upload.single('file'), a
           code.trim(),
           name.trim(),
           credits,
-          null, // track
+          null,
           category.trim(),
           semester,
           targetGrade,
@@ -165,6 +164,38 @@ router.post('/upload', authMiddleware, adminMiddleware, upload.single('file'), a
   } catch (err) {
     console.error('Upload Error:', err);
     res.status(500).json({ error: '엑셀 데이터 파싱 및 업로드 실패' });
+  }
+});
+
+// POST /api/courses/import-by-codes — 과목코드 배열로 수강 이력 가져오기
+router.post('/import-by-codes', authMiddleware, async (req, res) => {
+  const { codes } = req.body; // string[]
+  if (!Array.isArray(codes) || codes.length === 0) {
+    return res.status(400).json({ error: '과목코드 배열이 필요합니다.' });
+  }
+
+  try {
+    const result = await db.query(
+      `SELECT id, code, name, credits, category FROM courses WHERE code = ANY($1)`,
+      [codes]
+    );
+    const matched = result.rows;
+    const matchedCodes = matched.map(c => c.code);
+    const unmatched = codes.filter(c => !matchedCodes.includes(c));
+
+    for (const course of matched) {
+      await db.query(
+        `INSERT INTO completed_courses (user_id, course_id, semester, grade)
+         VALUES ($1, $2, 'imported', 'P')
+         ON CONFLICT (user_id, course_id) DO NOTHING`,
+        [req.userId, course.id]
+      );
+    }
+
+    res.json({ success: true, matched, unmatched });
+  } catch (err) {
+    console.error('Import error:', err);
+    res.status(500).json({ error: '서버 오류' });
   }
 });
 
