@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { requireAuth, errorJson, AuthError } from '@/lib/server/auth';
 import { getSupabaseAdmin } from '@/lib/server/supabase';
-import { generateRecommendations } from '@/lib/server/recommender';
+import { generateRecommendations, getLatestSemester } from '@/lib/server/recommender';
 
 export async function POST(request) {
   let auth;
@@ -13,13 +13,14 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { message, currentSchedule, semester, history = [] } = body;
+  const { message, currentSchedule, history = [] } = body;
 
   const supabase = getSupabaseAdmin();
+  const latestSemester = await getLatestSemester(supabase);
   const { data: allCourses } = await supabase
     .from('courses')
     .select('id, code, name, credits, track, category, timeslots')
-    .or(`semester.eq.${semester},semester.eq.both`);
+    .eq('semester', latestSemester);
 
   const courseListText = (allCourses || []).length
     ? allCourses.map(c => {
@@ -90,7 +91,7 @@ action이 "chat"이면 시간표를 변경하지 않고 reply만 반환합니다
     }
 
     const maxCredits = intent.max_credits || 21;
-    const plans = await generateRecommendations(auth.userId, semester, {}, 3, intent, maxCredits);
+    const plans = await generateRecommendations(auth.userId, null, {}, 3, intent, maxCredits);
     return Response.json({ intent, plans, reply: intent.reply });
   } catch (err) {
     console.error('Chat error:', err.message);

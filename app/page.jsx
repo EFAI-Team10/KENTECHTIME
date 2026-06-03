@@ -185,7 +185,11 @@ export default function MainPage() {
           />
         </section>
 
-        <Chat semester={semester} onScheduleUpdate={setCurrentSchedule} />
+        <Chat semester={semester} onScheduleUpdate={(plan) => {
+          setPlans(prev => [plan, ...prev.slice(1)]);
+          setCurrentSchedule(plan);
+          setSelectedPlan(0);
+        }} />
         <Tracker />
       </div>
     </div>
