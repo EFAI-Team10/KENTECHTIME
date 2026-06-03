@@ -12,6 +12,8 @@
 // CommonJS + dotenv (Next.js 앱 번들 밖에서 실행되는 스크립트)
 const path = require('path');
 const fs = require('fs');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env.local') });
 const XLSX = require('xlsx');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -103,14 +105,15 @@ async function seed() {
         continue;
       }
 
-      const headers = rows[0];
+      // \r\n 정규화 (엑셀 셀 내 줄바꿈이 OS마다 \r\n / \n 혼용)
+      const headers = rows[0].map(h => (h ? String(h).replace(/\r/g, '') : h));
       const col = {
         code:      headers.indexOf('교과목코드'),
         name:      headers.indexOf('교과목명(국문)'),
         category:  headers.indexOf('영역\n구분'),
         timetable: headers.indexOf('시간표'),
         credits:   headers.indexOf('학점'),
-        grade:     headers.indexOf('Unnamed: 1'),
+        grade:     1, // 수강학년 열은 항상 인덱스 1 (헤더가 null이라 indexOf 불가)
       };
 
       if (col.code === -1 || col.name === -1) {
@@ -137,11 +140,16 @@ async function seed() {
         });
       }
 
+      // 동일 파일 내 중복 코드 제거 (분반 등으로 같은 코드가 여러 행인 경우)
+      const seen = new Map();
+      for (const r of records) seen.set(r.code, r);
+      const deduped = [...seen.values()];
+
       // Supabase upsert (배치)
       const BATCH = 100;
       let count = 0;
-      for (let i = 0; i < records.length; i += BATCH) {
-        const batch = records.slice(i, i + BATCH);
+      for (let i = 0; i < deduped.length; i += BATCH) {
+        const batch = deduped.slice(i, i + BATCH);
         const { error } = await supabase
           .from('courses')
           .upsert(batch, { onConflict: 'code' });
@@ -151,7 +159,7 @@ async function seed() {
           count += batch.length;
         }
       }
-      console.log(`  완료: ${count}개 과목 등록/업데이트`);
+      console.log(`  완료: ${count}개 과목 등록/업데이트 (중복 제거 후 ${deduped.length}개 / 원본 ${records.length}개)`);
     } catch (err) {
       console.error(`  오류 (${fileInfo.filename}):`, err.message);
     }

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { coursesAPI } from '@/lib/api-client';
-import { parseGradeData, CONSOLE_COMMAND } from '@/lib/gradeParser';
+import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import './SettingsModal.css';
 
 const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR'];
@@ -225,21 +225,15 @@ export default function SettingsModal({ onClose }) {
               <>
                 <div className="portal-guide-sm">
                   <div className="guide-row"><span className="guide-num">1</span><span>KIS 포털 → 사용자서비스 → 성적 → <b>전체성적조회</b> → 조회</span></div>
-                  <div className="guide-url-row">
-                    <a href="https://kis.kentech.ac.kr/main.do" target="_blank" rel="noreferrer">
-                      https://kis.kentech.ac.kr/main.do
-                    </a>
+                  <div className="guide-row"><span className="guide-num">2</span><span>아래 버튼을 <b>북마크 바로 드래그</b>해서 설치 (한 번만) — 또는 클릭하면 F12 커맨드 복사</span></div>
+                  <div className="bookmarklet-row">
+                    <span dangerouslySetInnerHTML={{ __html:
+                      `<a href="${BOOKMARKLET_HREF_HTML}" class="bookmarklet-drag-btn" title="북마크 바로 드래그해서 설치">📎 포털 성적 가져오기</a>`
+                    }} />
+                    <span className="bookmarklet-hint">← 북마크 바로 드래그 (한 번만)</span>
                   </div>
-                  <div className="guide-row"><span className="guide-num">2</span><span><b>F12</b> → Console 탭에 아래 코드 붙여넣기 후 Enter</span></div>
-                  <code
-                    className="console-cmd-sm"
-                    onClick={() => { navigator.clipboard.writeText(CONSOLE_COMMAND); alert('복사되었습니다.'); }}
-                    title="클릭하면 복사됩니다"
-                  >
-                    여기를 클릭해서 복사
-                  </code>
-                  <div className="guide-row"><span className="guide-num">3</span><span>추출 완료 후 화면 우측 하단 <b>파란 버튼</b>을 클릭해서 복사</span></div>
-                  <div className="guide-row"><span className="guide-num">4</span><span>복사된 내용을 아래에 붙여넣고 <b>분석</b></span></div>
+                  <div className="guide-row"><span className="guide-num">3</span><span>포털 전체성적조회 페이지에서 북마클릿 클릭 <span className="guide-note">(F12 방식: 콘솔에 붙여넣기 후 Enter)</span></span></div>
+                  <div className="guide-row"><span className="guide-num">4</span><span>화면 우측 하단 <b>파란 버튼</b> 클릭 → 복사 후 아래에 붙여넣고 <b>분석</b></span></div>
                 </div>
                 <textarea
                   className="settings-paste"

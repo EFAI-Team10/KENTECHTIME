@@ -356,6 +356,11 @@
   color: #888;
 }
 
+.guide-note {
+  font-size: 11px;
+  color: #888;
+}
+
 .paste-area {
   width: 100%;
   border: 1.5px solid #ddd;
