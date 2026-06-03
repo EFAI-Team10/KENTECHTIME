@@ -31,6 +31,13 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 
 const classlistDir = path.resolve(__dirname, '../classlist');
 
+// 과목코드 → 트랙 역방향 맵 빌드
+const trackMapRaw = JSON.parse(fs.readFileSync(path.join(classlistDir, 'track-map.json'), 'utf8'));
+const TRACK_MAP = {};
+for (const [track, codes] of Object.entries(trackMapRaw)) {
+  for (const code of codes) TRACK_MAP[code] = track;
+}
+
 const SEMESTER_MAP = {
   '1학기': 'spring',
   '2학기': 'fall',
@@ -132,7 +139,7 @@ async function seed() {
           code:         String(code).trim(),
           name:         String(name).trim(),
           credits:      parseFloat(row[col.credits]) || 0,
-          track:        null,
+          track:        TRACK_MAP[String(code).trim()] || null,
           category:     row[col.category] ? String(row[col.category]).trim() : 'EL',
           semester:     fileInfo.semester,
           target_grade: parseGrade(row[col.grade]),
