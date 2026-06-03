@@ -21,13 +21,38 @@ function slotsConflict(a = [], b = []) {
 }
 
 function sortCourses(courses, userGrade, trackOrder) {
+  const keyOf = (c) => {
+    const gradeMatch  = c.target_grade === userGrade;
+    const noGrade     = c.target_grade === 0;
+    const trackIdx    = trackOrder.indexOf(c.track);
+    const trackMatch  = trackIdx !== -1;
+    const isEL        = c.category === 'EL';
+    const isEF        = c.category === 'EF';
+
+    // 1순위: EL + 내 학년 + 선택 트랙 (트랙 순서 내에서 세부 정렬)
+    if (isEL && gradeMatch && trackMatch)   return [0, trackIdx, 0];
+
+    // 2순위: 비EL·비EF + 학년 제한 없음 (MN/HASS/EN/ESP 등 졸업 필수 영역)
+    if (!isEL && !isEF && noGrade)          return [1, 0, 0];
+
+    // 3순위: EF + 학년 제한 없음
+    if (isEF && noGrade)                    return [2, 0, 0];
+
+    // 4순위: EL + 내 학년 + 트랙 미선택
+    if (isEL && gradeMatch && !trackMatch)  return [3, 0, 0];
+
+    // 5순위: 나머지 — 학년 거리순, 그 안에서 선택 트랙 우선
+    const gradeDist = noGrade ? 0.5 : Math.abs(c.target_grade - userGrade);
+    return [4, gradeDist, trackMatch ? trackIdx : 999];
+  };
+
   return [...courses].sort((a, b) => {
-    // target_grade=0은 전학년 수강 가능 → 정확히 내 학년인 과목 다음 우선순위
-    const gKey = c => c.target_grade === 0 ? 0.5 : Math.abs(c.target_grade - userGrade);
-    const gd = gKey(a) - gKey(b);
-    if (gd !== 0) return gd;
-    const tKey = c => { const i = trackOrder.indexOf(c.track); return i === -1 ? 999 : i; };
-    return tKey(a) - tKey(b);
+    const ka = keyOf(a);
+    const kb = keyOf(b);
+    for (let i = 0; i < 3; i++) {
+      if (ka[i] !== kb[i]) return ka[i] - kb[i];
+    }
+    return 0;
   });
 }
 
