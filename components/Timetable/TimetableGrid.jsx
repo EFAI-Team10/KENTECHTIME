@@ -43,17 +43,19 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
       prev.includes(track) ? prev.filter(t => t !== track) : [...prev, track]
     );
 
+  // 셀 [hour:00, hour+1:00) 구간과 겹치는 과목 탐색 (30분 단위 시작 과목 포함)
+  const coversCell = (s, day, hour) =>
+    s.day === day && s.start < pad(hour + 1) && s.end > pad(hour);
+
   const getCourseAt = (day, hour) =>
-    courses.find(c => (c.timeslots || []).some(s =>
-      s.day === day && s.start <= pad(hour) && s.end > pad(hour)
-    ));
+    courses.find(c => (c.timeslots || []).some(s => coversCell(s, day, hour)));
 
   const pickerCourse = pickerSlot ? getCourseAt(pickerSlot.day, pickerSlot.hour) : null;
 
   const pickerList = pickerSlot
     ? sortCourses(
         allCourses.filter(c => (c.timeslots || []).some(s =>
-          s.day === pickerSlot.day && s.start <= pad(pickerSlot.hour) && s.end > pad(pickerSlot.hour)
+          coversCell(s, pickerSlot.day, pickerSlot.hour)
         )),
         userGrade,
         trackOrder
