@@ -120,6 +120,7 @@ async function seed() {
         category:  headers.indexOf('영역\n구분'),
         timetable: headers.indexOf('시간표'),
         credits:   headers.indexOf('학점'),
+        section:   headers.indexOf('분반'),
         grade:     1, // 수강학년 열은 항상 인덱스 1 (헤더가 null이라 indexOf 불가)
       };
 
@@ -135,6 +136,7 @@ async function seed() {
         const code = row[col.code];
         const name = row[col.name];
         if (!code || !name) continue;
+        const sectionRaw = col.section >= 0 ? row[col.section] : null;
         records.push({
           code:         String(code).trim(),
           name:         String(name).trim(),
@@ -142,31 +144,27 @@ async function seed() {
           track:        TRACK_MAP[String(code).trim()] || null,
           category:     row[col.category] ? String(row[col.category]).trim() : 'EL',
           semester:     fileInfo.semester,
+          section:      sectionRaw ? String(sectionRaw).trim().padStart(2, '0') : '01',
           target_grade: parseGrade(row[col.grade]),
           timeslots:    parseTimeslots(row[col.timetable]),
         });
       }
 
-      // 동일 파일 내 중복 코드 제거 (분반 등으로 같은 코드가 여러 행인 경우)
-      const seen = new Map();
-      for (const r of records) seen.set(r.code, r);
-      const deduped = [...seen.values()];
-
-      // Supabase upsert (배치)
+      // Supabase upsert — (code, semester, section) 복합키로 분반별 개별 저장
       const BATCH = 100;
       let count = 0;
-      for (let i = 0; i < deduped.length; i += BATCH) {
-        const batch = deduped.slice(i, i + BATCH);
+      for (let i = 0; i < records.length; i += BATCH) {
+        const batch = records.slice(i, i + BATCH);
         const { error } = await supabase
           .from('courses')
-          .upsert(batch, { onConflict: 'code' });
+          .upsert(batch, { onConflict: 'code,semester,section' });
         if (error) {
           console.error('  upsert 오류:', error.message);
         } else {
           count += batch.length;
         }
       }
-      console.log(`  완료: ${count}개 과목 등록/업데이트 (중복 제거 후 ${deduped.length}개 / 원본 ${records.length}개)`);
+      console.log(`  완료: ${count}개 분반 등록/업데이트 (원본 ${records.length}행)`);
     } catch (err) {
       console.error(`  오류 (${fileInfo.filename}):`, err.message);
     }

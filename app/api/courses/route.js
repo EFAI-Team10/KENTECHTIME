@@ -10,7 +10,7 @@ export async function GET(request) {
   const supabase = getSupabaseAdmin();
   let query = supabase.from('courses').select('*');
 
-  if (semester) query = query.or(`semester.eq.${semester},semester.eq.both`);
+  if (semester) query = query.eq('semester', semester);
   if (track) query = query.eq('track', track);
   if (category) query = query.eq('category', category);
 

@@ -153,7 +153,7 @@ export default function MainPage() {
       )}
 
       <div className="main-content">
-        <Dashboard />
+        <Dashboard onImportSuccess={loadRecommendations} />
 
         <section className="schedule-section">
           <div className="plan-controls">

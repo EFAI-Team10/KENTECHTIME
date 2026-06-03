@@ -185,7 +185,7 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                           {added && <span className="pk-status added">추가됨</span>}
                         </div>
                         <div className="pk-item-name">{c.name}</div>
-                        <div className="pk-item-meta">{c.code} · {c.credits}학점</div>
+                        <div className="pk-item-meta">{c.code}{c.section ? ` (${c.section}분반)` : ''} · {c.credits}학점</div>
                       </li>
                     );
                   })}

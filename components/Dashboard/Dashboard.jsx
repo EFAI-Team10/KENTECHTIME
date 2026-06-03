@@ -19,7 +19,7 @@ const CAT_ORDER = ['EF','VC','EL','MN','HASS','EN','IR','CAPS','ESP','RC','FR','
 
 const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
 
-export default function Dashboard() {
+export default function Dashboard({ onImportSuccess }) {
   const [earned, setEarned] = useState({ VC: 0, EF: 0, EL: 0, MN: 0, HASS: 0, ESP: 0, IR: 0, GR: 0, CAPS: 0, EN: 0, RC: 0, FR: 0, total: 0 });
   const [espAdvDone, setEspAdvDone] = useState(0);
   const [showImport, setShowImport] = useState(false);
@@ -72,6 +72,7 @@ export default function Dashboard() {
       setImportDone(true);
       loadRequirements();
       setHistory(null);
+      onImportSuccess?.();
     } catch {
       alert('서버 오류가 발생했습니다.');
     } finally {
@@ -101,7 +102,8 @@ export default function Dashboard() {
       });
       setExtDone(true);
       loadRequirements();
-      setHistory(null); // 다음 열기 시 새로 로드
+      setHistory(null);
+      onImportSuccess?.();
     } catch {
       alert('서버 오류가 발생했습니다.');
     } finally {
