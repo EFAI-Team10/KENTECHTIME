@@ -7,7 +7,7 @@ import Dashboard from '@/components/Dashboard/Dashboard';
 import Chat from '@/components/Chat/Chat';
 import Tracker from '@/components/Tracker/Tracker';
 import SettingsModal from '@/components/Settings/SettingsModal';
-import { scheduleAPI, usersAPI } from '@/lib/api-client';
+import { scheduleAPI, usersAPI, coursesAPI } from '@/lib/api-client';
 import useStore from '@/lib/store';
 import './main.css';
 
@@ -23,6 +23,8 @@ export default function MainPage() {
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [withdrawError, setWithdrawError] = useState('');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
+  const [allCourses, setAllCourses] = useState([]);
+  const [coursesLoading, setCoursesLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -32,6 +34,11 @@ export default function MainPage() {
     if (!mounted) return;
     if (!token) { router.replace('/auth'); return; }
     loadRecommendations();
+    setCoursesLoading(true);
+    coursesAPI.getAll({ semester })
+      .then(res => setAllCourses(res.data.courses || []))
+      .catch(() => {})
+      .finally(() => setCoursesLoading(false));
   }, [mounted, token]);
 
   const loadRecommendations = async () => {
@@ -53,6 +60,21 @@ export default function MainPage() {
   const handlePlanSelect = (i) => {
     setSelectedPlan(i);
     setCurrentSchedule(plans[i]);
+  };
+
+  const handleAddCourse = (course) => {
+    const conflict = currentSchedule.some(c =>
+      (c.timeslots || []).some(sa =>
+        (course.timeslots || []).some(sb =>
+          sa.day === sb.day && sa.start < sb.end && sb.start < sa.end
+        )
+      )
+    );
+    if (!conflict) setCurrentSchedule([...currentSchedule, course]);
+  };
+
+  const handleRemoveCourse = (course) => {
+    setCurrentSchedule(currentSchedule.filter(c => c.id !== course.id));
   };
 
   const saveSchedule = async () => {
@@ -153,7 +175,14 @@ export default function MainPage() {
               <button className="save-btn" onClick={saveSchedule}>저장</button>
             </div>
           </div>
-          <TimetableGrid courses={currentSchedule} />
+          <TimetableGrid
+            courses={currentSchedule}
+            allCourses={allCourses}
+            userGrade={user?.grade || 1}
+            onAdd={handleAddCourse}
+            onRemove={handleRemoveCourse}
+            coursesLoading={coursesLoading}
+          />
         </section>
 
         <Chat semester={semester} onScheduleUpdate={setCurrentSchedule} />

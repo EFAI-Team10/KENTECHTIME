@@ -1,45 +1,200 @@
 'use client';
+import { useState } from 'react';
 import './TimetableGrid.css';
 
+const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
+const TRACK_COLOR = {
+  '전기/전자': '#4A90D9',
+  '재료/화학': '#27AE60',
+  '인공지능': '#8E44AD',
+  '원자력': '#E67E22',
+};
+const SCHEDULE_COLORS = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#E74C3C', '#16A085', '#D35400'];
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
+const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 9);
-const COLORS = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#E74C3C'];
 
-export default function TimetableGrid({ courses = [] }) {
+function pad(h) { return `${String(h).padStart(2, '0')}:00`; }
+
+function slotsConflict(a = [], b = []) {
+  return a.some(sa => b.some(sb => sa.day === sb.day && sa.start < sb.end && sb.start < sa.end));
+}
+
+function sortCourses(courses, userGrade, trackOrder) {
+  return [...courses].sort((a, b) => {
+    // target_grade=0은 전학년 수강 가능 → 정확히 내 학년인 과목 다음 우선순위
+    const gKey = c => c.target_grade === 0 ? 0.5 : Math.abs(c.target_grade - userGrade);
+    const gd = gKey(a) - gKey(b);
+    if (gd !== 0) return gd;
+    const tKey = c => { const i = trackOrder.indexOf(c.track); return i === -1 ? 999 : i; };
+    return tKey(a) - tKey(b);
+  });
+}
+
+export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, onAdd, onRemove, coursesLoading = false }) {
+  const [trackOrder, setTrackOrder] = useState([]);
+  const [pickerSlot, setPickerSlot] = useState(null);
+
   const colorMap = {};
-  courses.forEach((c, i) => { colorMap[c.id] = COLORS[i % COLORS.length]; });
+  courses.forEach((c, i) => { colorMap[c.id] = SCHEDULE_COLORS[i % SCHEDULE_COLORS.length]; });
 
-  const getCourseAtSlot = (day, hour) =>
-    courses.find(course =>
-      (course.timeslots || []).some(
-        slot => slot.day === day && slot.start <= `${hour}:00` && slot.end > `${hour}:00`
-      )
+  const toggleTrack = (track) =>
+    setTrackOrder(prev =>
+      prev.includes(track) ? prev.filter(t => t !== track) : [...prev, track]
     );
 
+  const getCourseAt = (day, hour) =>
+    courses.find(c => (c.timeslots || []).some(s =>
+      s.day === day && s.start <= pad(hour) && s.end > pad(hour)
+    ));
+
+  const pickerCourse = pickerSlot ? getCourseAt(pickerSlot.day, pickerSlot.hour) : null;
+
+  const pickerList = pickerSlot
+    ? sortCourses(
+        allCourses.filter(c => (c.timeslots || []).some(s =>
+          s.day === pickerSlot.day && s.start <= pad(pickerSlot.hour) && s.end > pad(pickerSlot.hour)
+        )),
+        userGrade,
+        trackOrder
+      )
+    : [];
+
   return (
-    <div className="timetable-grid">
-      <div className="timetable-header">
-        <div className="time-col" />
-        {DAYS.map(day => <div key={day} className="day-col">{day}</div>)}
-      </div>
-      {HOURS.map(hour => (
-        <div key={hour} className="timetable-row">
-          <div className="time-col">{hour}:00</div>
-          {DAYS.map(day => {
-            const course = getCourseAtSlot(day, hour);
+    <div className="timetable-wrapper">
+      {/* 트랙 우선순위 선택 */}
+      <div className="track-selector">
+        <span className="ts-label">트랙 우선순위</span>
+        <div className="ts-checks">
+          {TRACKS.map(track => {
+            const idx = trackOrder.indexOf(track);
+            const sel = idx !== -1;
             return (
-              <div
-                key={day}
-                className={`cell ${course ? 'occupied' : ''}`}
-                style={course ? { backgroundColor: colorMap[course.id] } : {}}
-                title={course?.name}
+              <label
+                key={track}
+                className={`ts-item ${sel ? 'sel' : ''}`}
+                style={sel ? { borderColor: TRACK_COLOR[track], background: TRACK_COLOR[track] + '18' } : {}}
               >
-                {course ? course.name : ''}
-              </div>
+                <input type="checkbox" checked={sel} onChange={() => toggleTrack(track)} />
+                {sel && <span className="ts-num" style={{ background: TRACK_COLOR[track] }}>{idx + 1}</span>}
+                <span className="ts-name">{track}</span>
+              </label>
             );
           })}
         </div>
-      ))}
+        {trackOrder.length > 0 && (
+          <button className="ts-reset" onClick={() => setTrackOrder([])}>초기화</button>
+        )}
+      </div>
+
+      {/* 시간표 그리드 */}
+      <div className="timetable-grid">
+        <div className="timetable-header">
+          <div className="time-col" />
+          {DAYS.map(d => <div key={d} className="day-col">{DAY_KO[d]}</div>)}
+        </div>
+        {HOURS.map(hour => (
+          <div key={hour} className="timetable-row">
+            <div className="time-col">{hour}:00</div>
+            {DAYS.map(day => {
+              const course = getCourseAt(day, hour);
+              const isActive = pickerSlot?.day === day && pickerSlot?.hour === hour;
+              return (
+                <div
+                  key={day}
+                  className={`cell ${course ? 'occupied' : 'empty'} ${isActive ? 'active-cell' : ''}`}
+                  style={course ? { background: colorMap[course.id] } : {}}
+                  onClick={() => setPickerSlot({ day, hour })}
+                  title={course?.name}
+                >
+                  {course
+                    ? <span className="cell-text">{course.name}</span>
+                    : <span className="cell-plus">+</span>
+                  }
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+
+      {/* 과목 선택 패널 */}
+      {pickerSlot && (
+        <>
+          <div className="picker-backdrop" onClick={() => setPickerSlot(null)} />
+          <div className="course-picker">
+            <div className="picker-header">
+              <span className="picker-title">
+                {DAY_KO[pickerSlot.day]}요일 {pickerSlot.hour}:00
+              </span>
+              <button className="picker-close" onClick={() => setPickerSlot(null)}>✕</button>
+            </div>
+
+            <div className="picker-body">
+              {/* 이미 등록된 과목 — 상단 정보 + 제거 버튼 */}
+              {pickerCourse && (
+                <div className="picker-occupied">
+                  {pickerCourse.track && (
+                    <span className="pk-track-badge" style={{ background: TRACK_COLOR[pickerCourse.track] || '#aaa' }}>
+                      {pickerCourse.track}
+                    </span>
+                  )}
+                  <div className="pk-name">{pickerCourse.name}</div>
+                  <div className="pk-meta">{pickerCourse.code} · {pickerCourse.credits}학점</div>
+                  {pickerCourse.target_grade > 0 && (
+                    <div className="pk-grade-text">{pickerCourse.target_grade}학년 권장</div>
+                  )}
+                  <button
+                    className="pk-remove-btn"
+                    onClick={() => { onRemove?.(pickerCourse); setPickerSlot(null); }}
+                  >
+                    시간표에서 제거
+                  </button>
+                  <div className="picker-divider">이 시간대 다른 과목</div>
+                </div>
+              )}
+
+              {/* 수강 가능한 과목 목록 */}
+              {coursesLoading ? (
+                <p className="picker-empty">과목 불러오는 중...</p>
+              ) : pickerList.length === 0 ? (
+                <p className="picker-empty">이 시간대에 개설된 과목이 없습니다.</p>
+              ) : (
+                <ul className="picker-list">
+                  {pickerList.map(c => {
+                    const conflict = courses.some(sc =>
+                      sc.id !== c.id && slotsConflict(sc.timeslots, c.timeslots)
+                    );
+                    const added = courses.some(sc => sc.id === c.id);
+                    return (
+                      <li
+                        key={c.id}
+                        className={`pk-item ${conflict ? 'pk-conflict' : ''} ${added ? 'pk-added' : ''}`}
+                        onClick={() => !conflict && !added && (onAdd?.(c), setPickerSlot(null))}
+                      >
+                        <div className="pk-item-tags">
+                          {c.track && (
+                            <span className="pk-track-badge" style={{ background: TRACK_COLOR[c.track] || '#aaa' }}>
+                              {c.track}
+                            </span>
+                          )}
+                          {c.target_grade > 0 && (
+                            <span className="pk-grade-badge">{c.target_grade}학년</span>
+                          )}
+                          {conflict && <span className="pk-status conflict">충돌</span>}
+                          {added && <span className="pk-status added">추가됨</span>}
+                        </div>
+                        <div className="pk-item-name">{c.name}</div>
+                        <div className="pk-item-meta">{c.code} · {c.credits}학점</div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
