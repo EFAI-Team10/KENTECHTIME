@@ -23,6 +23,37 @@ export async function GET(request) {
   return Response.json({ user });
 }
 
+export async function PATCH(request) {
+  let auth;
+  try {
+    auth = requireAuth(request);
+  } catch (err) {
+    if (err instanceof AuthError) return errorJson(err.message, err.status);
+    return errorJson('서버 오류', 500);
+  }
+
+  const body = await request.json().catch(() => ({}));
+  const { name, grade, student_id } = body;
+
+  const updates = {};
+  if (name      !== undefined) updates.name       = String(name).trim();
+  if (grade     !== undefined) updates.grade      = parseInt(grade) || 0;
+  if (student_id !== undefined) updates.student_id = String(student_id).trim();
+
+  if (Object.keys(updates).length === 0) return errorJson('수정할 항목이 없습니다.', 400);
+
+  const supabase = getSupabaseAdmin();
+  const { data: user, error } = await supabase
+    .from('users')
+    .update(updates)
+    .eq('id', auth.userId)
+    .select('id, email, name, grade, student_id, role')
+    .maybeSingle();
+
+  if (error) return errorJson('서버 오류', 500);
+  return Response.json({ user });
+}
+
 export async function DELETE(request) {
   let auth;
   try {

@@ -1,12 +1,46 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { coursesAPI } from '@/lib/api-client';
+import { coursesAPI, usersAPI } from '@/lib/api-client';
 import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
+import useStore from '@/lib/store';
 import './SettingsModal.css';
 
 const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR'];
 
 export default function SettingsModal({ onClose }) {
+  const { user, setUser } = useStore(s => ({ user: s.user, setUser: s.setUser }));
+
+  // ── 내 정보 ──
+  const [profile, setProfile] = useState({ name: '', student_id: '', grade: 0 });
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileDone, setProfileDone] = useState(false);
+  const [profileError, setProfileError] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setProfile({
+        name:       user.name       || '',
+        student_id: user.student_id || '',
+        grade:      user.grade      || 0,
+      });
+    }
+  }, [user]);
+
+  const handleProfileSave = async () => {
+    setProfileSaving(true);
+    setProfileError('');
+    setProfileDone(false);
+    try {
+      const res = await usersAPI.updateProfile(profile);
+      setUser(res.data.user);
+      setProfileDone(true);
+    } catch {
+      setProfileError('저장 중 오류가 발생했습니다.');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
   const [mode, setMode] = useState('choose'); // 'choose' | 'portal' | 'manual'
 
   // 포털 모드
@@ -117,6 +151,56 @@ export default function SettingsModal({ onClose }) {
           <button className="settings-close" onClick={onClose}>✕</button>
         </div>
 
+        {/* ── 내 정보 ── */}
+        <div className="settings-section">
+          <h3>내 정보</h3>
+          <div className="profile-form">
+            <div className="profile-field">
+              <label>이름</label>
+              <input
+                type="text"
+                value={profile.name}
+                onChange={e => { setProfile(p => ({ ...p, name: e.target.value })); setProfileDone(false); }}
+                placeholder="이름 입력"
+              />
+            </div>
+            <div className="profile-field">
+              <label>학번</label>
+              <input
+                type="text"
+                value={profile.student_id}
+                onChange={e => { setProfile(p => ({ ...p, student_id: e.target.value })); setProfileDone(false); }}
+                placeholder="학번 입력 (예: 20240001)"
+              />
+            </div>
+            <div className="profile-field">
+              <label>학년</label>
+              <select
+                value={profile.grade}
+                onChange={e => { setProfile(p => ({ ...p, grade: parseInt(e.target.value) })); setProfileDone(false); }}
+              >
+                <option value={0}>선택</option>
+                <option value={1}>1학년</option>
+                <option value={2}>2학년</option>
+                <option value={3}>3학년</option>
+                <option value={4}>4학년</option>
+              </select>
+            </div>
+          </div>
+          {profileError && <p className="profile-error">{profileError}</p>}
+          <div className="settings-btns">
+            {profileDone && <span className="profile-saved">저장되었습니다</span>}
+            <button
+              className="btn-primary"
+              onClick={handleProfileSave}
+              disabled={profileSaving}
+            >
+              {profileSaving ? '저장 중...' : '저장'}
+            </button>
+          </div>
+        </div>
+
+        {/* ── 기수강 과목 관리 ── */}
         <div className="settings-section">
           <h3>기수강 과목 관리</h3>
 
