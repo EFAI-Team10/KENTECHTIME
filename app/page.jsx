@@ -85,7 +85,7 @@ export default function MainPage() {
         }
       } catch {}
 
-      // 저장된 시간표 없으면 추천 생성
+      // 저장된 시간표 없으면 추천 생성 (초기에는 DB 트랙 = trackOrder이므로 prefs 그대로 사용)
       const res = await scheduleAPI.recommend({ semester, preferences: prefs });
       setPlans(res.data.plans);
       if (res.data.plans.length > 0) {
@@ -110,7 +110,11 @@ export default function MainPage() {
           setPreferences(prefs);
         }
       } catch {}
-      const res = await scheduleAPI.recommend({ semester, preferences: prefs });
+      // 시간표 UI에서 설정한 trackOrder를 추천에 반영 (DB 값보다 우선)
+      const res = await scheduleAPI.recommend({
+        semester,
+        preferences: { ...prefs, preferred_tracks: trackOrder },
+      });
       setPlans(res.data.plans);
       if (res.data.plans.length > 0) {
         setCurrentSchedule(res.data.plans[0]);
