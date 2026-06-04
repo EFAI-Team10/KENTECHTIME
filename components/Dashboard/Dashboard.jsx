@@ -22,6 +22,13 @@ const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
 export default function Dashboard({ onImportSuccess }) {
   const [earned, setEarned] = useState({ VC: 0, EF: 0, EL: 0, MN: 0, HASS: 0, ESP: 0, IR: 0, GR: 0, CAPS: 0, EN: 0, RC: 0, FR: 0, total: 0 });
   const [espAdvDone, setEspAdvDone] = useState(0);
+  const [espStageReached, setEspStageReached] = useState(-1);
+  const [espAutoCompleted, setEspAutoCompleted] = useState([]);
+  const [apCreditCount, setApCreditCount] = useState(0);
+  const [apCounted, setApCounted] = useState(0);
+  const [efSub, setEfSub] = useState({ math: 0, physics: 0, chem: 0, dl: 0 });
+  const [efSubRequired] = useState({ math: 8, physics: 4, chem: 4, dl: 4 });
+  const [elUpperCount, setElUpperCount] = useState(0);
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState('portal');
   const [pasteText, setPasteText] = useState('');
@@ -37,8 +44,15 @@ export default function Dashboard({ onImportSuccess }) {
   const loadRequirements = () => {
     coursesAPI.getRequirements()
       .then(res => {
-        setEarned(res.data.earned);
-        setEspAdvDone(res.data.espAdvDone || 0);
+        const d = res.data;
+        setEarned(d.earned);
+        setEspAdvDone(d.espAdvDone || 0);
+        setEspStageReached(d.espStageReached ?? -1);
+        setEspAutoCompleted(d.espAutoCompleted || []);
+        setApCreditCount(d.apCreditCount || 0);
+        setApCounted(d.apCounted || 0);
+        setEfSub(d.efSub || { math: 0, physics: 0, chem: 0, dl: 0 });
+        setElUpperCount(d.elUpperCount || 0);
       })
       .catch(() => {});
   };
@@ -177,41 +191,82 @@ export default function Dashboard({ onImportSuccess }) {
           {Object.entries(REQUIRED).filter(([cat]) => cat !== 'total').map(([cat, req]) => {
             const got = earned[cat] || 0;
             const color = CAT_COLORS[cat] || '#4A90D9';
-
-            // ESP: 고급 과목 2개 이수 시 4학점, 미이수 시 조건 표시
-            const espHint = cat === 'ESP'
-              ? (espAdvDone >= 2 ? null : `(고급쓰기·고급말하기 둘 다 이수해야 4학점 인정, 현재 ${espAdvDone}/2)`)
-              : null;
-
-            // FR: 최대 12학점 인정, raw 이수학점도 표시
-            const frHint = cat === 'FR' && earned.FR > 0
-              ? `(${earned.FR}학점 이수, 최대 ${req}학점 인정)`
-              : null;
+            const met = got >= req;
 
             return (
-              <div key={cat} className="requirement-item">
-                <span className="cat-label">{cat}</span>
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: `${Math.min(100, (got / req) * 100)}%`,
-                      backgroundColor: got >= req ? color : '#E74C3C',
-                    }}
-                  />
+              <div key={cat} className="requirement-item-block">
+                <div className="requirement-item">
+                  <span className="cat-label">{cat}</span>
+                  <div className="progress-bar">
+                    <div
+                      className="progress-fill"
+                      style={{
+                        width: `${Math.min(100, (got / req) * 100)}%`,
+                        backgroundColor: met ? color : '#E74C3C',
+                      }}
+                    />
+                  </div>
+                  <div className="credits-col">
+                    <span className="credits-text" style={{ color: met ? color : '#555' }}>
+                      {got} / {req}학점
+                    </span>
+                  </div>
                 </div>
-                <div className="credits-col">
-                  <span className="credits-text" style={{ color: got >= req ? color : '#555' }}>
-                    {got} / {req}학점
-                  </span>
-                  {(espHint || frHint) && (
-                    <span className="cat-hint">{espHint || frHint}</span>
-                  )}
-                </div>
+
+                {/* EF 세부 요건 */}
+                {cat === 'EF' && (
+                  <div className="sub-requirements">
+                    {[
+                      { key: 'math',    label: '수학',   req: efSubRequired.math    },
+                      { key: 'physics', label: '물리',   req: efSubRequired.physics },
+                      { key: 'chem',    label: '화학',   req: efSubRequired.chem    },
+                      { key: 'dl',      label: 'AI/DL',  req: efSubRequired.dl      },
+                    ].map(({ key, label, req: sr }) => {
+                      const sg = efSub[key] || 0;
+                      const ok = sg >= sr;
+                      return (
+                        <span key={key} className={`sub-req-chip ${ok ? 'ok' : 'ng'}`}>
+                          {ok ? '✓' : '✗'} {label} {sg}/{sr}학점
+                        </span>
+                      );
+                    })}
+                    {apCounted > 0 && (
+                      <span className="sub-req-chip ap">AP {apCounted}학점 인정{apCreditCount > apCounted ? ` (총 ${apCreditCount}학점 중)` : ''}</span>
+                    )}
+                  </div>
+                )}
+
+                {/* EL 고학년 과목 필수 */}
+                {cat === 'EL' && (
+                  <div className="sub-requirements">
+                    <span className={`sub-req-chip ${elUpperCount >= 2 ? 'ok' : 'ng'}`}>
+                      {elUpperCount >= 2 ? '✓' : '✗'} 4·5학년 과목 {elUpperCount}/2개 필수
+                    </span>
+                  </div>
+                )}
+
+                {/* ESP 단계 안내 */}
+                {cat === 'ESP' && (
+                  <div className="sub-requirements">
+                    <span className={`sub-req-chip ${espAdvDone >= 2 ? 'ok' : 'ng'}`}>
+                      {espAdvDone >= 2 ? '✓' : '✗'} 고급쓰기·고급말하기 {espAdvDone}/2
+                    </span>
+                    {espStageReached > 0 && (
+                      <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
+                    )}
+                  </div>
+                )}
+
+                {/* FR 최대 12학점 */}
+                {cat === 'FR' && earned.FR > 0 && (
+                  <div className="sub-requirements">
+                    <span className="sub-req-chip ap">이수 {earned.FR}학점 중 최대 {req}학점 인정</span>
+                  </div>
+                )}
               </div>
             );
           })}
-          {/* GR: 졸업학점 미포함, 이수 시만 표시 */}
+          {/* GR: 졸업학점 미포함 */}
           {earned.GR > 0 && (
             <div className="requirement-item extra">
               <span className="cat-label" style={{ color: CAT_COLORS.GR }}>GR</span>

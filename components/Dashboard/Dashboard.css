@@ -110,6 +110,43 @@
   color: #aaa;
 }
 
+/* 요건 블록 (progress bar + 세부 칩) */
+.requirement-item-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sub-requirements {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-left: 44px;
+}
+
+.sub-req-chip {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sub-req-chip.ok {
+  background: #eafaf1;
+  color: #27AE60;
+}
+
+.sub-req-chip.ng {
+  background: #fdecea;
+  color: #e74c3c;
+}
+
+.sub-req-chip.ap {
+  background: #ebf5fb;
+  color: #2471A3;
+}
+
 /* 수강이력 */
 .history-section {
   margin-top: 16px;
