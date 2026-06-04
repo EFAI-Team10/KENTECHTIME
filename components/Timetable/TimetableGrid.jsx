@@ -4,13 +4,13 @@ import './TimetableGrid.css';
 
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
 const TRACK_COLOR = {
-  '전기/전자': '#4A90D9',
-  '재료/화학': '#27AE60',
-  '인공지능': '#8E44AD',
+  '전기/전자': '#7289FF',
+  '재료/화학': '#6CDD8F',
+  '인공지능': '#F05268',
 };
 // DB에 '원자력'으로 저장된 과목은 '재료/화학'으로 통합
 const normalizeTrack = (t) => t === '원자력' ? '재료/화학' : t;
-const SCHEDULE_COLORS = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#E74C3C', '#16A085', '#D35400'];
+const SCHEDULE_COLORS = ['#B3C871', '#9AD2C9', '#F1C27D', '#EF8862', '#5C69AE', '#8B7BC9', '#C27DC3', '#D2634E'];
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 9);
@@ -23,37 +23,37 @@ function slotsConflict(a = [], b = []) {
 
 function sortCourses(courses, userGrade, trackOrder) {
   const keyOf = (c) => {
-    const gradeMatch  = c.target_grade === userGrade;
-    const noGrade     = c.target_grade === 0;
-    const trackIdx    = trackOrder.indexOf(normalizeTrack(c.track));
-    const trackMatch  = trackIdx !== -1;
-    const isEL        = c.category === 'EL';
-    const isEF        = c.category === 'EF';
-    const isESP       = c.category === 'ESP';
-    const isMN        = c.category === 'MN';
-    const isHASS      = c.category === 'HASS';
-    const isEN        = c.category === 'EN';
+    const gradeMatch = c.target_grade === userGrade;
+    const noGrade = c.target_grade === 0;
+    const trackIdx = trackOrder.indexOf(normalizeTrack(c.track));
+    const trackMatch = trackIdx !== -1;
+    const isEL = c.category === 'EL';
+    const isEF = c.category === 'EF';
+    const isESP = c.category === 'ESP';
+    const isMN = c.category === 'MN';
+    const isHASS = c.category === 'HASS';
+    const isEN = c.category === 'EN';
 
     // 1순위: EL + 내 학년 + 선택 트랙
-    if (isEL && gradeMatch && trackMatch)    return [0, trackIdx, 0];
+    if (isEL && gradeMatch && trackMatch) return [0, trackIdx, 0];
 
     // 2순위: EL + 내 학년 아님 + 선택 트랙 (트랙은 맞지만 학년이 다른 EL)
-    if (isEL && !gradeMatch && trackMatch)   return [1, trackIdx, Math.abs(c.target_grade - userGrade)];
+    if (isEL && !gradeMatch && trackMatch) return [1, trackIdx, Math.abs(c.target_grade - userGrade)];
 
     // 3순위: MN + 내 학년 (권장학년 일치)
-    if (isMN && gradeMatch)                  return [2, 0, 0];
+    if (isMN && gradeMatch) return [2, 0, 0];
 
     // 4순위: EL + 내 학년 (트랙 무관)
-    if (isEL && gradeMatch)                  return [3, 0, 0];
+    if (isEL && gradeMatch) return [3, 0, 0];
 
     // 5순위: EF + 학년 제한 없음
-    if (isEF && noGrade)                     return [4, 0, 0];
+    if (isEF && noGrade) return [4, 0, 0];
 
     // 6순위: HASS·EN + 학년 제한 없음
-    if ((isHASS || isEN) && noGrade)         return [5, 0, 0];
+    if ((isHASS || isEN) && noGrade) return [5, 0, 0];
 
     // 7순위: ESP
-    if (isESP)                               return [6, 0, 0];
+    if (isESP) return [6, 0, 0];
 
     // 8순위: 나머지 — 학년 거리순, 그 안에서 선택 트랙 우선
     const gradeDist = noGrade ? 0.5 : Math.abs(c.target_grade - userGrade);
@@ -94,13 +94,13 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
 
   const pickerList = pickerSlot
     ? sortCourses(
-        allCourses.filter(c =>
-          !completedCodes.has(c.code) &&  // 기수강 과목 제외
-          (c.timeslots || []).some(s => coversCell(s, pickerSlot.day, pickerSlot.hour))
-        ),
-        userGrade,
-        trackOrder
-      )
+      allCourses.filter(c =>
+        !completedCodes.has(c.code) &&  // 기수강 과목 제외
+        (c.timeslots || []).some(s => coversCell(s, pickerSlot.day, pickerSlot.hour))
+      ),
+      userGrade,
+      trackOrder
+    )
     : [];
 
   return (

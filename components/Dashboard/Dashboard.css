@@ -2,7 +2,7 @@
   background: white;
   padding: 24px;
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
 }
 
 .dashboard-header {
@@ -158,12 +158,29 @@
 }
 
 /* 진행바 — 계획(시간표) 반투명 */
-.progress-bar { position: relative; }
-.progress-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 5px; transition: width 0.4s ease; }
-.progress-planned { background: #27AE60; opacity: 0.4; }
+.progress-bar {
+  position: relative;
+}
+
+.progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.progress-planned {
+  background: #B5D5AE;
+}
 
 /* 총계 초과 표시 */
-.total-over { font-size: 11px; color: #E67E22; margin-left: 4px; }
+.total-over {
+  font-size: 11px;
+  color: #E67E22;
+  margin-left: 4px;
+}
 
 /* ESP 단일 연속 바 (requirement-item 행 내부에 인라인) */
 .esp-uni-bar-inline {
@@ -172,14 +189,16 @@
   background: #eee;
   border-radius: 5px;
   position: relative;
-  overflow: visible; /* 라벨이 바 아래로 나오도록 */
+  overflow: visible;
+  /* 라벨이 바 아래로 나오도록 */
 }
 
 .esp-uni-stage-labels {
   display: flex;
   position: absolute;
   top: 13px;
-  left: 0; right: 0;
+  left: 0;
+  right: 0;
 }
 
 .esp-uni-bar {
@@ -192,18 +211,25 @@
 
 .esp-uni-fill {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   height: 100%;
   border-radius: 4px;
   transition: width 0.4s ease;
 }
 
-.esp-uni-fill.done    { background: #1A5276; }
-.esp-uni-fill.planned { background: #27AE60; opacity: 0.4; }
+.esp-uni-fill.done {
+  background: #D488B7;
+}
+
+.esp-uni-fill.planned {
+  background: #B5D5AE;
+}
 
 .esp-uni-divider {
   position: absolute;
-  top: 0; bottom: 0;
+  top: 0;
+  bottom: 0;
   width: 2px;
   background: white;
   opacity: 0.8;
@@ -220,8 +246,15 @@
   color: #aaa;
 }
 
-.esp-uni-label.done    { color: #1A5276; font-weight: 700; }
-.esp-uni-label.partial { color: #5dade2; font-weight: 600; }
+.esp-uni-label.done {
+  color: #D488B7;
+  font-weight: 700;
+}
+
+.esp-uni-label.partial {
+  color: #5dade2;
+  font-weight: 600;
+}
 
 .esp-uni-count {
   font-size: 10px;
@@ -250,7 +283,9 @@
   gap: 8px;
 }
 
-.history-toggle:hover { color: #4A90D9; }
+.history-toggle:hover {
+  color: #4A90D9;
+}
 
 .history-summary {
   font-size: 12px;
@@ -265,7 +300,9 @@
   display: inline-block;
 }
 
-.toggle-arrow.open { transform: rotate(180deg); }
+.toggle-arrow.open {
+  transform: rotate(180deg);
+}
 
 .history-list {
   display: flex;
@@ -285,7 +322,9 @@
   font-size: 13px;
 }
 
-.history-item:hover { background: #f8f9fa; }
+.history-item:hover {
+  background: #f8f9fa;
+}
 
 .history-cat {
   width: 46px;
@@ -329,7 +368,10 @@
   color: #e74c3c;
 }
 
-.history-sem-group { margin-bottom: 4px; }
+.history-sem-group {
+  margin-bottom: 4px;
+}
+
 .history-sem-label {
   font-size: 11px;
   font-weight: 600;
@@ -338,7 +380,11 @@
   border-bottom: 1px solid #f0f0f0;
   margin-bottom: 2px;
 }
-.planned-count { color: #27AE60; font-weight: 700; }
+
+.planned-count {
+  color: #27AE60;
+  font-weight: 700;
+}
 
 .history-empty {
   font-size: 13px;
@@ -383,7 +429,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -397,7 +443,7 @@
   width: 520px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
 }
 
 .import-modal h3 {
@@ -473,7 +519,7 @@
   text-decoration: none;
   cursor: grab;
   user-select: none;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
   transition: background 0.15s;
 }
 
@@ -549,8 +595,14 @@
   margin: 0 0 8px;
 }
 
-.matched-label { color: #27AE60; }
-.unmatched-label { color: #e74c3c; margin-top: 12px; }
+.matched-label {
+  color: #27AE60;
+}
+
+.unmatched-label {
+  color: #e74c3c;
+  margin-top: 12px;
+}
 
 .preview-list {
   list-style: none;
@@ -695,7 +747,10 @@
   border-radius: 6px;
 }
 
-.external-label { color: #E67E22; margin-top: 12px; }
+.external-label {
+  color: #E67E22;
+  margin-top: 12px;
+}
 
 .ext-badge {
   background: #fff3e0;
@@ -733,7 +788,10 @@
   flex-shrink: 0;
 }
 
-.ext-fill-btn:hover { background: #E67E22; color: white; }
+.ext-fill-btn:hover {
+  background: #E67E22;
+  color: white;
+}
 
 .ext-notice {
   font-size: 11px;
