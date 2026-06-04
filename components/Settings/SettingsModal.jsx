@@ -60,6 +60,7 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
   const [recPref, setRecPref] = useState({
     preferred_tracks: [],
     last_semester: false,
+    prefer_compact: false,
     elective_cats: [],
     max_credits: 16,
   });
@@ -73,6 +74,7 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
         if (p) setRecPref({
           preferred_tracks: normalizePreferredTracks(p.preferred_tracks),
           last_semester:    !!p.last_semester,
+          prefer_compact:   !!p.prefer_compact,
           elective_cats:    p.elective_cats || [],
           max_credits:      p.max_credits   ?? 16,
         });
@@ -317,6 +319,19 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
                   className={`toggle ${recPref.last_semester ? 'on' : ''}`}
                   onClick={() => { setRecPref(p => ({ ...p, last_semester: !p.last_semester })); setRecPrefDone(false); }}
                   aria-pressed={recPref.last_semester}
+                >
+                  <div className="toggle-thumb" />
+                </button>
+              </div>
+            </div>
+            <div className="pref-toggle-field">
+              <div className="toggle-row">
+                <span>공강 최소화 {recPref.prefer_compact ? '(과목 간 빈 시간 최소로 추천)' : '(끄면 우선순위 순)'}</span>
+                <button
+                  type="button"
+                  className={`toggle ${recPref.prefer_compact ? 'on' : ''}`}
+                  onClick={() => { setRecPref(p => ({ ...p, prefer_compact: !p.prefer_compact })); setRecPrefDone(false); }}
+                  aria-pressed={recPref.prefer_compact}
                 >
                   <div className="toggle-thumb" />
                 </button>
