@@ -64,12 +64,7 @@
   background: #eee;
   border-radius: 5px;
   overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  border-radius: 5px;
-  transition: width 0.4s ease;
+  position: relative;
 }
 
 .credits-text {
@@ -145,6 +140,72 @@
 .sub-req-chip.ap {
   background: #ebf5fb;
   color: #2471A3;
+}
+
+.sub-req-chip.overflow {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* 진행바 — 계획(시간표) 반투명 */
+.progress-bar { position: relative; }
+.progress-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 5px; transition: width 0.4s ease; }
+.progress-planned { opacity: 0.3; }
+
+/* 총계 초과 표시 */
+.total-over { font-size: 11px; color: #E67E22; margin-left: 4px; }
+
+/* ESP 단계 바 */
+.esp-stages {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-left: 44px;
+  margin-top: 2px;
+}
+
+.esp-stage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.esp-stage-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+.esp-stage-bar {
+  flex: 1;
+  height: 6px;
+  background: #eee;
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.esp-stage-fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+  background: #e0e0e0;
+}
+
+.esp-stage-fill.done    { background: #1A5276; }
+.esp-stage-fill.partial { background: #5dade2; }
+.esp-stage-fill.planned { background: #1A5276; opacity: 0.3; }
+
+.esp-stage-count {
+  font-size: 10px;
+  color: #888;
+  width: 24px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 /* 수강이력 */

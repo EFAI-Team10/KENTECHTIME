@@ -19,9 +19,10 @@ const CAT_ORDER = ['EF','VC','EL','MN','HASS','EN','IR','CAPS','ESP','RC','FR','
 
 const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
 
-export default function Dashboard({ onImportSuccess }) {
+export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
   const [earned, setEarned] = useState({ VC: 0, EF: 0, EL: 0, MN: 0, HASS: 0, ESP: 0, IR: 0, GR: 0, CAPS: 0, EN: 0, RC: 0, FR: 0, total: 0 });
-  const [espAdvDone, setEspAdvDone] = useState(0);
+  const [overflows, setOverflows] = useState({});
+  const [espStages, setEspStages] = useState([]);
   const [espStageReached, setEspStageReached] = useState(-1);
   const [espAutoCompleted, setEspAutoCompleted] = useState([]);
   const [apCreditCount, setApCreditCount] = useState(0);
@@ -29,6 +30,13 @@ export default function Dashboard({ onImportSuccess }) {
   const [efSub, setEfSub] = useState({ math: 0, physics: 0, chem: 0, dl: 0 });
   const [efSubRequired] = useState({ math: 8, physics: 4, chem: 4, dl: 4 });
   const [elUpperCount, setElUpperCount] = useState(0);
+
+  // 시간표 과목 → 카테고리별 계획 학점
+  const planned = {};
+  for (const c of currentSchedule) {
+    const cat = c.category || 'EL';
+    planned[cat] = (planned[cat] || 0) + Number(c.credits || 0);
+  }
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState('portal');
   const [pasteText, setPasteText] = useState('');
@@ -46,7 +54,8 @@ export default function Dashboard({ onImportSuccess }) {
       .then(res => {
         const d = res.data;
         setEarned(d.earned);
-        setEspAdvDone(d.espAdvDone || 0);
+        setOverflows(d.overflows || {});
+        setEspStages(d.espStages || []);
         setEspStageReached(d.espStageReached ?? -1);
         setEspAutoCompleted(d.espAutoCompleted || []);
         setApCreditCount(d.apCreditCount || 0);
@@ -59,7 +68,7 @@ export default function Dashboard({ onImportSuccess }) {
 
   useEffect(() => { loadRequirements(); }, []);
 
-  // 카테고리별 도넛 차트: 각 섹션 크기 = 요구학점, 색상 = 충족 여부
+  // 카테고리별 도넛 차트
   const donutData = Object.entries(REQUIRED)
     .filter(([cat]) => cat !== 'total')
     .map(([cat, req]) => ({
@@ -67,7 +76,7 @@ export default function Dashboard({ onImportSuccess }) {
       value: req,
       fill: (earned[cat] || 0) >= req ? (CAT_COLORS[cat] || '#4A90D9') : '#e8eaf0',
     }));
-  const totalPct = Math.min(100, Math.round((earned.total / REQUIRED.total) * 100));
+  const totalPct = Math.round((earned.total / REQUIRED.total) * 100); // 초과 시 100% 넘을 수 있음
 
   const handleParse = () => {
     const { toImport, external } = parseGradeData(pasteText);
@@ -189,38 +198,43 @@ export default function Dashboard({ onImportSuccess }) {
         </div>
         <div className="requirements-list">
           {Object.entries(REQUIRED).filter(([cat]) => cat !== 'total').map(([cat, req]) => {
-            const got = earned[cat] || 0;
-            const color = CAT_COLORS[cat] || '#4A90D9';
-            const met = got >= req;
+            const got       = earned[cat] || 0;
+            const plan      = planned[cat] || 0;
+            const overflow  = overflows[cat] || 0;
+            const color     = CAT_COLORS[cat] || '#4A90D9';
+            const met       = got >= req;
+            const earnedPct = Math.min(100, (got / req) * 100);
+            const planPct   = Math.min(100, ((got + plan) / req) * 100);
 
             return (
               <div key={cat} className="requirement-item-block">
                 <div className="requirement-item">
                   <span className="cat-label">{cat}</span>
                   <div className="progress-bar">
-                    <div
-                      className="progress-fill"
-                      style={{
-                        width: `${Math.min(100, (got / req) * 100)}%`,
-                        backgroundColor: met ? color : '#E74C3C',
-                      }}
-                    />
+                    {/* 계획(시간표) 과목 — 반투명 배경 */}
+                    {plan > 0 && (
+                      <div className="progress-fill progress-planned"
+                        style={{ width: `${planPct}%`, backgroundColor: color }} />
+                    )}
+                    {/* 기이수 — 진한 색 */}
+                    <div className="progress-fill"
+                      style={{ width: `${earnedPct}%`, backgroundColor: met ? color : '#E74C3C' }} />
                   </div>
                   <div className="credits-col">
                     <span className="credits-text" style={{ color: met ? color : '#555' }}>
-                      {got} / {req}학점
+                      {got}{plan > 0 ? `+${plan}` : ''} / {req}학점
                     </span>
                   </div>
                 </div>
 
-                {/* EF 세부 요건 */}
+                {/* EF 세부 요건 + 초과분 FR 안내 */}
                 {cat === 'EF' && (
                   <div className="sub-requirements">
                     {[
-                      { key: 'math',    label: '수학',   req: efSubRequired.math    },
-                      { key: 'physics', label: '물리',   req: efSubRequired.physics },
-                      { key: 'chem',    label: '화학',   req: efSubRequired.chem    },
-                      { key: 'dl',      label: 'AI/DL',  req: efSubRequired.dl      },
+                      { key: 'math',    label: '수학',  req: efSubRequired.math    },
+                      { key: 'physics', label: '물리',  req: efSubRequired.physics },
+                      { key: 'chem',    label: '화학',  req: efSubRequired.chem    },
+                      { key: 'dl',      label: 'AI/DL', req: efSubRequired.dl      },
                     ].map(({ key, label, req: sr }) => {
                       const sg = efSub[key] || 0;
                       const ok = sg >= sr;
@@ -233,39 +247,73 @@ export default function Dashboard({ onImportSuccess }) {
                     {apCounted > 0 && (
                       <span className="sub-req-chip ap">AP {apCounted}학점 인정{apCreditCount > apCounted ? ` (총 ${apCreditCount}학점 중)` : ''}</span>
                     )}
+                    {overflow > 0 && (
+                      <span className="sub-req-chip overflow">+{overflow}학점 초과 → FR 산정</span>
+                    )}
                   </div>
                 )}
 
-                {/* EL 고학년 과목 필수 */}
+                {/* EL 고학년 필수 + 초과분 */}
                 {cat === 'EL' && (
                   <div className="sub-requirements">
                     <span className={`sub-req-chip ${elUpperCount >= 2 ? 'ok' : 'ng'}`}>
                       {elUpperCount >= 2 ? '✓' : '✗'} EL4·EL5 과목 {elUpperCount}/2개 필수 이수
                     </span>
-                  </div>
-                )}
-
-                {/* ESP 단계 안내 */}
-                {cat === 'ESP' && (
-                  <div className="sub-requirements">
-                    <span className={`sub-req-chip ${espAdvDone >= 2 ? 'ok' : 'ng'}`}>
-                      {espAdvDone >= 2 ? '✓' : '✗'} 고급쓰기·고급말하기 {espAdvDone}/2
-                    </span>
-                    {espStageReached > 0 && (
-                      <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
+                    {overflow > 0 && (
+                      <span className="sub-req-chip overflow">+{overflow}학점 초과 → FR 산정</span>
                     )}
                   </div>
                 )}
 
-                {/* FR 최대 12학점 */}
+                {/* 기타 카테고리 초과분 */}
+                {!['EF','EL','ESP','FR'].includes(cat) && overflow > 0 && (
+                  <div className="sub-requirements">
+                    <span className="sub-req-chip overflow">+{overflow}학점 초과 → FR 산정</span>
+                  </div>
+                )}
+
+                {/* ESP: 단계별 바 */}
+                {cat === 'ESP' && (
+                  <div className="esp-stages">
+                    {espStages.map((stage) => {
+                      const stagePlan = (currentSchedule || []).filter(c =>
+                        stage.codes.includes(c.code)
+                      ).length;
+                      const total = stage.doneCount + stagePlan;
+                      return (
+                        <div key={stage.label} className="esp-stage-row">
+                          <span className="esp-stage-label">{stage.label}</span>
+                          <div className="esp-stage-bar">
+                            {stagePlan > 0 && (
+                              <div className="esp-stage-fill planned"
+                                style={{ width: `${Math.min(100, (total / 2) * 100)}%` }} />
+                            )}
+                            <div className={`esp-stage-fill ${stage.doneCount === 2 ? 'done' : stage.doneCount > 0 ? 'partial' : ''}`}
+                              style={{ width: `${(stage.doneCount / 2) * 100}%` }} />
+                          </div>
+                          <span className="esp-stage-count">{stage.doneCount}/2</span>
+                        </div>
+                      );
+                    })}
+                    {espStageReached > 0 && (
+                      <span className="sub-req-chip ap" style={{ marginTop: 4 }}>↑ 이전 단계 자동 이수 인정</span>
+                    )}
+                  </div>
+                )}
+
+                {/* FR: 실이수 + 초과 안내 */}
                 {cat === 'FR' && earned.FR > 0 && (
                   <div className="sub-requirements">
-                    <span className="sub-req-chip ap">이수 {earned.FR}학점 중 최대 {req}학점 인정</span>
+                    {earned.FR > req
+                      ? <span className="sub-req-chip overflow">실이수 {earned.FR}학점 (12학점 초과 — {earned.FR - req}학점 미인정)</span>
+                      : <span className="sub-req-chip ap">실이수 {earned.FR}학점 (최대 {req}학점 인정)</span>
+                    }
                   </div>
                 )}
               </div>
             );
           })}
+
           {/* GR: 졸업학점 미포함 */}
           {earned.GR > 0 && (
             <div className="requirement-item extra">
@@ -277,6 +325,7 @@ export default function Dashboard({ onImportSuccess }) {
             <span>졸업요건 총계</span>
             <span style={{ color: earned.total >= REQUIRED.total ? '#4A90D9' : '#555' }}>
               {earned.total} / {REQUIRED.total}학점
+              {earned.total > REQUIRED.total && <span className="total-over"> (초과)</span>}
             </span>
           </div>
         </div>

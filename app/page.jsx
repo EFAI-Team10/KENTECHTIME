@@ -164,7 +164,7 @@ export default function MainPage() {
       )}
 
       <div className="main-content">
-        <Dashboard onImportSuccess={loadRecommendations} />
+        <Dashboard onImportSuccess={loadRecommendations} currentSchedule={currentSchedule} />
 
         <section className="schedule-section">
           <div className="plan-controls">
