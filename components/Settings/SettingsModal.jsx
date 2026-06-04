@@ -6,7 +6,7 @@ import useStore from '@/lib/store';
 import './SettingsModal.css';
 
 const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
-const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
+const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
 
 const ELECTIVE_OPTIONS = [
   { value: 'EN',   label: 'EN (창업)' },

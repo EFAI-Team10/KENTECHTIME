@@ -2,13 +2,14 @@
 import { useState } from 'react';
 import './TimetableGrid.css';
 
-const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
+const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
 const TRACK_COLOR = {
   '전기/전자': '#4A90D9',
   '재료/화학': '#27AE60',
   '인공지능': '#8E44AD',
-  '원자력': '#E67E22',
 };
+// DB에 '원자력'으로 저장된 과목은 '재료/화학'으로 통합
+const normalizeTrack = (t) => t === '원자력' ? '재료/화학' : t;
 const SCHEDULE_COLORS = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#E74C3C', '#16A085', '#D35400'];
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
@@ -24,7 +25,7 @@ function sortCourses(courses, userGrade, trackOrder) {
   const keyOf = (c) => {
     const gradeMatch  = c.target_grade === userGrade;
     const noGrade     = c.target_grade === 0;
-    const trackIdx    = trackOrder.indexOf(c.track);
+    const trackIdx    = trackOrder.indexOf(normalizeTrack(c.track));
     const trackMatch  = trackIdx !== -1;
     const isEL        = c.category === 'EL';
     const isEF        = c.category === 'EF';
