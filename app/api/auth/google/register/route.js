@@ -37,7 +37,7 @@ export async function POST(request) {
     p_course_ids: courseIds,
     p_preferred_tracks: Array.isArray(prefs.preferred_tracks) ? prefs.preferred_tracks : [],
     p_avoid_morning: !!prefs.avoid_morning,
-    p_preferred_gap: Number.isInteger(prefs.preferred_gap) ? prefs.preferred_gap : 60,
+    p_preferred_gap: Number.isInteger(prefs.preferred_gap) ? prefs.preferred_gap : 0,
     p_day_off: Array.isArray(prefs.day_off) ? prefs.day_off : [],
   });
 
