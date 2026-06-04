@@ -35,6 +35,7 @@ export default function MainPage() {
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [completedCodes, setCompletedCodes] = useState(new Set());
   const [preferences, setPreferences] = useState({});
+  const [trackOrder, setTrackOrder] = useState([]);
   // IR 수강 중 토글 (IR1: 필수 4학점, IR2: 선택 4학점)
   const [irTaking, setIrTaking] = useState({ ir1: false, ir2: false });
 
@@ -66,6 +67,7 @@ export default function MainPage() {
         const prefRes = await usersAPI.getPreferences();
         if (prefRes.data.preferences) prefs = prefRes.data.preferences;
         setPreferences(prefs);
+        setTrackOrder(prefs.preferred_tracks || []);
       } catch {}
 
       // 저장된 시간표가 있으면 불러오기
@@ -184,7 +186,7 @@ export default function MainPage() {
 
   return (
     <div className="main-page">
-      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} onTrackOrderChange={setTrackOrder} />}
       <header className="main-header">
         <span className="logo">KENTECHTIME</span>
         <span className="semester-chip">{formatSemester(semester)}</span>
@@ -245,7 +247,8 @@ export default function MainPage() {
             allCourses={allCourses}
             userGrade={user?.grade || 1}
             completedCodes={completedCodes}
-            preferredTracks={preferences.preferred_tracks || []}
+            trackOrder={trackOrder}
+            onTrackOrderChange={setTrackOrder}
             onAdd={handleAddCourse}
             onRemove={handleRemoveCourse}
             coursesLoading={coursesLoading}

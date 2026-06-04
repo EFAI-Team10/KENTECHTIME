@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import './TimetableGrid.css';
 
 const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
@@ -69,26 +69,18 @@ function sortCourses(courses, userGrade, trackOrder) {
   });
 }
 
-export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), preferredTracks = [], onAdd, onRemove, coursesLoading = false }) {
-  const [trackOrder, setTrackOrder] = useState([]);
+export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, coursesLoading = false }) {
   const [pickerSlot, setPickerSlot] = useState(null);
-  const initialized = useRef(false);
-
-  // 선호 트랙이 로드되면 초기값으로 반영 (사용자가 수동으로 변경한 경우는 덮어쓰지 않음)
-  useEffect(() => {
-    if (!initialized.current && preferredTracks.length > 0) {
-      setTrackOrder(preferredTracks);
-      initialized.current = true;
-    }
-  }, [preferredTracks]);
 
   const colorMap = {};
   courses.forEach((c, i) => { colorMap[c.id] = SCHEDULE_COLORS[i % SCHEDULE_COLORS.length]; });
 
-  const toggleTrack = (track) =>
-    setTrackOrder(prev =>
-      prev.includes(track) ? prev.filter(t => t !== track) : [...prev, track]
-    );
+  const toggleTrack = (track) => {
+    const next = trackOrder.includes(track)
+      ? trackOrder.filter(t => t !== track)
+      : [...trackOrder, track];
+    onTrackOrderChange?.(next);
+  };
 
   // 셀 [hour:00, hour+1:00) 구간과 겹치는 과목 탐색 (30분 단위 시작 과목 포함)
   const coversCell = (s, day, hour) =>
@@ -136,7 +128,7 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
           })}
         </div>
         {trackOrder.length > 0 && (
-          <button className="ts-reset" onClick={() => setTrackOrder([])}>초기화</button>
+          <button className="ts-reset" onClick={() => onTrackOrderChange?.([])}>초기화</button>
         )}
       </div>
 

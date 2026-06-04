@@ -16,7 +16,7 @@ const ELECTIVE_OPTIONS = [
   { value: 'FR',   label: 'FR (자유학점)' },
 ];
 
-export default function SettingsModal({ onClose }) {
+export default function SettingsModal({ onClose, onTrackOrderChange }) {
   const { user, setUser } = useStore(s => ({ user: s.user, setUser: s.setUser }));
 
   // ── 내 정보 ──
@@ -99,6 +99,7 @@ export default function SettingsModal({ onClose }) {
     setRecPrefDone(false);
     try {
       await usersAPI.savePreferences(recPref);
+      onTrackOrderChange?.(recPref.preferred_tracks || []);
       setRecPrefDone(true);
     } catch {}
     finally { setRecPrefSaving(false); }
