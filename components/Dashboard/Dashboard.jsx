@@ -287,9 +287,15 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                       )}
                       <div className="progress-fill"
                         style={{ width: `${earnedPct}%`, backgroundColor: met ? color : '#E74C3C' }} />
+                      {/* EL4/5 슬롯 독립 fill (학점 총량과 무관하게 이수 여부로 채움) */}
+                      <div className={`el-zone-slot ${elUpperCount >= 1 ? 'done' : elUpperCount + plannedElUpper >= 1 ? 'planned' : ''}`}
+                        style={{ left: '80%', width: '10%', backgroundColor: color }} />
+                      <div className={`el-zone-slot ${elUpperCount >= 2 ? 'done' : elUpperCount + plannedElUpper >= 2 ? 'planned' : ''}`}
+                        style={{ left: '90%', width: '10%', backgroundColor: color }} />
                       <div className="el-zone-divider" style={{ left: '80%' }} />
                       <div className="el-zone-divider" style={{ left: '90%' }} />
                       <div className="el-zone-labels">
+                        <span className="el-zone-tag">EL4/5</span>
                         <span className={elUpperCount >= 1 ? 'done' : elUpperCount + plannedElUpper >= 1 ? 'planned' : ''}>①</span>
                         <span className={elUpperCount >= 2 ? 'done' : elUpperCount + plannedElUpper >= 2 ? 'planned' : ''}>②</span>
                       </div>
