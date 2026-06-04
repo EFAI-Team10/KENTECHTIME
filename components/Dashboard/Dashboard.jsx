@@ -57,6 +57,13 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
     planned[cat] = (planned[cat] || 0) + Number(c.credits || 0);
   }
 
+  // 시간표에서 EL4/5 과목 수 (미리보기용)
+  const plannedElUpper = (currentSchedule || []).filter(c => {
+    if (c.category !== 'EL') return false;
+    const level = parseInt(String(c.code || '').replace(/^EL/, '')[0]);
+    return level >= 4;
+  }).length;
+
   // 시간표 추가 시 각 카테고리 초과분 → FR 미리보기
   const plannedFRExtra = Object.entries(CAT_OVERFLOW_TARGET).reduce((sum, [cat, req]) => {
     const got      = earned[cat] || 0;
@@ -321,12 +328,22 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                   </div>
                 )}
 
-                {/* EL 고학년 필수 + 초과분 */}
+                {/* EL 고학년 필수 바 + 초과분 */}
                 {cat === 'EL' && (
                   <div className="sub-requirements">
-                    <span className={`sub-req-chip ${elUpperCount >= 2 ? 'ok' : 'ng'}`}>
-                      {elUpperCount >= 2 ? '✓' : '✗'} EL4·EL5 과목 {elUpperCount}/2개 필수 이수
-                    </span>
+                    <div className="esp-uni-bar-inline">
+                      {plannedElUpper > 0 && elUpperCount < 2 && (
+                        <div className="esp-uni-fill planned"
+                          style={{ width: `${Math.min(100, ((elUpperCount + plannedElUpper) / 2) * 100)}%` }} />
+                      )}
+                      <div className="esp-uni-fill done"
+                        style={{ width: `${Math.min(100, (elUpperCount / 2) * 100)}%` }} />
+                      <div className="esp-uni-divider" style={{ left: '50%' }} />
+                      <div className="esp-uni-stage-labels">
+                        <span className={`esp-uni-label ${elUpperCount >= 1 ? 'done' : ''}`}>EL4/5 ①</span>
+                        <span className={`esp-uni-label ${elUpperCount >= 2 ? 'done' : ''}`}>EL4/5 ②</span>
+                      </div>
+                    </div>
                     {overflow > 0 && (
                       <span className="sub-req-chip overflow">+{overflow}학점 초과 → FR 산정</span>
                     )}
