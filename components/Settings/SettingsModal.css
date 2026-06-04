@@ -117,6 +117,48 @@
   margin: 2px 0;
 }
 
+/* 스위치형 토글 (막학기 모드 등) */
+.pref-toggle-field .toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #555;
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+}
+
+.pref-toggle-field .toggle {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  background: #ddd;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.pref-toggle-field .toggle.on { background: #4A90D9; }
+
+.pref-toggle-field .toggle-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  transition: left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+
+.pref-toggle-field .toggle.on .toggle-thumb { left: 23px; }
+
 .pref-toggle {
   display: flex;
   align-items: center;

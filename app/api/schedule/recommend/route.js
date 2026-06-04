@@ -12,7 +12,7 @@ export async function POST(request) {
 
   const body = await request.json().catch(() => ({}));
   const { semester, preferences = {} } = body;
-  const maxCredits = preferences.max_credits ?? 21;
+  const maxCredits = preferences.max_credits ?? 16;
 
   try {
     const plans = await generateRecommendations(auth.userId, semester, preferences, 3, null, maxCredits);

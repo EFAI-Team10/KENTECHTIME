@@ -44,7 +44,7 @@ export async function POST(request) {
       day_off:           day_off           || [],
       last_semester:     !!last_semester,
       elective_cats:     elective_cats     || [],
-      max_credits:       max_credits       ?? 21,
+      max_credits:       max_credits       ?? 16,
     }, { onConflict: 'user_id' });
 
   if (error) {
