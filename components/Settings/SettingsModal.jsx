@@ -61,7 +61,7 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
     preferred_tracks: [],
     last_semester: false,
     elective_cats: [],
-    max_credits: 21,
+    max_credits: 16,
   });
   const [recPrefSaving, setRecPrefSaving] = useState(false);
   const [recPrefDone, setRecPrefDone] = useState(false);
@@ -74,7 +74,7 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
           preferred_tracks: normalizePreferredTracks(p.preferred_tracks),
           last_semester:    !!p.last_semester,
           elective_cats:    p.elective_cats || [],
-          max_credits:      p.max_credits   ?? 21,
+          max_credits:      p.max_credits   ?? 16,
         });
       })
       .catch(() => {});
@@ -304,20 +304,23 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
                 type="number"
                 min={4} max={24}
                 value={recPref.max_credits}
-                onChange={e => { setRecPref(p => ({ ...p, max_credits: parseInt(e.target.value) || 21 })); setRecPrefDone(false); }}
+                onChange={e => { setRecPref(p => ({ ...p, max_credits: parseInt(e.target.value) || 16 })); setRecPrefDone(false); }}
                 style={{ width: 64 }}
               />
-              <span style={{ fontSize: 12, color: '#888', marginLeft: 6 }}>학점 / 학기 (기본 21)</span>
+              <span style={{ fontSize: 12, color: '#888', marginLeft: 6 }}>학점 / 학기 (기본 16)</span>
             </div>
             <div className="pref-toggle-field">
-              <label className={`pref-toggle ${recPref.last_semester ? 'active' : ''}`}>
-                <input
-                  type="checkbox"
-                  checked={recPref.last_semester}
-                  onChange={e => { setRecPref(p => ({ ...p, last_semester: e.target.checked })); setRecPrefDone(false); }}
-                />
-                막학기 모드 (최소 4학점만 채워도 됨)
-              </label>
+              <div className="toggle-row">
+                <span>막학기 모드 {recPref.last_semester ? '(최소 4학점만 채움)' : '(끄면 최소 10학점)'}</span>
+                <button
+                  type="button"
+                  className={`toggle ${recPref.last_semester ? 'on' : ''}`}
+                  onClick={() => { setRecPref(p => ({ ...p, last_semester: !p.last_semester })); setRecPrefDone(false); }}
+                  aria-pressed={recPref.last_semester}
+                >
+                  <div className="toggle-thumb" />
+                </button>
+              </div>
             </div>
             <div className="pref-elective-field">
               <span className="pref-elective-label">남는 학점 채울 선호 영역</span>
