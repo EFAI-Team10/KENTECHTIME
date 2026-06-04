@@ -240,7 +240,7 @@ export default function Dashboard({ onImportSuccess }) {
                 {cat === 'EL' && (
                   <div className="sub-requirements">
                     <span className={`sub-req-chip ${elUpperCount >= 2 ? 'ok' : 'ng'}`}>
-                      {elUpperCount >= 2 ? '✓' : '✗'} 4·5학년 과목 {elUpperCount}/2개 필수
+                      {elUpperCount >= 2 ? '✓' : '✗'} EL4·EL5 과목 {elUpperCount}/2개 필수 이수
                     </span>
                   </div>
                 )}
