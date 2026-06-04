@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { coursesAPI } from '@/lib/api-client';
-import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
+import { parseGradeData, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import './Dashboard.css';
 
 // 졸업요건 학점 (학사편람 기준)
@@ -43,7 +43,6 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [overflows, setOverflows] = useState({});
   const [espStages, setEspStages] = useState([]);
   const [espStageReached, setEspStageReached] = useState(-1);
-  const [espAutoCompleted, setEspAutoCompleted] = useState([]);
   const [apCreditCount, setApCreditCount] = useState(0);
   const [apCounted, setApCounted] = useState(0);
   const [efSub, setEfSub] = useState({ math: 0, physics: 0, chem: 0, dl: 0 });
@@ -97,7 +96,6 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
         setOverflows(d.overflows || {});
         setEspStages(d.espStages || []);
         setEspStageReached(d.espStageReached ?? -1);
-        setEspAutoCompleted(d.espAutoCompleted || []);
         setApCreditCount(d.apCreditCount || 0);
         setApCounted(d.apCounted || 0);
         setEfSub(d.efSub || { math: 0, physics: 0, chem: 0, dl: 0 });
@@ -280,6 +278,22 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                         ))}
                       </div>
                     </div>
+                  ) : cat === 'EL' ? (
+                    /* EL 바: 오른쪽 20%를 EL4/5 존으로 분리 */
+                    <div className="progress-bar el-bar-composite">
+                      {plan > 0 && (
+                        <div className="progress-fill progress-planned"
+                          style={{ width: `${planPct}%`, backgroundColor: color }} />
+                      )}
+                      <div className="progress-fill"
+                        style={{ width: `${earnedPct}%`, backgroundColor: met ? color : '#E74C3C' }} />
+                      <div className="el-zone-divider" style={{ left: '80%' }} />
+                      <div className="el-zone-divider" style={{ left: '90%' }} />
+                      <div className="el-zone-labels">
+                        <span className={elUpperCount >= 1 ? 'done' : elUpperCount + plannedElUpper >= 1 ? 'planned' : ''}>①</span>
+                        <span className={elUpperCount >= 2 ? 'done' : elUpperCount + plannedElUpper >= 2 ? 'planned' : ''}>②</span>
+                      </div>
+                    </div>
                   ) : (
                     /* 일반 프로그레스 바 */
                     <div className="progress-bar">
@@ -328,25 +342,10 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                   </div>
                 )}
 
-                {/* EL 고학년 필수 바 + 초과분 */}
-                {cat === 'EL' && (
+                {/* EL 초과분 */}
+                {cat === 'EL' && overflow > 0 && (
                   <div className="sub-requirements">
-                    <div className="esp-uni-bar-inline">
-                      {plannedElUpper > 0 && elUpperCount < 2 && (
-                        <div className="esp-uni-fill planned"
-                          style={{ width: `${Math.min(100, ((elUpperCount + plannedElUpper) / 2) * 100)}%` }} />
-                      )}
-                      <div className="esp-uni-fill done"
-                        style={{ width: `${Math.min(100, (elUpperCount / 2) * 100)}%` }} />
-                      <div className="esp-uni-divider" style={{ left: '50%' }} />
-                      <div className="esp-uni-stage-labels">
-                        <span className={`esp-uni-label ${elUpperCount >= 1 ? 'done' : ''}`}>EL4/5 ①</span>
-                        <span className={`esp-uni-label ${elUpperCount >= 2 ? 'done' : ''}`}>EL4/5 ②</span>
-                      </div>
-                    </div>
-                    {overflow > 0 && (
-                      <span className="sub-req-chip overflow">+{overflow}학점 초과 → FR 산정</span>
-                    )}
+                    <span className="sub-req-chip overflow">+{overflow}학점 초과 → FR 산정</span>
                   </div>
                 )}
 
