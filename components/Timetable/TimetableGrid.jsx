@@ -29,25 +29,34 @@ function sortCourses(courses, userGrade, trackOrder) {
     const isEL        = c.category === 'EL';
     const isEF        = c.category === 'EF';
     const isESP       = c.category === 'ESP';
+    const isMN        = c.category === 'MN';
+    const isHASS      = c.category === 'HASS';
+    const isEN        = c.category === 'EN';
 
     // 1순위: EL + 내 학년 + 선택 트랙
-    if (isEL && gradeMatch && trackMatch)   return [0, trackIdx, 0];
+    if (isEL && gradeMatch && trackMatch)    return [0, trackIdx, 0];
 
-    // 2순위: EL + 내 학년 (트랙 미선택 포함) — ESP·EF보다 항상 우선
-    if (isEL && gradeMatch)                 return [1, 0, 0];
+    // 2순위: EL + 내 학년 아님 + 선택 트랙 (트랙은 맞지만 학년이 다른 EL)
+    if (isEL && !gradeMatch && trackMatch)   return [1, trackIdx, Math.abs(c.target_grade - userGrade)];
 
-    // 3순위: 졸업 필수 공통 영역 (MN/HASS/EN/RC 등) + 학년 제한 없음
-    if (!isEL && !isEF && !isESP && noGrade) return [2, 0, 0];
+    // 3순위: MN + 내 학년 (권장학년 일치)
+    if (isMN && gradeMatch)                  return [2, 0, 0];
 
-    // 4순위: EF + 학년 제한 없음
-    if (isEF && noGrade)                    return [3, 0, 0];
+    // 4순위: EL + 내 학년 (트랙 무관)
+    if (isEL && gradeMatch)                  return [3, 0, 0];
 
-    // 5순위: ESP (언어 과목 — 필수지만 시간표 선택 시 후순위)
-    if (isESP)                              return [4, 0, 0];
+    // 5순위: EF + 학년 제한 없음
+    if (isEF && noGrade)                     return [4, 0, 0];
 
-    // 6순위: 나머지 — 학년 거리순, 그 안에서 선택 트랙 우선
+    // 6순위: HASS·EN + 학년 제한 없음
+    if ((isHASS || isEN) && noGrade)         return [5, 0, 0];
+
+    // 7순위: ESP
+    if (isESP)                               return [6, 0, 0];
+
+    // 8순위: 나머지 — 학년 거리순, 그 안에서 선택 트랙 우선
     const gradeDist = noGrade ? 0.5 : Math.abs(c.target_grade - userGrade);
-    return [5, gradeDist, trackMatch ? trackIdx : 999];
+    return [7, gradeDist, trackMatch ? trackIdx : 999];
   };
 
   return [...courses].sort((a, b) => {
@@ -60,7 +69,7 @@ function sortCourses(courses, userGrade, trackOrder) {
   });
 }
 
-export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, onAdd, onRemove, coursesLoading = false }) {
+export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), onAdd, onRemove, coursesLoading = false }) {
   const [trackOrder, setTrackOrder] = useState([]);
   const [pickerSlot, setPickerSlot] = useState(null);
 
@@ -83,9 +92,10 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
 
   const pickerList = pickerSlot
     ? sortCourses(
-        allCourses.filter(c => (c.timeslots || []).some(s =>
-          coversCell(s, pickerSlot.day, pickerSlot.hour)
-        )),
+        allCourses.filter(c =>
+          !completedCodes.has(c.code) &&  // 기수강 과목 제외
+          (c.timeslots || []).some(s => coversCell(s, pickerSlot.day, pickerSlot.hour))
+        ),
         userGrade,
         trackOrder
       )

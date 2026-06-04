@@ -25,6 +25,7 @@ export default function MainPage() {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [allCourses, setAllCourses] = useState([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
+  const [completedCodes, setCompletedCodes] = useState(new Set());
 
   useEffect(() => {
     setMounted(true);
@@ -35,10 +36,14 @@ export default function MainPage() {
     if (!token) { router.replace('/auth'); return; }
     loadRecommendations();
     setCoursesLoading(true);
-    coursesAPI.getAll({ semester })
-      .then(res => setAllCourses(res.data.courses || []))
-      .catch(() => {})
-      .finally(() => setCoursesLoading(false));
+    Promise.all([
+      coursesAPI.getAll({ semester }),
+      coursesAPI.getCompleted(),
+    ]).then(([allRes, completedRes]) => {
+      setAllCourses(allRes.data.courses || []);
+      const codes = new Set((completedRes.data.courses || []).map(c => c.code).filter(Boolean));
+      setCompletedCodes(codes);
+    }).catch(() => {}).finally(() => setCoursesLoading(false));
   }, [mounted, token]);
 
   const loadRecommendations = async () => {
@@ -185,6 +190,7 @@ export default function MainPage() {
             courses={currentSchedule}
             allCourses={allCourses}
             userGrade={user?.grade || 1}
+            completedCodes={completedCodes}
             onAdd={handleAddCourse}
             onRemove={handleRemoveCourse}
             coursesLoading={coursesLoading}
