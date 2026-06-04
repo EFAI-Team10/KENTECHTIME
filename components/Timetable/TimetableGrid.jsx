@@ -28,22 +28,26 @@ function sortCourses(courses, userGrade, trackOrder) {
     const trackMatch  = trackIdx !== -1;
     const isEL        = c.category === 'EL';
     const isEF        = c.category === 'EF';
+    const isESP       = c.category === 'ESP';
 
-    // 1순위: EL + 내 학년 + 선택 트랙 (트랙 순서 내에서 세부 정렬)
+    // 1순위: EL + 내 학년 + 선택 트랙
     if (isEL && gradeMatch && trackMatch)   return [0, trackIdx, 0];
 
-    // 2순위: 비EL·비EF + 학년 제한 없음 (MN/HASS/EN/ESP 등 졸업 필수 영역)
-    if (!isEL && !isEF && noGrade)          return [1, 0, 0];
+    // 2순위: EL + 내 학년 (트랙 미선택 포함) — ESP·EF보다 항상 우선
+    if (isEL && gradeMatch)                 return [1, 0, 0];
 
-    // 3순위: EF + 학년 제한 없음
-    if (isEF && noGrade)                    return [2, 0, 0];
+    // 3순위: 졸업 필수 공통 영역 (MN/HASS/EN/RC 등) + 학년 제한 없음
+    if (!isEL && !isEF && !isESP && noGrade) return [2, 0, 0];
 
-    // 4순위: EL + 내 학년 + 트랙 미선택
-    if (isEL && gradeMatch && !trackMatch)  return [3, 0, 0];
+    // 4순위: EF + 학년 제한 없음
+    if (isEF && noGrade)                    return [3, 0, 0];
 
-    // 5순위: 나머지 — 학년 거리순, 그 안에서 선택 트랙 우선
+    // 5순위: ESP (언어 과목 — 필수지만 시간표 선택 시 후순위)
+    if (isESP)                              return [4, 0, 0];
+
+    // 6순위: 나머지 — 학년 거리순, 그 안에서 선택 트랙 우선
     const gradeDist = noGrade ? 0.5 : Math.abs(c.target_grade - userGrade);
-    return [4, gradeDist, trackMatch ? trackIdx : 999];
+    return [5, gradeDist, trackMatch ? trackIdx : 999];
   };
 
   return [...courses].sort((a, b) => {
