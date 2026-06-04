@@ -155,8 +155,8 @@
 /* 총계 초과 표시 */
 .total-over { font-size: 11px; color: #E67E22; margin-left: 4px; }
 
-/* ESP 1열 순차 바 */
-.esp-sequential {
+/* ESP 단일 연속 바 */
+.esp-unified {
   padding-left: 44px;
   display: flex;
   flex-direction: column;
@@ -164,47 +164,52 @@
   margin-top: 4px;
 }
 
-.esp-seq-bar {
-  display: flex;
+.esp-uni-bar {
   height: 8px;
-  gap: 2px;
-}
-
-.esp-seq-segment {
-  flex: 1;
   background: #eee;
-  border-radius: 2px;
+  border-radius: 4px;
   position: relative;
   overflow: hidden;
 }
 
-.esp-seq-segment:first-child { border-radius: 4px 2px 2px 4px; }
-.esp-seq-segment:last-child  { border-radius: 2px 4px 4px 2px; }
-
-.esp-seq-fill {
+.esp-uni-fill {
   position: absolute;
   top: 0; left: 0;
   height: 100%;
+  border-radius: 4px;
   transition: width 0.4s ease;
 }
 
-.esp-seq-fill.done    { background: #1A5276; }
-.esp-seq-fill.partial { background: #5dade2; }
-.esp-seq-fill.planned { background: #1A5276; opacity: 0.3; }
+.esp-uni-fill.done    { background: #1A5276; }
+.esp-uni-fill.planned { background: #1A5276; opacity: 0.3; }
 
-.esp-seq-labels {
+.esp-uni-divider {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 2px;
+  background: white;
+  opacity: 0.8;
+}
+
+.esp-uni-labels {
   display: flex;
 }
 
-.esp-seq-label {
+.esp-uni-label {
   flex: 1;
   font-size: 10px;
   text-align: center;
   color: #aaa;
 }
 
-.esp-seq-label.done    { color: #1A5276; font-weight: 700; }
-.esp-seq-label.partial { color: #5dade2; font-weight: 600; }
+.esp-uni-label.done    { color: #1A5276; font-weight: 700; }
+.esp-uni-label.partial { color: #5dade2; font-weight: 600; }
+
+.esp-uni-count {
+  font-size: 10px;
+  color: #888;
+  text-align: right;
+}
 
 /* 수강이력 */
 .history-section {

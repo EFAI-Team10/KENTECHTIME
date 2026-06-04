@@ -272,40 +272,38 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
                   </div>
                 )}
 
-                {/* ESP: 1열 순차 바 (입문 → 중급 → 고급) */}
-                {cat === 'ESP' && espStages.length > 0 && (
-                  <div className="esp-sequential">
-                    <div className="esp-seq-bar">
-                      {espStages.map((stage) => {
-                        const stagePlan = (currentSchedule || []).filter(c =>
-                          stage.codes.includes(c.code)
-                        ).length;
-                        const displayPct = Math.min(100, ((stage.doneCount + stagePlan) / 2) * 100);
-                        const earnedPct2 = (stage.doneCount / 2) * 100;
-                        return (
-                          <div key={stage.label} className="esp-seq-segment">
-                            {stagePlan > 0 && (
-                              <div className="esp-seq-fill planned" style={{ width: `${displayPct}%` }} />
-                            )}
-                            <div className={`esp-seq-fill ${stage.doneCount === 2 ? 'done' : stage.doneCount > 0 ? 'partial' : ''}`}
-                              style={{ width: `${earnedPct2}%` }} />
-                          </div>
-                        );
-                      })}
+                {/* ESP: 단일 연속 바 (전체 6칸) */}
+                {cat === 'ESP' && espStages.length > 0 && (() => {
+                  const TOTAL = 6;
+                  const totalDone = espStages.reduce((s, st) => s + st.doneCount, 0);
+                  const totalPlan = espStages.reduce((s, st) =>
+                    s + Math.min(2 - st.doneCount, (currentSchedule || []).filter(c => st.codes.includes(c.code)).length), 0);
+                  const donePct = (totalDone / TOTAL) * 100;
+                  const planPct = Math.min(100, ((totalDone + totalPlan) / TOTAL) * 100);
+                  return (
+                    <div className="esp-unified">
+                      <div className="esp-uni-bar">
+                        {totalPlan > 0 && <div className="esp-uni-fill planned" style={{ width: `${planPct}%` }} />}
+                        <div className="esp-uni-fill done" style={{ width: `${donePct}%` }} />
+                        {/* 단계 구분선 */}
+                        <div className="esp-uni-divider" style={{ left: '33.33%' }} />
+                        <div className="esp-uni-divider" style={{ left: '66.66%' }} />
+                      </div>
+                      <div className="esp-uni-labels">
+                        {espStages.map(st => (
+                          <span key={st.label}
+                            className={`esp-uni-label ${st.doneCount === 2 ? 'done' : st.doneCount > 0 ? 'partial' : ''}`}>
+                            {st.label} {st.doneCount}/2
+                          </span>
+                        ))}
+                      </div>
+                      <span className="esp-uni-count">{totalDone}/{TOTAL} 이수</span>
+                      {espStageReached > 0 && (
+                        <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
+                      )}
                     </div>
-                    <div className="esp-seq-labels">
-                      {espStages.map(stage => (
-                        <span key={stage.label}
-                          className={`esp-seq-label ${stage.doneCount === 2 ? 'done' : stage.doneCount > 0 ? 'partial' : ''}`}>
-                          {stage.label} {stage.doneCount}/2
-                        </span>
-                      ))}
-                    </div>
-                    {espStageReached > 0 && (
-                      <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
-                    )}
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* FR: 실이수 + 초과 안내 */}
                 {cat === 'FR' && earned.FR > 0 && (
