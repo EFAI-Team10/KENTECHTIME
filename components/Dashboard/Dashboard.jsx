@@ -48,6 +48,8 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [efSub, setEfSub] = useState({ math: 0, physics: 0, chem: 0, dl: 0 });
   const [efSubRequired] = useState({ math: 8, physics: 4, chem: 4, dl: 4 });
   const [elUpperCount, setElUpperCount] = useState(0);
+  const [elCount, setElCount] = useState(0);
+  const EL_SLOTS = 10; // EL 바 슬롯 수 (1과목 = 1/10)
 
   // 시간표 과목 → 카테고리별 계획 학점
   const planned = {};
@@ -56,12 +58,17 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
     planned[cat] = (planned[cat] || 0) + Number(c.credits || 0);
   }
 
-  // 시간표에서 EL4/5 과목 수 (미리보기용)
+  // 시간표 EL 과목 수 (전체 / EL4/5)
+  const plannedElAll = (currentSchedule || []).filter(c => c.category === 'EL').length;
   const plannedElUpper = (currentSchedule || []).filter(c => {
     if (c.category !== 'EL') return false;
     const level = parseInt(String(c.code || '').replace(/^EL/, '')[0]);
     return level >= 4;
   }).length;
+
+  // EL 바: 과목 수 기준 fill (1과목 = 1/10)
+  const elEarnedPct = Math.min(100, (elCount / EL_SLOTS) * 100);
+  const elPlanPct   = Math.min(100, ((elCount + plannedElAll) / EL_SLOTS) * 100);
 
   // 시간표 추가 시 각 카테고리 초과분 → FR 미리보기
   const plannedFRExtra = Object.entries(CAT_OVERFLOW_TARGET).reduce((sum, [cat, req]) => {
@@ -100,6 +107,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
         setApCounted(d.apCounted || 0);
         setEfSub(d.efSub || { math: 0, physics: 0, chem: 0, dl: 0 });
         setElUpperCount(d.elUpperCount || 0);
+        setElCount(d.elCount || 0);
       })
       .catch(() => {});
   };
@@ -279,14 +287,14 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                       </div>
                     </div>
                   ) : cat === 'EL' ? (
-                    /* EL 바: 오른쪽 20%를 EL4/5 존으로 분리 */
+                    /* EL 바: 과목 수 기준 (1과목=1/10), 오른쪽 20%는 EL4/5 존 */
                     <div className="progress-bar el-bar-composite">
-                      {plan > 0 && (
+                      {plannedElAll > 0 && (
                         <div className="progress-fill progress-planned"
-                          style={{ width: `${planPct}%`, backgroundColor: color }} />
+                          style={{ width: `${elPlanPct}%`, backgroundColor: color }} />
                       )}
                       <div className="progress-fill"
-                        style={{ width: `${earnedPct}%`, backgroundColor: met ? color : '#E74C3C' }} />
+                        style={{ width: `${elEarnedPct}%`, backgroundColor: elCount >= EL_SLOTS ? color : '#E74C3C' }} />
                       {/* EL4/5 슬롯 독립 fill — 이수/계획 시에만 렌더 */}
                       {(elUpperCount >= 1 || plannedElUpper >= 1) && (
                         <div className={`el-zone-slot ${elUpperCount >= 1 ? 'done' : 'planned'}`}
@@ -315,10 +323,12 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                   )}
 
                   <div className="credits-col">
-                    <span className="credits-text" style={{ color: met ? color : '#555' }}>
+                    <span className="credits-text" style={{ color: cat === 'EL' ? (elCount >= EL_SLOTS ? color : '#555') : met ? color : '#555' }}>
                       {cat === 'ESP'
                         ? `${got} / ${req}학점`
-                        : <>{got}{plan > 0 && <span className="planned-count">+{plan}</span>} / {req}학점</>
+                        : cat === 'EL'
+                          ? <>{elCount}{plannedElAll > 0 && <span className="planned-count">+{plannedElAll}</span>} / {EL_SLOTS}과목</>
+                          : <>{got}{plan > 0 && <span className="planned-count">+{plan}</span>} / {req}학점</>
                       }
                     </span>
                   </div>

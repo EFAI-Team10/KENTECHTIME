@@ -61,6 +61,8 @@ export async function GET(request) {
   let elUpperCount  = 0;
   const completedEspCodes = new Set();
 
+  let elTotalCount = 0; // 이수한 EL 과목 수 (학점과 무관)
+
   const seenCodes = new Set(); // 같은 과목 코드가 여러 학기로 중복 저장된 경우 1번만 집계
   for (const row of data) {
     const { code, category: storedCat, credits: rawCredits } = row.courses || {};
@@ -100,6 +102,7 @@ export async function GET(request) {
     } else if (category === 'EL' || category === 'GS') {
       earned.EL += cr;
       if (category === 'EL') {
+        elTotalCount++;
         const levelDigit = parseInt(String(code).replace(/^EL/, '')[0]);
         if (levelDigit >= 4) elUpperCount++;
       }
@@ -176,5 +179,7 @@ export async function GET(request) {
     efSubRequired: { math:8, physics:4, chem:4, dl:4 },
     elUpperCount,
     elUpperRequired: 2,
+    elCount: elTotalCount,
+    elSlots: 10,
   });
 }
