@@ -8,14 +8,6 @@ import './onboarding.css';
 
 const STEPS = ['기본 정보', '기수강 과목', '선호도'];
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
-const DAYS = [
-  { value: 'MON', label: '월' },
-  { value: 'TUE', label: '화' },
-  { value: 'WED', label: '수' },
-  { value: 'THU', label: '목' },
-  { value: 'FRI', label: '금' },
-];
-
 export default function OnboardingPage() {
   const router = useRouter();
   const { setToken, setUser } = useStore();
@@ -36,8 +28,6 @@ export default function OnboardingPage() {
   const [prefs, setPrefs] = useState({
     preferred_tracks: [],
     avoid_morning: false,
-    day_off: [],
-    preferred_gap: 60,
   });
 
   useEffect(() => {
@@ -364,22 +354,6 @@ export default function OnboardingPage() {
             </div>
 
             <div className="pref-section">
-              <label className="pref-label">공강 요일</label>
-              <div className="chip-group">
-                {DAYS.map(d => (
-                  <button
-                    key={d.value}
-                    type="button"
-                    className={`chip ${prefs.day_off.includes(d.value) ? 'selected' : ''}`}
-                    onClick={() => togglePrefArray('day_off', d.value)}
-                  >
-                    {d.label}요일
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="pref-section">
               <label className="pref-label">아침 수업 기피 (9:00 이전)</label>
               <div className="toggle-row">
                 <span>{prefs.avoid_morning ? '기피함' : '상관없음'}</span>
@@ -391,20 +365,6 @@ export default function OnboardingPage() {
                   <div className="toggle-thumb" />
                 </button>
               </div>
-            </div>
-
-            <div className="pref-section">
-              <label className="pref-label">최소 공강 시간: {prefs.preferred_gap}분</label>
-              <input
-                type="range"
-                min="0"
-                max="120"
-                step="15"
-                value={prefs.preferred_gap}
-                onChange={e => setPrefs(p => ({ ...p, preferred_gap: Number(e.target.value) }))}
-                className="range-input"
-              />
-              <div className="range-labels"><span>0분</span><span>120분</span></div>
             </div>
 
             <div className="step-footer">

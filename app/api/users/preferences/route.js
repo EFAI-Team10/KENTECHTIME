@@ -40,7 +40,7 @@ export async function POST(request) {
       user_id: auth.userId,
       preferred_tracks:  preferred_tracks  || [],
       avoid_morning:     !!avoid_morning,
-      preferred_gap:     preferred_gap     ?? 60,
+      preferred_gap:     preferred_gap     ?? 0,
       day_off:           day_off           || [],
       last_semester:     !!last_semester,
       elective_cats:     elective_cats     || [],
