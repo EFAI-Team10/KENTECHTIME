@@ -179,6 +179,19 @@
   font-weight: 600;
 }
 
+.pref-chip-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .pref-elective-hint {
   font-size: 11px;
   color: #aaa;

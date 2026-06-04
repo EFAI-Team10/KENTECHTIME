@@ -6,6 +6,7 @@ import useStore from '@/lib/store';
 import './SettingsModal.css';
 
 const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
+const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
 
 const ELECTIVE_OPTIONS = [
   { value: 'EN',   label: 'EN (영어)' },
@@ -51,6 +52,7 @@ export default function SettingsModal({ onClose }) {
 
   // ── 추천 설정 ──
   const [recPref, setRecPref] = useState({
+    preferred_tracks: [],
     last_semester: false,
     elective_cats: [],
     max_credits: 21,
@@ -63,13 +65,24 @@ export default function SettingsModal({ onClose }) {
       .then(res => {
         const p = res.data.preferences;
         if (p) setRecPref({
-          last_semester: !!p.last_semester,
-          elective_cats: p.elective_cats || [],
-          max_credits:   p.max_credits   ?? 21,
+          preferred_tracks: p.preferred_tracks || [],
+          last_semester:    !!p.last_semester,
+          elective_cats:    p.elective_cats || [],
+          max_credits:      p.max_credits   ?? 21,
         });
       })
       .catch(() => {});
   }, []);
+
+  const toggleTrack = (track) => {
+    setRecPref(p => {
+      const tracks = p.preferred_tracks.includes(track)
+        ? p.preferred_tracks.filter(t => t !== track)
+        : [...p.preferred_tracks, track];
+      return { ...p, preferred_tracks: tracks };
+    });
+    setRecPrefDone(false);
+  };
 
   const toggleElectiveCat = (cat) => {
     setRecPref(p => {
@@ -254,6 +267,30 @@ export default function SettingsModal({ onClose }) {
         <div className="settings-section">
           <h3>추천 설정</h3>
           <div className="profile-form">
+            <div className="pref-elective-field">
+              <span className="pref-elective-label">관심 트랙</span>
+              <div className="pref-elective-chips">
+                {TRACKS.map(track => {
+                  const idx = recPref.preferred_tracks.indexOf(track);
+                  const selected = idx !== -1;
+                  return (
+                    <label
+                      key={track}
+                      className={`pref-chip ${selected ? 'selected' : ''}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        onChange={() => toggleTrack(track)}
+                      />
+                      {selected && <span className="pref-chip-order">{idx + 1}</span>}
+                      {track}
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="pref-elective-hint">선택한 순서대로 EL 과목 우선순위가 정해집니다.</p>
+            </div>
             <div className="profile-field">
               <label style={{ width: 80 }}>최대 학점</label>
               <input
