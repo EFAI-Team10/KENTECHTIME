@@ -177,11 +177,10 @@
 .el-zone-labels {
   position: absolute;
   top: 12px;
-  left: 70%;
-  width: 30%;
+  left: 80%;
+  width: 20%;
   display: flex;
-  align-items: center;
-  gap: 2px;
+  justify-content: center;
   pointer-events: none;
 }
 
@@ -194,23 +193,10 @@
 
 .el-zone-slot.done    { opacity: 1; }
 .el-zone-slot.planned { opacity: 0.3; }
-/* 빈 슬롯은 배경(#eee)만 보임 */
-
-.el-zone-labels span {
-  flex: 1;
-  text-align: center;
-  font-size: 10px;
-  color: #bbb;
-  font-weight: 500;
-}
-
-.el-zone-labels span.done    { color: #27AE60; font-weight: 700; }
-.el-zone-labels span.planned { color: #27AE60; opacity: 0.55; }
 
 .el-zone-tag {
   font-size: 10px;
   color: #aaa;
-  margin-right: 3px;
   white-space: nowrap;
 }
 
