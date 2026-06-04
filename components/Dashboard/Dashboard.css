@@ -117,6 +117,11 @@
   margin-bottom: 14px;
 }
 
+/* ESP 자동이수 칩 — 라벨 아래로 */
+.requirement-item-block:has(.esp-uni-bar-inline) .sub-requirements {
+  margin-top: 10px;
+}
+
 .sub-requirements {
   display: flex;
   flex-wrap: wrap;
