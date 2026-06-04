@@ -61,9 +61,11 @@ export async function GET(request) {
   let elUpperCount  = 0;
   const completedEspCodes = new Set();
 
+  const seenCodes = new Set(); // 같은 과목 코드가 여러 학기로 중복 저장된 경우 1번만 집계
   for (const row of data) {
     const { code, category: storedCat, credits: rawCredits } = row.courses || {};
-    if (!code) continue;
+    if (!code || seenCodes.has(code)) continue;
+    seenCodes.add(code);
     const category = resolveCategory(code, storedCat);
 
     let cr = Number(rawCredits) || 0;

@@ -83,7 +83,13 @@ export default function OnboardingPage() {
       return;
     }
     const importCodes = new Set(toImport.map(i => i.code));
-    const matched = allCourses.filter(c => importCodes.has(c.code));
+    // 같은 코드가 여러 학기에 걸쳐 DB에 존재할 수 있으므로 코드당 1개만 선택
+    const seenCodes = new Set();
+    const matched = allCourses.filter(c => {
+      if (!importCodes.has(c.code) || seenCodes.has(c.code)) return false;
+      seenCodes.add(c.code);
+      return true;
+    });
     const matchedCodes = new Set(matched.map(c => c.code));
     const unmatched = [...importCodes].filter(code => !matchedCodes.has(code));
     setPortalPreview({ matched, unmatched, external });
