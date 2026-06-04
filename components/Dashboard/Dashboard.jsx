@@ -111,7 +111,7 @@ export default function Dashboard({ onImportSuccess }) {
       await coursesAPI.addExternal({
         name: extForm.name.trim(),
         source: extForm.source.trim(),
-        credits: parseInt(extForm.credits, 10),
+        credits: parseFloat(extForm.credits),
         category: extForm.category,
       });
       setExtDone(true);
@@ -464,7 +464,7 @@ export default function Dashboard({ onImportSuccess }) {
                         <label>학점 <span className="required">*</span></label>
                         <input
                           type="number"
-                          min="1" max="12"
+                          min="0.5" max="12" step="0.5"
                           placeholder="3"
                           value={extForm.credits}
                           onChange={e => setExtForm(f => ({ ...f, credits: e.target.value }))}
