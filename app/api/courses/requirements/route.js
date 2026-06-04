@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from '@/lib/server/supabase';
 const PREFIX_TO_CAT = {
   EF:'EF', EL:'EL', EN:'EN', ES:'ESP', FR:'FR', GR:'GR',
   HA:'HASS', IR:'IR', MN:'MN', RC:'RC', VC:'VC', CA:'CAPS',
+  GS:'GS', // 대학원 과목 (졸업학점 EL로 인정)
 };
 function resolveCategory(code, stored) {
   const fullPrefix = String(code || '').match(/^[A-Z]+/)?.[0] ?? '';
@@ -106,12 +107,14 @@ export async function GET(request) {
         else if (EF_DL.has(code))   efSub.dl      += cr;
       }
 
-    } else if (category === 'EL') {
+    } else if (category === 'EL' || category === 'GS') {
+      // GS(대학원 과목)은 EL로 합산
       earned.EL += cr;
       earned.total += cr;
-      // EL 4/5 앞자리 과목 카운트 (고학년 전공심화)
-      const levelDigit = parseInt(String(code).replace(/^EL/, '')[0]);
-      if (levelDigit >= 4) elUpperCount++;
+      if (category === 'EL') {
+        const levelDigit = parseInt(String(code).replace(/^EL/, '')[0]);
+        if (levelDigit >= 4) elUpperCount++;
+      }
 
     } else {
       earned[category] = (earned[category] || 0) + cr;

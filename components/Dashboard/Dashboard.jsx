@@ -11,9 +11,9 @@ const CAT_COLORS = {
   EL: '#27AE60', EF: '#4A90D9', VC: '#8E44AD',
   MN: '#F39C12', HASS: '#E74C3C', ESP: '#1A5276',
   IR: '#16A085', CAPS: '#626567', EN: '#2471A3',
-  FR: '#717D7E', RC: '#196F3D', GR: '#CA6F1E',
+  FR: '#717D7E', RC: '#196F3D', GR: '#CA6F1E', GS: '#6C3483',
 };
-const CATEGORIES = ['EF','EL','VC','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR'];
+const CATEGORIES = ['EF','EL','VC','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
 const CAT_ORDER = ['EF','VC','EL','MN','HASS','EN','IR','CAPS','ESP','RC','FR','GR'];
 
 

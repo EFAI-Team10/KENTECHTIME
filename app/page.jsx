@@ -44,7 +44,13 @@ export default function MainPage() {
   const loadRecommendations = async () => {
     setLoading(true);
     try {
-      const res = await scheduleAPI.recommend({ semester });
+      // 저장된 사용자 선호도 로드 후 추천에 반영
+      let preferences = {};
+      try {
+        const prefRes = await usersAPI.getPreferences();
+        if (prefRes.data.preferences) preferences = prefRes.data.preferences;
+      } catch {}
+      const res = await scheduleAPI.recommend({ semester, preferences });
       setPlans(res.data.plans);
       if (res.data.plans.length > 0) {
         setCurrentSchedule(res.data.plans[0]);

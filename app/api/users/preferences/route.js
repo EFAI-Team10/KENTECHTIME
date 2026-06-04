@@ -31,17 +31,20 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { preferred_tracks, avoid_morning, preferred_gap, day_off } = body;
+  const { preferred_tracks, avoid_morning, preferred_gap, day_off, last_semester, elective_cats, max_credits } = body;
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase
     .from('user_preferences')
     .upsert({
       user_id: auth.userId,
-      preferred_tracks: preferred_tracks || [],
-      avoid_morning: !!avoid_morning,
-      preferred_gap: preferred_gap ?? 60,
-      day_off: day_off || [],
+      preferred_tracks:  preferred_tracks  || [],
+      avoid_morning:     !!avoid_morning,
+      preferred_gap:     preferred_gap     ?? 60,
+      day_off:           day_off           || [],
+      last_semester:     !!last_semester,
+      elective_cats:     elective_cats     || [],
+      max_credits:       max_credits       ?? 21,
     }, { onConflict: 'user_id' });
 
   if (error) {

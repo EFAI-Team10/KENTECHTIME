@@ -112,6 +112,79 @@
   font-weight: 600;
 }
 
+/* 추천 설정 */
+.pref-toggle-field {
+  margin: 2px 0;
+}
+
+.pref-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  padding: 8px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  transition: all 0.15s;
+}
+
+.pref-toggle input { accent-color: #4A90D9; cursor: pointer; }
+
+.pref-toggle.active {
+  border-color: #4A90D9;
+  background: #f0f7ff;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.pref-elective-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pref-elective-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+}
+
+.pref-elective-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pref-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 20px;
+  font-size: 12px;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pref-chip input { display: none; }
+
+.pref-chip.selected {
+  border-color: #4A90D9;
+  background: #4A90D9;
+  color: white;
+  font-weight: 600;
+}
+
+.pref-elective-hint {
+  font-size: 11px;
+  color: #aaa;
+  margin: 0;
+}
+
 /* 방식 선택 */
 .settings-mode-select {
   display: flex;
@@ -326,6 +399,7 @@
 .cat-EN  { background: #EAF2FF; color: #2471A3; }
 .cat-RC  { background: #F0FFF0; color: #196F3D; }
 .cat-FR  { background: #FDFEFE; color: #717D7E; }
+.cat-GS  { background: #F5EEF8; color: #6C3483; }
 
 .course-item {
   display: flex;

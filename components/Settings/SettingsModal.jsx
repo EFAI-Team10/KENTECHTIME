@@ -5,7 +5,15 @@ import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gr
 import useStore from '@/lib/store';
 import './SettingsModal.css';
 
-const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR'];
+const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
+
+const ELECTIVE_OPTIONS = [
+  { value: 'EN',   label: 'EN (영어)' },
+  { value: 'HASS', label: 'HASS (인문사회)' },
+  { value: 'MN',   label: 'MN (경영)' },
+  { value: 'EL',   label: 'EL (전공선택)' },
+  { value: 'FR',   label: 'FR (학점교류)' },
+];
 
 export default function SettingsModal({ onClose }) {
   const { user, setUser } = useStore(s => ({ user: s.user, setUser: s.setUser }));
@@ -39,6 +47,48 @@ export default function SettingsModal({ onClose }) {
     } finally {
       setProfileSaving(false);
     }
+  };
+
+  // ── 추천 설정 ──
+  const [recPref, setRecPref] = useState({
+    last_semester: false,
+    elective_cats: [],
+    max_credits: 21,
+  });
+  const [recPrefSaving, setRecPrefSaving] = useState(false);
+  const [recPrefDone, setRecPrefDone] = useState(false);
+
+  useEffect(() => {
+    usersAPI.getPreferences()
+      .then(res => {
+        const p = res.data.preferences;
+        if (p) setRecPref({
+          last_semester: !!p.last_semester,
+          elective_cats: p.elective_cats || [],
+          max_credits:   p.max_credits   ?? 21,
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleElectiveCat = (cat) => {
+    setRecPref(p => {
+      const cats = p.elective_cats.includes(cat)
+        ? p.elective_cats.filter(c => c !== cat)
+        : [...p.elective_cats, cat];
+      return { ...p, elective_cats: cats };
+    });
+    setRecPrefDone(false);
+  };
+
+  const handleRecPrefSave = async () => {
+    setRecPrefSaving(true);
+    setRecPrefDone(false);
+    try {
+      await usersAPI.savePreferences(recPref);
+      setRecPrefDone(true);
+    } catch {}
+    finally { setRecPrefSaving(false); }
   };
 
   const [mode, setMode] = useState('choose'); // 'choose' | 'portal' | 'manual'
@@ -196,6 +246,59 @@ export default function SettingsModal({ onClose }) {
               disabled={profileSaving}
             >
               {profileSaving ? '저장 중...' : '저장'}
+            </button>
+          </div>
+        </div>
+
+        {/* ── 추천 설정 ── */}
+        <div className="settings-section">
+          <h3>추천 설정</h3>
+          <div className="profile-form">
+            <div className="profile-field">
+              <label style={{ width: 80 }}>최대 학점</label>
+              <input
+                type="number"
+                min={4} max={24}
+                value={recPref.max_credits}
+                onChange={e => { setRecPref(p => ({ ...p, max_credits: parseInt(e.target.value) || 21 })); setRecPrefDone(false); }}
+                style={{ width: 64 }}
+              />
+              <span style={{ fontSize: 12, color: '#888', marginLeft: 6 }}>학점 / 학기 (기본 21)</span>
+            </div>
+            <div className="pref-toggle-field">
+              <label className={`pref-toggle ${recPref.last_semester ? 'active' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={recPref.last_semester}
+                  onChange={e => { setRecPref(p => ({ ...p, last_semester: e.target.checked })); setRecPrefDone(false); }}
+                />
+                막학기 모드 (최소 4학점만 채워도 됨)
+              </label>
+            </div>
+            <div className="pref-elective-field">
+              <span className="pref-elective-label">남는 학점 채울 선호 영역</span>
+              <div className="pref-elective-chips">
+                {ELECTIVE_OPTIONS.map(({ value, label }) => (
+                  <label
+                    key={value}
+                    className={`pref-chip ${recPref.elective_cats.includes(value) ? 'selected' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={recPref.elective_cats.includes(value)}
+                      onChange={() => toggleElectiveCat(value)}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <p className="pref-elective-hint">선택 안 하면 기본 순서로 채웁니다.</p>
+            </div>
+          </div>
+          <div className="settings-btns">
+            {recPrefDone && <span className="profile-saved">저장되었습니다</span>}
+            <button className="btn-primary" onClick={handleRecPrefSave} disabled={recPrefSaving}>
+              {recPrefSaving ? '저장 중...' : '저장'}
             </button>
           </div>
         </div>
