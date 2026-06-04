@@ -7,6 +7,8 @@ const PREFIX_TO_CAT = {
   GS:'GS',
 };
 function resolveCategory(code, stored) {
+  // AP 학점 코드(예: F000017)는 저장 카테고리와 무관하게 EF로 인정
+  if (/^[A-Z]\d{6}$/.test(String(code || ''))) return 'EF';
   const fullPrefix = String(code || '').match(/^[A-Z]+/)?.[0] ?? '';
   for (let len = fullPrefix.length; len >= 1; len--) {
     const mapped = PREFIX_TO_CAT[fullPrefix.slice(0, len)];
