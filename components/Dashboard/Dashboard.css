@@ -155,58 +155,56 @@
 /* 총계 초과 표시 */
 .total-over { font-size: 11px; color: #E67E22; margin-left: 4px; }
 
-/* ESP 단계 바 */
-.esp-stages {
+/* ESP 1열 순차 바 */
+.esp-sequential {
+  padding-left: 44px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding-left: 44px;
-  margin-top: 2px;
+  gap: 4px;
+  margin-top: 4px;
 }
 
-.esp-stage-row {
+.esp-seq-bar {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  height: 8px;
+  gap: 2px;
 }
 
-.esp-stage-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #666;
-  width: 24px;
-  flex-shrink: 0;
-}
-
-.esp-stage-bar {
+.esp-seq-segment {
   flex: 1;
-  height: 6px;
   background: #eee;
-  border-radius: 3px;
-  overflow: hidden;
+  border-radius: 2px;
   position: relative;
+  overflow: hidden;
 }
 
-.esp-stage-fill {
+.esp-seq-segment:first-child { border-radius: 4px 2px 2px 4px; }
+.esp-seq-segment:last-child  { border-radius: 2px 4px 4px 2px; }
+
+.esp-seq-fill {
   position: absolute;
   top: 0; left: 0;
   height: 100%;
-  border-radius: 3px;
   transition: width 0.4s ease;
-  background: #e0e0e0;
 }
 
-.esp-stage-fill.done    { background: #1A5276; }
-.esp-stage-fill.partial { background: #5dade2; }
-.esp-stage-fill.planned { background: #1A5276; opacity: 0.3; }
+.esp-seq-fill.done    { background: #1A5276; }
+.esp-seq-fill.partial { background: #5dade2; }
+.esp-seq-fill.planned { background: #1A5276; opacity: 0.3; }
 
-.esp-stage-count {
+.esp-seq-labels {
+  display: flex;
+}
+
+.esp-seq-label {
+  flex: 1;
   font-size: 10px;
-  color: #888;
-  width: 24px;
-  text-align: right;
-  flex-shrink: 0;
+  text-align: center;
+  color: #aaa;
 }
+
+.esp-seq-label.done    { color: #1A5276; font-weight: 700; }
+.esp-seq-label.partial { color: #5dade2; font-weight: 600; }
 
 /* 수강이력 */
 .history-section {

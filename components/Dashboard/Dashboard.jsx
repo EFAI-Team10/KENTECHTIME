@@ -272,31 +272,37 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
                   </div>
                 )}
 
-                {/* ESP: 단계별 바 */}
-                {cat === 'ESP' && (
-                  <div className="esp-stages">
-                    {espStages.map((stage) => {
-                      const stagePlan = (currentSchedule || []).filter(c =>
-                        stage.codes.includes(c.code)
-                      ).length;
-                      const total = stage.doneCount + stagePlan;
-                      return (
-                        <div key={stage.label} className="esp-stage-row">
-                          <span className="esp-stage-label">{stage.label}</span>
-                          <div className="esp-stage-bar">
+                {/* ESP: 1열 순차 바 (입문 → 중급 → 고급) */}
+                {cat === 'ESP' && espStages.length > 0 && (
+                  <div className="esp-sequential">
+                    <div className="esp-seq-bar">
+                      {espStages.map((stage) => {
+                        const stagePlan = (currentSchedule || []).filter(c =>
+                          stage.codes.includes(c.code)
+                        ).length;
+                        const displayPct = Math.min(100, ((stage.doneCount + stagePlan) / 2) * 100);
+                        const earnedPct2 = (stage.doneCount / 2) * 100;
+                        return (
+                          <div key={stage.label} className="esp-seq-segment">
                             {stagePlan > 0 && (
-                              <div className="esp-stage-fill planned"
-                                style={{ width: `${Math.min(100, (total / 2) * 100)}%` }} />
+                              <div className="esp-seq-fill planned" style={{ width: `${displayPct}%` }} />
                             )}
-                            <div className={`esp-stage-fill ${stage.doneCount === 2 ? 'done' : stage.doneCount > 0 ? 'partial' : ''}`}
-                              style={{ width: `${(stage.doneCount / 2) * 100}%` }} />
+                            <div className={`esp-seq-fill ${stage.doneCount === 2 ? 'done' : stage.doneCount > 0 ? 'partial' : ''}`}
+                              style={{ width: `${earnedPct2}%` }} />
                           </div>
-                          <span className="esp-stage-count">{stage.doneCount}/2</span>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
+                    <div className="esp-seq-labels">
+                      {espStages.map(stage => (
+                        <span key={stage.label}
+                          className={`esp-seq-label ${stage.doneCount === 2 ? 'done' : stage.doneCount > 0 ? 'partial' : ''}`}>
+                          {stage.label} {stage.doneCount}/2
+                        </span>
+                      ))}
+                    </div>
                     {espStageReached > 0 && (
-                      <span className="sub-req-chip ap" style={{ marginTop: 4 }}>↑ 이전 단계 자동 이수 인정</span>
+                      <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
                     )}
                   </div>
                 )}
