@@ -14,8 +14,10 @@ export default function Chat({ semester, onScheduleUpdate }) {
   const [loading, setLoading] = useState(false);
   const currentSchedule = useStore(s => s.currentSchedule);
   const bottomRef = useRef(null);
+  const isInitial = useRef(true);
 
   useEffect(() => {
+    if (isInitial.current) { isInitial.current = false; return; }
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
