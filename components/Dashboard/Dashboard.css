@@ -112,6 +112,11 @@
   gap: 4px;
 }
 
+/* ESP 행은 라벨 공간 확보 */
+.requirement-item-block:has(.esp-uni-bar-inline) {
+  margin-bottom: 14px;
+}
+
 .sub-requirements {
   display: flex;
   flex-wrap: wrap;
@@ -155,13 +160,21 @@
 /* 총계 초과 표시 */
 .total-over { font-size: 11px; color: #E67E22; margin-left: 4px; }
 
-/* ESP 단일 연속 바 */
-.esp-unified {
-  padding-left: 44px;
+/* ESP 단일 연속 바 (requirement-item 행 내부에 인라인) */
+.esp-uni-bar-inline {
+  flex: 1;
+  height: 10px;
+  background: #eee;
+  border-radius: 5px;
+  position: relative;
+  overflow: visible; /* 라벨이 바 아래로 나오도록 */
+}
+
+.esp-uni-stage-labels {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 4px;
+  position: absolute;
+  top: 13px;
+  left: 0; right: 0;
 }
 
 .esp-uni-bar {

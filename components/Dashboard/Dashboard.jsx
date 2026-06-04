@@ -206,23 +206,55 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
             const earnedPct = Math.min(100, (got / req) * 100);
             const planPct   = Math.min(100, ((got + plan) / req) * 100);
 
+            // ESP: 전용 바 계산
+            const espTotal = 6;
+            const espDone  = cat === 'ESP' ? espStages.reduce((s, st) => s + st.doneCount, 0) : 0;
+            const espPlan  = cat === 'ESP' ? espStages.reduce((s, st) =>
+              s + Math.min(2 - st.doneCount, (currentSchedule || []).filter(c => st.codes.includes(c.code)).length), 0) : 0;
+
             return (
               <div key={cat} className="requirement-item-block">
                 <div className="requirement-item">
                   <span className="cat-label">{cat}</span>
-                  <div className="progress-bar">
-                    {/* 계획(시간표) 과목 — 반투명 배경 */}
-                    {plan > 0 && (
-                      <div className="progress-fill progress-planned"
-                        style={{ width: `${planPct}%`, backgroundColor: color }} />
-                    )}
-                    {/* 기이수 — 진한 색 */}
-                    <div className="progress-fill"
-                      style={{ width: `${earnedPct}%`, backgroundColor: met ? color : '#E74C3C' }} />
-                  </div>
+
+                  {cat === 'ESP' && espStages.length > 0 ? (
+                    /* ESP 단일 연속 바 */
+                    <div className="esp-uni-bar-inline">
+                      {espPlan > 0 && (
+                        <div className="esp-uni-fill planned"
+                          style={{ width: `${Math.min(100, ((espDone + espPlan) / espTotal) * 100)}%` }} />
+                      )}
+                      <div className="esp-uni-fill done"
+                        style={{ width: `${(espDone / espTotal) * 100}%` }} />
+                      <div className="esp-uni-divider" style={{ left: '33.33%' }} />
+                      <div className="esp-uni-divider" style={{ left: '66.66%' }} />
+                      <div className="esp-uni-stage-labels">
+                        {espStages.map(st => (
+                          <span key={st.label}
+                            className={`esp-uni-label ${st.doneCount === 2 ? 'done' : st.doneCount > 0 ? 'partial' : ''}`}>
+                            {st.label}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    /* 일반 프로그레스 바 */
+                    <div className="progress-bar">
+                      {plan > 0 && (
+                        <div className="progress-fill progress-planned"
+                          style={{ width: `${planPct}%`, backgroundColor: color }} />
+                      )}
+                      <div className="progress-fill"
+                        style={{ width: `${earnedPct}%`, backgroundColor: met ? color : '#E74C3C' }} />
+                    </div>
+                  )}
+
                   <div className="credits-col">
                     <span className="credits-text" style={{ color: met ? color : '#555' }}>
-                      {got}{plan > 0 ? `+${plan}` : ''} / {req}학점
+                      {cat === 'ESP'
+                        ? `${got} / ${req}학점`
+                        : `${got}${plan > 0 ? `+${plan}` : ''} / ${req}학점`
+                      }
                     </span>
                   </div>
                 </div>
@@ -272,38 +304,12 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
                   </div>
                 )}
 
-                {/* ESP: 단일 연속 바 (전체 6칸) */}
-                {cat === 'ESP' && espStages.length > 0 && (() => {
-                  const TOTAL = 6;
-                  const totalDone = espStages.reduce((s, st) => s + st.doneCount, 0);
-                  const totalPlan = espStages.reduce((s, st) =>
-                    s + Math.min(2 - st.doneCount, (currentSchedule || []).filter(c => st.codes.includes(c.code)).length), 0);
-                  const donePct = (totalDone / TOTAL) * 100;
-                  const planPct = Math.min(100, ((totalDone + totalPlan) / TOTAL) * 100);
-                  return (
-                    <div className="esp-unified">
-                      <div className="esp-uni-bar">
-                        {totalPlan > 0 && <div className="esp-uni-fill planned" style={{ width: `${planPct}%` }} />}
-                        <div className="esp-uni-fill done" style={{ width: `${donePct}%` }} />
-                        {/* 단계 구분선 */}
-                        <div className="esp-uni-divider" style={{ left: '33.33%' }} />
-                        <div className="esp-uni-divider" style={{ left: '66.66%' }} />
-                      </div>
-                      <div className="esp-uni-labels">
-                        {espStages.map(st => (
-                          <span key={st.label}
-                            className={`esp-uni-label ${st.doneCount === 2 ? 'done' : st.doneCount > 0 ? 'partial' : ''}`}>
-                            {st.label} {st.doneCount}/2
-                          </span>
-                        ))}
-                      </div>
-                      <span className="esp-uni-count">{totalDone}/{TOTAL} 이수</span>
-                      {espStageReached > 0 && (
-                        <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
-                      )}
-                    </div>
-                  );
-                })()}
+                {/* ESP 이전 단계 자동완료 안내 */}
+                {cat === 'ESP' && espStageReached > 0 && (
+                  <div className="sub-requirements">
+                    <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
+                  </div>
+                )}
 
                 {/* FR: 실이수 + 초과 안내 */}
                 {cat === 'FR' && earned.FR > 0 && (
