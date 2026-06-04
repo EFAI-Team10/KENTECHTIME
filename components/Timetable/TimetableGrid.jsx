@@ -116,7 +116,10 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
       <div className="track-selector">
         <span className="ts-label">트랙 우선순위</span>
         <div className="ts-checks">
-          {TRACKS.map(track => {
+          {[
+            ...trackOrder.filter(t => TRACKS.includes(t)),   // 선택된 트랙: 우선순위 순
+            ...TRACKS.filter(t => !trackOrder.includes(t)),  // 미선택 트랙: 기본 순
+          ].map(track => {
             const idx = trackOrder.indexOf(track);
             const sel = idx !== -1;
             return (
