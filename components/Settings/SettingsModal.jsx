@@ -7,6 +7,12 @@ import './SettingsModal.css';
 
 const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
+const TRACK_ALIAS = { '원자력': '재료/화학', 'AI': '인공지능', '신소재': '재료/화학' };
+function normalizePreferredTracks(arr) {
+  return (arr || [])
+    .map(t => TRACK_ALIAS[t] || t)
+    .filter((t, i, a) => TRACKS.includes(t) && a.indexOf(t) === i);
+}
 
 const ELECTIVE_OPTIONS = [
   { value: 'EN',   label: 'EN (창업)' },
@@ -65,7 +71,7 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
       .then(res => {
         const p = res.data.preferences;
         if (p) setRecPref({
-          preferred_tracks: p.preferred_tracks || [],
+          preferred_tracks: normalizePreferredTracks(p.preferred_tracks),
           last_semester:    !!p.last_semester,
           elective_cats:    p.elective_cats || [],
           max_credits:      p.max_credits   ?? 21,

@@ -1,5 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
+
+const VALID_TRACKS = ['전기/전자', '재료/화학', '인공지능'];
+const TRACK_ALIAS = { '원자력': '재료/화학', 'AI': '인공지능', '신소재': '재료/화학' };
+function normalizePreferredTracks(arr) {
+  return (arr || [])
+    .map(t => TRACK_ALIAS[t] || t)
+    .filter((t, i, a) => VALID_TRACKS.includes(t) && a.indexOf(t) === i);
+}
 import { useRouter } from 'next/navigation';
 import { GoogleLogin } from '@react-oauth/google';
 
@@ -67,7 +75,7 @@ export default function MainPage() {
         const prefRes = await usersAPI.getPreferences();
         if (prefRes.data.preferences) prefs = prefRes.data.preferences;
         setPreferences(prefs);
-        setTrackOrder(prefs.preferred_tracks || []);
+        setTrackOrder(normalizePreferredTracks(prefs.preferred_tracks));
       } catch {}
 
       // 저장된 시간표가 있으면 불러오기
