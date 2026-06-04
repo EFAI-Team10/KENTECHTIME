@@ -9,11 +9,11 @@ const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC',
 const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
 
 const ELECTIVE_OPTIONS = [
-  { value: 'EN',   label: 'EN (영어)' },
+  { value: 'EN',   label: 'EN (창업)' },
   { value: 'HASS', label: 'HASS (인문사회)' },
-  { value: 'MN',   label: 'MN (경영)' },
+  { value: 'MN',   label: 'MN (필수교양)' },
   { value: 'EL',   label: 'EL (전공선택)' },
-  { value: 'FR',   label: 'FR (학점교류)' },
+  { value: 'FR',   label: 'FR (자유학점)' },
 ];
 
 export default function SettingsModal({ onClose }) {
