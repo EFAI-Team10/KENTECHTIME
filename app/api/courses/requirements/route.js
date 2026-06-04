@@ -141,20 +141,21 @@ export async function GET(request) {
     earned.ESP +
     frForGrad;
 
-  // ESP 단계별 이수 현황
-  const espStages = ESP_STAGES.map(({ label, codes }) => ({
-    label,
-    codes,
-    doneCount: codes.filter(c => completedEspCodes.has(c)).length,
-  }));
-
-  // ESP 이전 단계 자동 완료 처리
+  // ESP: 실제 이수한 최고 단계 인덱스 산출
   let espStageReached = -1;
   for (let i = ESP_STAGES.length - 1; i >= 0; i--) {
     if (ESP_STAGES[i].codes.some(c => completedEspCodes.has(c))) {
       espStageReached = i; break;
     }
   }
+
+  // ESP 단계별 이수 현황 — 상위 단계 이수 시 하위 단계 자동 완료(2/2) 처리
+  const espStages = ESP_STAGES.map(({ label, codes }, idx) => {
+    const actualDone    = codes.filter(c => completedEspCodes.has(c)).length;
+    const effectiveDone = espStageReached > idx ? 2 : actualDone; // 상위 단계 있으면 이전 단계 완료 간주
+    return { label, codes, doneCount: effectiveDone, actualDoneCount: actualDone };
+  });
+
   const espAutoCompleted = espStageReached > 0
     ? ESP_STAGES.slice(0, espStageReached).flatMap(s => s.codes)
     : [];
