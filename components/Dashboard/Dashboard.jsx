@@ -414,7 +414,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                       </div>
                     ))}
                 </div>
-              });
+              ));
             })()}
           </div>
         )}
