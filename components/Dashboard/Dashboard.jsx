@@ -7,6 +7,8 @@ import './Dashboard.css';
 
 // 졸업요건 학점 (학사편람 기준)
 const REQUIRED = { VC: 8, EF: 28, EL: 40, MN: 16, HASS: 4, ESP: 4, IR: 4, CAPS: 4, EN: 4, FR: 12, RC: 4, total: 128 };
+// FR overflow 계산 대상 카테고리 (요구학점이 있는 카테고리)
+const CAT_OVERFLOW_TARGET = { VC: 8, EF: 28, EL: 40, MN: 16, HASS: 4, IR: 4, CAPS: 4, EN: 4, RC: 4 };
 const CAT_COLORS = {
   EL: '#27AE60', EF: '#4A90D9', VC: '#8E44AD',
   MN: '#F39C12', HASS: '#E74C3C', ESP: '#1A5276',
@@ -37,6 +39,17 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
     const cat = c.category || 'EL';
     planned[cat] = (planned[cat] || 0) + Number(c.credits || 0);
   }
+
+  // 시간표 추가 시 각 카테고리 초과분 → FR 미리보기
+  const plannedFRExtra = Object.entries(CAT_OVERFLOW_TARGET).reduce((sum, [cat, req]) => {
+    const got      = earned[cat] || 0;
+    const plan     = planned[cat] || 0;
+    const alreadyOver = Math.max(0, got - req);        // 이미 earned.FR에 반영된 초과분
+    const projected   = Math.max(0, got + plan - req); // earned+planned 기준 초과분
+    return sum + Math.max(0, projected - alreadyOver);
+  }, 0);
+  // FR 바의 계획 학점 = 직접 FR 과목 + 타 카테고리 초과 예정분
+  planned['FR'] = (planned['FR'] || 0) + plannedFRExtra;
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState('portal');
   const [pasteText, setPasteText] = useState('');
