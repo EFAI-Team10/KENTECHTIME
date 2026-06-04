@@ -7,7 +7,7 @@ import useStore from '@/lib/store';
 import './onboarding.css';
 
 const STEPS = ['기본 정보', '기수강 과목', '선호도'];
-const TRACKS = ['AI', '신소재', '에너지그리드', '공통'];
+const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
 const DAYS = [
   { value: 'MON', label: '월' },
   { value: 'TUE', label: '화' },
