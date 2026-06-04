@@ -34,6 +34,7 @@ export default function MainPage() {
   const [allCourses, setAllCourses] = useState([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [completedCodes, setCompletedCodes] = useState(new Set());
+  const [preferences, setPreferences] = useState({});
   // IR 수강 중 토글 (IR1: 필수 4학점, IR2: 선택 4학점)
   const [irTaking, setIrTaking] = useState({ ir1: false, ir2: false });
 
@@ -44,7 +45,7 @@ export default function MainPage() {
   useEffect(() => {
     if (!mounted) return;
     if (!token) { router.replace('/auth'); return; }
-    loadRecommendations();
+    initializePage();
     setCoursesLoading(true);
     Promise.all([
       coursesAPI.getAll({ semester }),
@@ -56,16 +57,58 @@ export default function MainPage() {
     }).catch(() => {}).finally(() => setCoursesLoading(false));
   }, [mounted, token]);
 
+  const initializePage = async () => {
+    setLoading(true);
+    try {
+      // 선호도 먼저 로드
+      let prefs = {};
+      try {
+        const prefRes = await usersAPI.getPreferences();
+        if (prefRes.data.preferences) prefs = prefRes.data.preferences;
+        setPreferences(prefs);
+      } catch {}
+
+      // 저장된 시간표가 있으면 불러오기
+      try {
+        const myRes = await scheduleAPI.getMy(semester);
+        const rows = myRes.data.schedule || [];
+        if (rows.length > 0) {
+          const saved = rows.map(row => ({ ...row.courses })).filter(c => c.id);
+          if (saved.length > 0) {
+            setCurrentSchedule(saved);
+            setPlans([saved]);
+            setSelectedPlan(0);
+            return;
+          }
+        }
+      } catch {}
+
+      // 저장된 시간표 없으면 추천 생성
+      const res = await scheduleAPI.recommend({ semester, preferences: prefs });
+      setPlans(res.data.plans);
+      if (res.data.plans.length > 0) {
+        setCurrentSchedule(res.data.plans[0]);
+        setSelectedPlan(0);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadRecommendations = async () => {
     setLoading(true);
     try {
-      // 저장된 사용자 선호도 로드 후 추천에 반영
-      let preferences = {};
+      let prefs = preferences;
       try {
         const prefRes = await usersAPI.getPreferences();
-        if (prefRes.data.preferences) preferences = prefRes.data.preferences;
+        if (prefRes.data.preferences) {
+          prefs = prefRes.data.preferences;
+          setPreferences(prefs);
+        }
       } catch {}
-      const res = await scheduleAPI.recommend({ semester, preferences });
+      const res = await scheduleAPI.recommend({ semester, preferences: prefs });
       setPlans(res.data.plans);
       if (res.data.plans.length > 0) {
         setCurrentSchedule(res.data.plans[0]);
@@ -202,6 +245,7 @@ export default function MainPage() {
             allCourses={allCourses}
             userGrade={user?.grade || 1}
             completedCodes={completedCodes}
+            preferredTracks={preferences.preferred_tracks || []}
             onAdd={handleAddCourse}
             onRemove={handleRemoveCourse}
             coursesLoading={coursesLoading}

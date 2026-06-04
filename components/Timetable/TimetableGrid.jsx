@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './TimetableGrid.css';
 
 const TRACKS = ['전기/전자', '재료/화학', '인공지능', '원자력'];
@@ -69,9 +69,18 @@ function sortCourses(courses, userGrade, trackOrder) {
   });
 }
 
-export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), onAdd, onRemove, coursesLoading = false }) {
+export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), preferredTracks = [], onAdd, onRemove, coursesLoading = false }) {
   const [trackOrder, setTrackOrder] = useState([]);
   const [pickerSlot, setPickerSlot] = useState(null);
+  const initialized = useRef(false);
+
+  // 선호 트랙이 로드되면 초기값으로 반영 (사용자가 수동으로 변경한 경우는 덮어쓰지 않음)
+  useEffect(() => {
+    if (!initialized.current && preferredTracks.length > 0) {
+      setTrackOrder(preferredTracks);
+      initialized.current = true;
+    }
+  }, [preferredTracks]);
 
   const colorMap = {};
   courses.forEach((c, i) => { colorMap[c.id] = SCHEDULE_COLORS[i % SCHEDULE_COLORS.length]; });

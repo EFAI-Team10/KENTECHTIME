@@ -16,7 +16,7 @@ export async function GET(request) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('planned_schedules')
-    .select('*, courses(name, credits, timeslots, track, category)')
+    .select('*, courses(id, code, name, credits, timeslots, track, category, target_grade)')
     .eq('user_id', auth.userId)
     .eq('semester', semester);
 
