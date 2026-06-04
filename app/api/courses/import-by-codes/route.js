@@ -91,17 +91,25 @@ export async function POST(request) {
   // completed_courses에 일괄 등록
   if (matched.length > 0) {
     // replace=true: 기존 포털 import 이력 전체 교체 (수동 추가 과목은 유지)
+    // 포털 출처 판별: semester='imported' 또는 YYYY-(spring|fall|summer|winter) 형식
     if (replace) {
-      await supabase
+      const { data: existing } = await supabase
         .from('completed_courses')
-        .delete()
-        .eq('user_id', auth.userId)
-        .eq('semester', 'imported');
+        .select('course_id, semester')
+        .eq('user_id', auth.userId);
+      const portalIds = (existing || [])
+        .filter(r => r.semester === 'imported' || /^\d{4}-(spring|fall|summer|winter)$/.test(r.semester || ''))
+        .map(r => r.course_id);
+      if (portalIds.length > 0) {
+        await supabase.from('completed_courses').delete()
+          .eq('user_id', auth.userId).in('course_id', portalIds);
+      }
     }
+    const courseMap = new Map(courses.map(c => [c.code, c]));
     const rows = matched.map(c => ({
       user_id: auth.userId,
       course_id: c.id,
-      semester: 'imported',
+      semester: courseMap.get(c.code)?.semester || 'imported',
       grade: 'P',
     }));
     await supabase

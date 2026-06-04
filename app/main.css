@@ -197,3 +197,60 @@
   justify-content: center;
   margin: 16px 0;
 }
+
+/* 현재 학기 칩 */
+.semester-chip {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4A90D9;
+  background: #eef4fd;
+  border: 1px solid #c3d8f5;
+  border-radius: 20px;
+  padding: 4px 12px;
+  letter-spacing: 0.01em;
+}
+
+/* IR 토글 섹션 */
+.ir-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+.ir-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #16A085;
+  min-width: 90px;
+}
+.ir-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: 1.5px solid #b2dfdb;
+  border-radius: 20px;
+  background: white;
+  color: #555;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ir-chip:hover { border-color: #16A085; color: #16A085; }
+.ir-chip--taking {
+  background: #16A085;
+  border-color: #16A085;
+  color: white;
+}
+.ir-chip-desc { font-size: 11px; opacity: 0.75; }
+.ir-chip-badge {
+  font-size: 11px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 10px;
+  padding: 1px 6px;
+}
+.ir-section-hint { font-size: 11px; color: #aaa; margin-left: auto; }

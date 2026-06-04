@@ -21,7 +21,24 @@ const CAT_ORDER = ['EF','VC','EL','MN','HASS','EN','IR','CAPS','ESP','RC','FR','
 
 const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
 
-export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
+function formatSemLabel(sem) {
+  if (!sem || sem === 'imported') return '가져온 이력';
+  if (sem === 'external') return '외부 과목';
+  const m = sem.match(/^(\d{4})-(spring|fall|summer|winter)$/);
+  if (!m) return sem;
+  const ko = { spring: '봄학기', fall: '가을학기', summer: '하계', winter: '동계' };
+  return `${m[1]}년 ${ko[m[2]]}`;
+}
+
+function semSortKey(sem) {
+  if (!sem || sem === 'imported') return '0000-z';
+  const m = sem.match(/^(\d{4})-(spring|fall|summer|winter)$/);
+  if (!m) return sem;
+  const order = { spring: '1', summer: '2', fall: '3', winter: '4' };
+  return `${m[1]}-${order[m[2]] || '0'}`;
+}
+
+export default function Dashboard({ onImportSuccess, currentSchedule = [], irTaking = {} }) {
   const [earned, setEarned] = useState({ VC: 0, EF: 0, EL: 0, MN: 0, HASS: 0, ESP: 0, IR: 0, GR: 0, CAPS: 0, EN: 0, RC: 0, FR: 0, total: 0 });
   const [overflows, setOverflows] = useState({});
   const [espStages, setEspStages] = useState([]);
@@ -50,6 +67,9 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
   }, 0);
   // FR 바의 계획 학점 = 직접 FR 과목 + 타 카테고리 초과 예정분
   planned['FR'] = (planned['FR'] || 0) + plannedFRExtra;
+  // IR 토글 수강 중 → 계획 학점 반영 (IR1: 4학점, IR2: 4학점)
+  if (irTaking.ir1) planned.IR = (planned.IR || 0) + 4;
+  if (irTaking.ir2) planned.IR = (planned.IR || 0) + 4;
   const [showImport, setShowImport] = useState(false);
   const [activeTab, setActiveTab] = useState('portal');
   const [pasteText, setPasteText] = useState('');
@@ -89,7 +109,8 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
       value: req,
       fill: (earned[cat] || 0) >= req ? (CAT_COLORS[cat] || '#4A90D9') : '#e8eaf0',
     }));
-  const totalPct = Math.round((earned.total / REQUIRED.total) * 100); // 초과 시 100% 넘을 수 있음
+  const totalPct = Math.round((earned.total / REQUIRED.total) * 100);
+  const plannedTotal = Object.values(planned).reduce((s, v) => s + v, 0);
 
   const handleParse = () => {
     const { toImport, external } = parseGradeData(pasteText);
@@ -206,7 +227,9 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
           </ResponsiveContainer>
           <div className="donut-center">
             <span className="donut-pct">{totalPct}%</span>
-            <span className="donut-sub">{earned.total} / {REQUIRED.total}학점</span>
+            <span className="donut-sub">
+              {earned.total}{plannedTotal > 0 && <span className="planned-count" style={{ fontSize: 11 }}>+{plannedTotal}</span>} / {REQUIRED.total}학점
+            </span>
           </div>
         </div>
         <div className="requirements-list">
@@ -266,7 +289,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
                     <span className="credits-text" style={{ color: met ? color : '#555' }}>
                       {cat === 'ESP'
                         ? `${got} / ${req}학점`
-                        : `${got}${plan > 0 ? `+${plan}` : ''} / ${req}학점`
+                        : <>{got}{plan > 0 && <span className="planned-count">+{plan}</span>} / {req}학점</>
                       }
                     </span>
                   </div>
@@ -347,7 +370,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
           <div className="requirement-item total">
             <span>졸업요건 총계</span>
             <span style={{ color: earned.total >= REQUIRED.total ? '#4A90D9' : '#555' }}>
-              {earned.total} / {REQUIRED.total}학점
+              {earned.total}{plannedTotal > 0 && <span className="planned-count">+{plannedTotal}</span>} / {REQUIRED.total}학점
               {earned.total > REQUIRED.total && <span className="total-over"> (초과)</span>}
             </span>
           </div>
@@ -371,23 +394,28 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [] }) {
               <p className="history-empty">불러오는 중…</p>
             ) : !history?.length ? (
               <p className="history-empty">등록된 수강이력이 없습니다.</p>
-            ) : (
-              [...history]
-                .sort((a, b) => CAT_ORDER.indexOf(a.category) - CAT_ORDER.indexOf(b.category))
-                .map(course => (
-                  <div key={course.id} className="history-item">
-                    <span
-                      className="history-cat"
-                      style={{ background: (CAT_COLORS[course.category] || '#888') + '22', color: CAT_COLORS[course.category] || '#888' }}
-                    >
-                      {course.category}
-                    </span>
-                    <span className="history-name">{course.name}</span>
-                    <span className="history-credits">{course.credits}학점</span>
-                    <button className="history-del" onClick={() => handleDeleteCourse(course.id)}>삭제</button>
-                  </div>
-                ))
-            )}
+            ) : (() => {
+              const grouped = {};
+              history.forEach(c => { const s = c.semester || 'imported'; if (!grouped[s]) grouped[s] = []; grouped[s].push(c); });
+              const sems = Object.keys(grouped).sort((a, b) => semSortKey(b).localeCompare(semSortKey(a)));
+              return sems.map(sem => (
+                <div key={sem} className="history-sem-group">
+                  <div className="history-sem-label">{formatSemLabel(sem)}</div>
+                  {[...grouped[sem]]
+                    .sort((a, b) => CAT_ORDER.indexOf(a.category) - CAT_ORDER.indexOf(b.category))
+                    .map(course => (
+                      <div key={course.id} className="history-item">
+                        <span className="history-cat" style={{ background: (CAT_COLORS[course.category] || '#888') + '22', color: CAT_COLORS[course.category] || '#888' }}>
+                          {course.category}
+                        </span>
+                        <span className="history-name">{course.name}</span>
+                        <span className="history-credits">{course.credits}학점</span>
+                        <button className="history-del" onClick={() => handleDeleteCourse(course.id)}>삭제</button>
+                      </div>
+                    ))}
+                </div>
+              });
+            })()}
           </div>
         )}
       </div>

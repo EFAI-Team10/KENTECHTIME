@@ -2,6 +2,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleLogin } from '@react-oauth/google';
+
+function formatSemester(sem) {
+  if (!sem) return '';
+  const m = sem.match(/^(\d{4})-(spring|fall|summer|winter)$/);
+  if (!m) return sem;
+  const ko = { spring: '봄학기', fall: '가을학기', summer: '하계', winter: '동계' };
+  return `${m[1]}년 ${ko[m[2]]}`;
+}
 import TimetableGrid from '@/components/Timetable/TimetableGrid';
 import Dashboard from '@/components/Dashboard/Dashboard';
 import Chat from '@/components/Chat/Chat';
@@ -26,6 +34,8 @@ export default function MainPage() {
   const [allCourses, setAllCourses] = useState([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [completedCodes, setCompletedCodes] = useState(new Set());
+  // IR 수강 중 토글 (IR1: 필수 4학점, IR2: 선택 4학점)
+  const [irTaking, setIrTaking] = useState({ ir1: false, ir2: false });
 
   useEffect(() => {
     setMounted(true);
@@ -134,6 +144,7 @@ export default function MainPage() {
       {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       <header className="main-header">
         <span className="logo">KENTECHTIME</span>
+        <span className="semester-chip">{formatSemester(semester)}</span>
         <div className="header-right">
           {user && <span className="username">{user.name}</span>}
           <button className="settings-btn" onClick={() => setShowSettings(true)}>설정</button>
@@ -164,7 +175,7 @@ export default function MainPage() {
       )}
 
       <div className="main-content">
-        <Dashboard onImportSuccess={loadRecommendations} currentSchedule={currentSchedule} />
+        <Dashboard onImportSuccess={loadRecommendations} currentSchedule={currentSchedule} irTaking={irTaking} />
 
         <section className="schedule-section">
           <div className="plan-controls">
@@ -195,6 +206,26 @@ export default function MainPage() {
             onRemove={handleRemoveCourse}
             coursesLoading={coursesLoading}
           />
+          {/* IR 개별연구 토글 (시간표에 없어서 수동 표시) */}
+          <div className="ir-section">
+            <span className="ir-section-label">개별연구 (IR)</span>
+            {[
+              { key: 'ir1', label: 'IR1', desc: '필수' },
+              { key: 'ir2', label: 'IR2', desc: '선택' },
+            ].map(({ key, label, desc }) => (
+              <button
+                key={key}
+                className={`ir-chip${irTaking[key] ? ' ir-chip--taking' : ''}`}
+                onClick={() => setIrTaking(prev => ({ ...prev, [key]: !prev[key] }))}
+                title={irTaking[key] ? '수강 중 — 클릭하여 해제' : '클릭하면 수강 중으로 표시'}
+              >
+                {label}
+                <span className="ir-chip-desc">{desc}</span>
+                {irTaking[key] && <span className="ir-chip-badge">수강 중</span>}
+              </button>
+            ))}
+            <span className="ir-section-hint">수강 중인 IR 과목을 체크하면 졸업요건에 반영됩니다</span>
+          </div>
         </section>
 
         <Chat semester={semester} onScheduleUpdate={(plan) => {

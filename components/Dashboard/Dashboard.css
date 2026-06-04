@@ -160,7 +160,7 @@
 /* 진행바 — 계획(시간표) 반투명 */
 .progress-bar { position: relative; }
 .progress-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 5px; transition: width 0.4s ease; }
-.progress-planned { opacity: 0.3; }
+.progress-planned { background: #27AE60; opacity: 0.4; }
 
 /* 총계 초과 표시 */
 .total-over { font-size: 11px; color: #E67E22; margin-left: 4px; }
@@ -199,7 +199,7 @@
 }
 
 .esp-uni-fill.done    { background: #1A5276; }
-.esp-uni-fill.planned { background: #1A5276; opacity: 0.3; }
+.esp-uni-fill.planned { background: #27AE60; opacity: 0.4; }
 
 .esp-uni-divider {
   position: absolute;
@@ -328,6 +328,17 @@
   border-color: #e74c3c;
   color: #e74c3c;
 }
+
+.history-sem-group { margin-bottom: 4px; }
+.history-sem-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  padding: 8px 4px 4px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 2px;
+}
+.planned-count { color: #27AE60; font-weight: 700; }
 
 .history-empty {
   font-size: 13px;
