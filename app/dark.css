@@ -1,0 +1,335 @@
+/* ══════════════════════════════════════════════════════
+   DARK MODE — [data-dark="true"] on <html>
+   gray 팔레트 기준:
+     primary text   #c8c8d0  (step 010)
+     secondary text #9898a4  (step 050)
+     hint/caption   #787882  (step 055)
+     subtle label   #686870  (step 058)
+     disabled       #585860  (step 060)
+     decoration     #3e3e46  (step 068)
+   surfaces:
+     page           #0f0f11  (step 095)
+     card           #1c1c20  (step 088)
+     elevated       #252529  (step 083)
+     border         #2e2e34  (step 080)
+   ══════════════════════════════════════════════════════ */
+
+/* ── Base ── */
+[data-dark="true"] body {
+  background: #0f0f11;
+  color: #c8c8d0;
+}
+
+/* ── Page layout ── */
+[data-dark="true"] .main-page { background: #0f0f11; }
+
+/* ── Header ── */
+[data-dark="true"] .main-header {
+  background: #1c1c20;
+  box-shadow: 0 1px 0 #2e2e34;
+}
+[data-dark="true"] .logo         { color: #d0d0d8; }
+[data-dark="true"] .username     { color: #9898a4; }
+[data-dark="true"] .semester-chip {
+  color: #9898a4;
+  background: #252529;
+  border-color: #2e2e34;
+}
+[data-dark="true"] .settings-btn {
+  background: #252529;
+  color: #b8b8c0;
+  border-color: #38383e;
+}
+[data-dark="true"] .settings-btn:hover { background: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .logout-btn {
+  background: #252529;
+  color: #9898a4;
+  border-color: #2e2e34;
+}
+[data-dark="true"] .logout-btn:hover { background: #2e2e34; color: #b8b8c0; }
+
+/* ── Main content sections ── */
+[data-dark="true"] .schedule-section {
+  background: #1c1c20;
+  box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+
+/* ── Plan tabs ── */
+[data-dark="true"] .plan-tabs button {
+  background: #1c1c20;
+  color: #9898a4;
+  border-color: #2e2e34;
+}
+[data-dark="true"] .plan-tabs button:hover  { border-color: #505058; color: #c8c8d0; }
+[data-dark="true"] .plan-tabs button.active {
+  background: #2e2e34;
+  color: #c8c8d0;
+  border-color: #505058;
+}
+[data-dark="true"] .plan-tabs button.my-tab         { color: #5a9a6a; border-color: #2a3d2a; }
+[data-dark="true"] .plan-tabs button.my-tab.active  { background: #1a2e20; color: #7aba8a; border-color: #3a5a40; }
+[data-dark="true"] .plan-tabs button.my-tab:hover   { border-color: #3a5a40; color: #7aba8a; }
+[data-dark="true"] .my-tabs-row                     { border-top-color: #2e2e34; }
+
+[data-dark="true"] .rec-hint    { color: #787882; }   /* 힌트 문구 — 읽힘 */
+
+/* track chips */
+[data-dark="true"] .plan-tabs .track-chip       { background: #1c1c20; border-color: #2e2e34; color: #9898a4; }
+[data-dark="true"] .plan-tabs .track-chip.sel   { color: #c8c8d0; }
+[data-dark="true"] .track-mini                  { border-left-color: #2e2e34; }
+[data-dark="true"] .track-mini-label            { color: #787882; }   /* 레이블 — 읽힘 */
+[data-dark="true"] .plan-tabs .track-reset      { color: #686870; }
+
+/* ── Action buttons ── */
+[data-dark="true"] .action-btns button          { background: #252529; color: #a8a8b0; border-color: #2e2e34; }
+[data-dark="true"] .action-btns button:hover    { background: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .action-btns button:disabled { color: #585860; }   /* disabled — 살짝 보임 */
+
+[data-dark="true"] .save-btn          { background: #1a3522 !important; color: #5aaa70 !important; border-color: #2a5535 !important; }
+[data-dark="true"] .copy-btn          { background: #252535 !important; color: #8888cc !important; border-color: #333355 !important; }
+[data-dark="true"] .copy-btn.copied   { background: #1a3522 !important; border-color: #2a5535 !important; color: #5aaa70 !important; }
+[data-dark="true"] .paste-btn         { background: #1c1c2a !important; color: #7070aa !important; border-color: #2a2a44 !important; }
+[data-dark="true"] .confirm-btn       { background: #3a2a10 !important; color: #c8882a !important; border-color: #4a3a18 !important; }
+[data-dark="true"] .cancel-confirm-btn{ background: #252529 !important; color: #787882 !important; border-color: #2e2e34 !important; }
+[data-dark="true"] .rename-btn        { background: #252529 !important; color: #9898a4 !important; border-color: #2e2e34 !important; }
+[data-dark="true"] .delete-tt-btn     { background: #252529 !important; color: #aa7070 !important; border-color: #503838 !important; }
+
+/* IR section */
+[data-dark="true"] .ir-section       { border-top-color: #252529; }
+[data-dark="true"] .ir-section-label { color: #b07850; }
+[data-dark="true"] .ir-chip          { background: #1c1c20; border-color: #443328; color: #9898a4; }
+[data-dark="true"] .ir-chip--locked  { background: #181818; border-color: #2a2a2a; color: #686870; }  /* locked — 흐리게 */
+[data-dark="true"] .ir-section-hint  { color: #787882; }   /* 힌트 — 읽힘 */
+
+/* ── Timetable grid ── */
+[data-dark="true"] .timetable-grid   { background: #1c1c20; border-color: #2e2e34; }
+[data-dark="true"] .timetable-header { background: #252529; }
+[data-dark="true"] .time-col,
+[data-dark="true"] .day-col,
+[data-dark="true"] .cell             { border-color: #2a2a30; color: #9898a4; }
+[data-dark="true"] .cell.empty              { color: #3e3e46; }        /* + 기호 — 장식용 */
+[data-dark="true"] .cell.empty:hover        { background: #22222a; }
+[data-dark="true"] .cell.empty:hover .cell-plus { color: #686870; }   /* hover시 조금 더 보임 */
+
+/* Track selector */
+[data-dark="true"] .ts-label                { color: #787882; }       /* 레이블 */
+[data-dark="true"] .ts-item                 { border-color: #2e2e34; color: #9898a4; }
+[data-dark="true"] .ts-item:hover           { border-color: #505058; }
+[data-dark="true"] .ts-item.sel             { color: #c8c8d0; }
+[data-dark="true"] .ts-reset                { color: #686870; }
+[data-dark="true"] .ts-reset:hover          { background: #252529; color: #9898a4; }
+
+/* Course picker panel */
+[data-dark="true"] .course-picker           { background: #1c1c20; box-shadow: -4px 0 24px rgba(0,0,0,.6); }
+[data-dark="true"] .picker-header           { border-bottom-color: #2e2e34; }
+[data-dark="true"] .picker-title            { color: #d0d0d8; }
+[data-dark="true"] .picker-close            { color: #686870; }
+[data-dark="true"] .picker-close:hover      { background: #252529; color: #9898a4; }
+[data-dark="true"] .picker-empty            { color: #787882; }       /* 안내 — 읽힘 */
+[data-dark="true"] .pk-name                 { color: #c8c8d0; }
+[data-dark="true"] .pk-meta                 { color: #9898a4; }       /* 과목 부가정보 */
+[data-dark="true"] .pk-grade-text           { color: #7a9abb; }
+[data-dark="true"] .pk-remove-btn           { background: #1c1c20; border-color: #553333; color: #aa7070; }
+[data-dark="true"] .pk-remove-btn:hover     { background: #2e1a1a; color: #cc8888; }
+[data-dark="true"] .picker-divider          { color: #686870; border-top-color: #252529; }
+[data-dark="true"] .pk-item                 { border-color: #2a2a30; }
+[data-dark="true"] .pk-item:hover:not(.pk-added) { border-color: #404048; background: #22222a; }
+[data-dark="true"] .pk-item.pk-conflict     { border-color: #2a2a30; background: #1a1a1e; }
+[data-dark="true"] .pk-item.pk-conflict:hover { border-color: #404048; background: #22222a; }
+[data-dark="true"] .pk-item.pk-added        { background: #142014; border-color: #2a4a2a; }
+[data-dark="true"] .pk-item-name            { color: #c8c8d0; }
+[data-dark="true"] .pk-item-meta            { color: #9898a4; }       /* 과목 부가정보 */
+[data-dark="true"] .pk-grade-badge          { background: #1c2030; color: #7a9abb; }
+[data-dark="true"] .pk-status.conflict      { background: #2a1414; color: #cc8888; }
+[data-dark="true"] .pk-status.added         { background: #142014; color: #5aaa70; }
+
+/* ── Tracker ── */
+[data-dark="true"] .tracker                 { background: #1c1c20; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+[data-dark="true"] .tracker-header h3       { color: #d0d0d8; }
+[data-dark="true"] .updated                 { color: #787882; }       /* 업데이트 시각 */
+[data-dark="true"] .empty                   { color: #787882; }
+[data-dark="true"] .tracker th              { background: #252529; color: #9898a4; border-bottom-color: #2e2e34; }
+[data-dark="true"] .tracker td              { border-bottom-color: #252529; color: #c8c8d0; }
+[data-dark="true"] .tracker tr:hover td     { background: #22222a; }
+[data-dark="true"] .tracker-locked          { background: #1a1010; border-color: #3a2020; }
+[data-dark="true"] .tracker-locked-main     { color: #cc7070; }
+[data-dark="true"] .tracker-locked-sub      { color: #aa5050; }
+
+/* ── Dashboard ── */
+[data-dark="true"] .dashboard              { background: #1c1c20; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+[data-dark="true"] .dashboard-header h2   { color: #d0d0d8; }
+[data-dark="true"] .import-btn            { background: #1c1c20; color: #9898a4; border-color: #2e2e34; }
+[data-dark="true"] .import-btn:hover      { background: #252529; color: #c8c8d0; }
+[data-dark="true"] .cat-label             { color: #9898a4; }
+[data-dark="true"] .credits-text          { color: #9898a4; }
+[data-dark="true"] .progress-bar          { background: #252529; }
+[data-dark="true"] .cat-hint              { color: #787882; }         /* 요건 힌트 */
+[data-dark="true"] .requirement-item.total { border-top-color: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .sub-req-chip.ok       { background: #142014; color: #5aaa70; }
+[data-dark="true"] .sub-req-chip.ng       { background: #2a1414; color: #cc8888; }
+[data-dark="true"] .sub-req-chip.ap       { background: #14202a; color: #7a9abb; }
+[data-dark="true"] .sub-req-chip.overflow { background: #2a2010; color: #c8a050; }
+[data-dark="true"] .donut-pct             { color: #d0d0d8; }
+[data-dark="true"] .donut-sub             { color: #9898a4; }         /* 도넛 부제목 */
+[data-dark="true"] .legend-label          { color: #9898a4; }
+[data-dark="true"] .el-zone-tag           { color: #787882; }         /* EL 구역 레이블 */
+[data-dark="true"] .esp-uni-bar           { background: #252529; }
+[data-dark="true"] .esp-uni-bar-inline    { background: #252529; }
+[data-dark="true"] .esp-uni-fill.done     { background: #646680; }
+[data-dark="true"] .esp-uni-fill.planned  {
+  background-color: #646680;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    rgba(255,255,255,0.15),
+    rgba(255,255,255,0.15) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  opacity: 0.75;
+}
+[data-dark="true"] .esp-uni-label         { color: #787882; }         /* ESP 단계 레이블 */
+[data-dark="true"] .esp-uni-label.done    { color: #9898c0; font-weight: 700; }
+[data-dark="true"] .esp-uni-label.partial { color: #8888aa; font-weight: 600; }
+[data-dark="true"] .esp-uni-count         { color: #9898a4; }
+[data-dark="true"] .history-section       { border-top-color: #252529; }
+[data-dark="true"] .history-toggle        { color: #d0d0d8; }
+[data-dark="true"] .history-toggle:hover  { color: #9898a4; }
+[data-dark="true"] .history-summary       { color: #787882; }         /* 수강 요약 */
+[data-dark="true"] .history-sem-label     { color: #787882; border-bottom-color: #252529; }  /* 학기 레이블 */
+[data-dark="true"] .history-item:hover    { background: #22222a; }
+[data-dark="true"] .history-name          { color: #c8c8d0; }
+[data-dark="true"] .history-credits       { color: #787882; }         /* 학점 표시 */
+[data-dark="true"] .history-del           { border-color: #2e2e34; color: #686870; background: transparent; }
+[data-dark="true"] .history-del:hover     { border-color: #553333; color: #aa7070; }
+[data-dark="true"] .history-empty         { color: #787882; }         /* 이력 없음 안내 */
+[data-dark="true"] .planned-count         { color: #5aaa70; }
+/* import modal */
+[data-dark="true"] .import-modal          { background: #1c1c20; box-shadow: 0 8px 32px rgba(0,0,0,.6); }
+[data-dark="true"] .import-modal h3       { color: #d0d0d8; }
+[data-dark="true"] .bookmarklet-guide     { background: #252529; }
+[data-dark="true"] .guide-step            { color: #9898a4; }
+[data-dark="true"] .paste-area            { background: #252529; border-color: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .paste-area:focus      { border-color: #505058; }
+[data-dark="true"] .import-modal-btns button { background: #252529; border-color: #2e2e34; color: #9898a4; }
+[data-dark="true"] .preview-section       { border-color: #2e2e34; }
+[data-dark="true"] .import-tabs           { border-bottom-color: #2e2e34; }
+[data-dark="true"] .import-tab            { color: #787882; }         /* 탭 — 읽힘 */
+[data-dark="true"] .import-tab.active     { color: #9898cc; border-bottom-color: #9898cc; }
+[data-dark="true"] .import-tab:hover:not(.active) { color: #9898a4; }
+[data-dark="true"] .code-badge            { background: #1c2030; color: #7a9abb; }
+[data-dark="true"] .credits-badge         { color: #787882; }         /* 학점 뱃지 */
+[data-dark="true"] .ext-badge             { background: #2a1e10; color: #c89858; }
+[data-dark="true"] .ext-name-text         { color: #c8c8d0; }
+[data-dark="true"] .ext-code-text         { color: #787882; }         /* 외부 코드 */
+[data-dark="true"] .ext-form-desc         { background: #252529; border-left-color: #404048; color: #9898a4; }
+[data-dark="true"] .ext-field label       { color: #a8a8b0; }
+[data-dark="true"] .ext-field input,
+[data-dark="true"] .ext-field select      { background: #252529; border-color: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .ext-field input:focus,
+[data-dark="true"] .ext-field select:focus{ border-color: #505058; }
+[data-dark="true"] .ext-fill-btn          { background: #1c1c20; border-color: #503020; color: #c89858; }
+[data-dark="true"] .ext-fill-btn:hover    { background: #2a1e10; color: #e8b878; }
+[data-dark="true"] .unmatched-hint        { background: #1c2030; color: #7a9abb; }
+[data-dark="true"] .bookmarklet-hint      { color: #787882; }         /* 북마크 힌트 */
+[data-dark="true"] .guide-note            { color: #787882; }         /* 가이드 노트 */
+
+/* ── Chat ── */
+[data-dark="true"] .chat-container         { background: #1c1c20; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+[data-dark="true"] .chat-header            { border-bottom-color: #2e2e34; }
+[data-dark="true"] .chat-title             { color: #d0d0d8; }
+[data-dark="true"] .chat-new-btn           { background: #1c1c20; color: #9898a4; border-color: #2e2e34; }
+[data-dark="true"] .chat-new-btn:hover:not(:disabled) { background: #252529; color: #c8c8d0; }
+[data-dark="true"] .message.assistant      { background: #252529; color: #c8c8d0; }
+[data-dark="true"] .chat-input             { border-top-color: #2e2e34; }
+[data-dark="true"] .chat-input input       { background: #252529; border-color: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .chat-input input:focus { border-color: #505058; }
+[data-dark="true"] .chat-input button      { background: #2e2e34; }
+[data-dark="true"] .chat-input button:disabled { background: #252529; }
+
+/* ── Settings Modal ── */
+[data-dark="true"] .settings-overlay      { background: rgba(0,0,0,.65); }
+[data-dark="true"] .settings-modal        { background: #1c1c20; box-shadow: 0 8px 32px rgba(0,0,0,.6); }
+[data-dark="true"] .settings-header h2    { color: #d0d0d8; }
+[data-dark="true"] .settings-close        { color: #686870; }
+[data-dark="true"] .settings-close:hover  { background: #252529; color: #9898a4; }
+[data-dark="true"] .settings-section      { border-top-color: #252529; }
+[data-dark="true"] .settings-section h3   { color: #d0d0d8; border-bottom-color: #252529; }
+[data-dark="true"] .profile-field label   { color: #9898a4; }
+[data-dark="true"] .profile-field input,
+[data-dark="true"] .profile-field select  { background: #252529; border-color: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .profile-field input:focus,
+[data-dark="true"] .profile-field select:focus { border-color: #505058; }
+[data-dark="true"] .pref-toggle-field .toggle-row { background: #1c1c20; border-color: #2e2e34; color: #9898a4; }
+[data-dark="true"] .pref-toggle-field .toggle     { background: #2e2e34; }
+[data-dark="true"] .pref-toggle-field .toggle.on  { background: #3a4a5a; }
+[data-dark="true"] .pref-toggle-field .toggle-thumb { background: #a8a8b0; }
+[data-dark="true"] .pref-elective-label    { color: #9898a4; }
+[data-dark="true"] .pref-chip              { border-color: #2e2e34; color: #9898a4; }
+[data-dark="true"] .pref-chip.selected     { border-color: #4a5a6a; background: #2a3a4a; color: #9ab0c8; }
+[data-dark="true"] .pref-elective-hint     { color: #787882; }        /* 순서 힌트 */
+[data-dark="true"] .settings-mode-btn      { background: #1c1c20; border-color: #2e2e34; }
+[data-dark="true"] .settings-mode-btn:hover{ border-color: #404048; background: #252529; }
+[data-dark="true"] .settings-mode-btn .mode-title { color: #c8c8d0; }
+[data-dark="true"] .settings-mode-btn .mode-desc  { color: #9898a4; }  /* 모드 설명 */
+[data-dark="true"] .portal-guide-sm        { background: #252529; color: #9898a4; }
+[data-dark="true"] .settings-paste         { background: #252529; border-color: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .settings-paste:focus   { border-color: #505058; }
+[data-dark="true"] .portal-preview         { border-color: #2e2e34; }
+[data-dark="true"] .settings-search        { background: #252529; border-color: #2e2e34; color: #c8c8d0; }
+[data-dark="true"] .settings-search:focus  { border-color: #505058; }
+[data-dark="true"] .settings-course-list   { border-color: #2e2e34; }
+[data-dark="true"] .course-item:hover      { background: #22222a; }
+[data-dark="true"] .course-item.checked    { background: #14202a; }
+[data-dark="true"] .course-name            { color: #c8c8d0; }
+[data-dark="true"] .course-meta            { color: #787882; }        /* 코드·학점 */
+[data-dark="true"] .settings-btns button   { background: #252529; border-color: #2e2e34; color: #9898a4; }
+[data-dark="true"] .btn-primary            { background: #2a3a4a !important; color: #9ab0c8 !important; border-color: #3a5060 !important; }
+[data-dark="true"] .danger-zone            { border-top-color: #252529; }
+[data-dark="true"] .btn-clear-all          { background: #1c1c20; border-color: #553333; color: #aa7070; }
+[data-dark="true"] .btn-clear-all:hover    { background: #2a1414; }
+[data-dark="true"] .clear-confirm          { background: #1c1010; border-color: #3a2020; }
+[data-dark="true"] .clear-confirm p        { color: #9898a4; }
+[data-dark="true"] .clear-warn             { color: #cc8888; }
+[data-dark="true"] .clear-confirm-btns button { background: #252529; border-color: #2e2e34; color: #9898a4; }
+
+/* theme cards in dark mode */
+[data-dark="true"] .theme-card          { background: #252529; border-color: #2e2e34; }
+[data-dark="true"] .theme-card:hover    { border-color: #404048; }
+[data-dark="true"] .theme-card.selected { border-color: #686870; box-shadow: 0 0 0 3px rgba(120,120,130,0.2); }
+[data-dark="true"] .theme-name          { color: #9898a4; }
+[data-dark="true"] .theme-card-dark             { background: #111 !important; border-color: #2e2e34 !important; }
+[data-dark="true"] .theme-card-dark:hover       { border-color: #505058 !important; }
+[data-dark="true"] .theme-card-dark.selected    { border-color: #888 !important; box-shadow: 0 0 0 3px rgba(150,150,160,0.25) !important; }
+[data-dark="true"] .theme-card-dark .theme-name { color: #a8a8b0 !important; }
+
+/* ── Withdraw button ── */
+[data-dark="true"] .withdraw-btn {
+  background: #1c1c20;
+  color: #aa7070;
+  border-color: #553333;
+}
+[data-dark="true"] .withdraw-btn:hover {
+  background: #2e1a1a;
+  color: #cc9090;
+  border-color: #774444;
+}
+
+/* ── Withdraw modal ── */
+[data-dark="true"] .withdraw-modal            { background: #1c1c20; box-shadow: 0 8px 32px rgba(0,0,0,.6); }
+[data-dark="true"] .withdraw-modal h3         { color: #cc8888; }
+[data-dark="true"] .withdraw-modal p          { color: #c8c8d0; }
+[data-dark="true"] .withdraw-modal strong     { color: #cc8888; }
+[data-dark="true"] .withdraw-error            { color: #cc8888; }
+[data-dark="true"] .withdraw-modal-btns button{ background: #252529; border-color: #2e2e34; color: #9898a4; }
+[data-dark="true"] .withdraw-modal-btns button:hover { background: #2e2e34; color: #c8c8d0; }
+
+/* ── Misc ── */
+[data-dark="true"] .manual-note        { background: #2a1e10; color: #c89858; border-left-color: #6a4428; }
+[data-dark="true"] .loading-msg        { color: #787882; }            /* 로딩 중 안내 */
+[data-dark="true"] .done-msg           { color: #5aaa70; }
+[data-dark="true"] .clear-done-msg     { background: #142014; border-color: #2a4a2a; color: #5aaa70; }
+[data-dark="true"] .profile-saved      { color: #5aaa70; }
+[data-dark="true"] .profile-error      { color: #cc8888; }
+[data-dark="true"] .selected-count     { color: #7a9abb; }
+[data-dark="true"] .unmatched-codes    { color: #9898a4; }
+[data-dark="true"] .ext-notice         { color: #787882; }            /* 외부 과목 주의사항 */

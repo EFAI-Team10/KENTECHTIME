@@ -601,6 +601,13 @@
 }
 
 /* ── 색상 테마 피커 ── */
+.theme-top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
 .theme-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -620,6 +627,10 @@
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+.theme-card-top {
+  padding: 14px 10px;
+}
+
 .theme-card:hover {
   border-color: #b0b8d0;
 }
@@ -627,6 +638,30 @@
 .theme-card.selected {
   border-color: #4A90D9;
   box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
+}
+
+.theme-card-dark {
+  background: #111;
+  border-color: #333;
+}
+
+.theme-card-dark:hover {
+  border-color: #555;
+}
+
+.theme-card-dark.selected {
+  border-color: #777;
+  box-shadow: 0 0 0 3px rgba(120,120,120,0.25);
+}
+
+.theme-card-dark .theme-name {
+  color: #aaa;
+}
+
+.theme-dark-swatches {
+  background: #111;
+  border-radius: 6px;
+  padding: 3px 4px;
 }
 
 .theme-swatches {

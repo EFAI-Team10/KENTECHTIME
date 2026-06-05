@@ -40,7 +40,7 @@ function semSortKey(sem) {
 }
 
 export default function Dashboard({ onImportSuccess, currentSchedule = [], irTaking = {} }) {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const CAT_COLORS = theme?.catColors ?? DEFAULT_CAT_COLORS;
 
   const [earned, setEarned] = useState({ VC: 0, EF: 0, EL: 0, MN: 0, HASS: 0, ESP: 0, IR: 0, GR: 0, CAPS: 0, EN: 0, RC: 0, FR: 0, total: 0 });
@@ -171,7 +171,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
       const color = CAT_COLORS[cat] || '#4A90D9';
       return [
         ...(got > 0 ? [{ name: cat, value: got, fill: color }] : []),
-        ...(rem > 0 ? [{ name: `${cat}_rem`, value: rem, fill: '#e8eaf0' }] : []),
+        ...(rem > 0 ? [{ name: `${cat}_rem`, value: rem, fill: isDark ? '#2e2e38' : '#e8eaf0' }] : []),
       ];
     });
   const totalPct = Math.round((earned.total / REQUIRED.total) * 100);
@@ -286,6 +286,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                   startAngle={90} endAngle={-270}
                   dataKey="value"
                   paddingAngle={1}
+                  stroke="none"
                 >
                   {donutData.map((entry, i) => (
                     <Cell key={i} fill={entry.fill} />
@@ -396,7 +397,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                   )}
 
                   <div className="credits-col">
-                    <span className="credits-text" style={{ color: met ? color : '#555' }}>
+                    <span className="credits-text" style={{ color: isDark ? '#c8c8d0' : (met ? color : '#555') }}>
                       {cat === 'ESP'
                         ? `${got} / ${req}학점`
                         : cat === 'EL'
@@ -476,7 +477,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
           )}
           <div className="requirement-item total">
             <span>졸업요건 총계</span>
-            <span style={{ color: earned.total >= REQUIRED.total ? '#4A90D9' : '#555' }}>
+            <span style={{ color: earned.total >= REQUIRED.total ? (isDark ? '#9898a4' : '#4A90D9') : (isDark ? '#787882' : '#555') }}>
               {earned.total}{plannedTotal > 0 && <span className="planned-count">+{plannedTotal}</span>} / {REQUIRED.total}학점
               {earned.total > REQUIRED.total && <span className="total-over"> (초과)</span>}
             </span>

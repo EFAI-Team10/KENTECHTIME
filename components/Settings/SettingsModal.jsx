@@ -4,7 +4,7 @@ import { coursesAPI, usersAPI } from '@/lib/api-client';
 import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import useStore from '@/lib/store';
 import { useTheme } from '@/contexts/ThemeContext';
-import { THEMES } from '@/lib/themes';
+import { THEMES, DARK_THEME } from '@/lib/themes';
 import './SettingsModal.css';
 
 const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
@@ -26,7 +26,7 @@ const ELECTIVE_OPTIONS = [
 
 export default function SettingsModal({ onClose, onTrackOrderChange }) {
   const { user, setUser } = useStore(s => ({ user: s.user, setUser: s.setUser }));
-  const { themeIdx, setTheme } = useTheme();
+  const { themeIdx, setTheme, isDark, setIsDark } = useTheme();
 
   // ── 내 정보 ──
   const [profile, setProfile] = useState({ name: '', student_id: '', grade: 0 });
@@ -278,12 +278,38 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
         {/* ── 색상 테마 ── */}
         <div className="settings-section">
           <h3>색상 테마</h3>
+          {/* 상단 2개: 베이직 + 다크 모드 */}
+          <div className="theme-top-row">
+            <button
+              className={`theme-card theme-card-top ${!isDark && themeIdx === 0 ? 'selected' : ''}`}
+              onClick={() => { setTheme(0); if (isDark) setIsDark(false); }}
+            >
+              <div className="theme-swatches">
+                {THEMES[0].preview.map((color, j) => (
+                  <span key={j} className="theme-swatch" style={{ background: color }} />
+                ))}
+              </div>
+              <span className="theme-name">{THEMES[0].name}</span>
+            </button>
+            <button
+              className={`theme-card theme-card-top theme-card-dark ${isDark ? 'selected' : ''}`}
+              onClick={() => setIsDark(!isDark)}
+            >
+              <div className="theme-swatches theme-dark-swatches">
+                {DARK_THEME.preview.map((color, j) => (
+                  <span key={j} className="theme-swatch" style={{ background: color }} />
+                ))}
+              </div>
+              <span className="theme-name">{DARK_THEME.name}</span>
+            </button>
+          </div>
+          {/* 나머지 9개: 3×3 그리드 */}
           <div className="theme-grid">
-            {THEMES.map((t, i) => (
+            {THEMES.slice(1).map((t, i) => (
               <button
-                key={i}
-                className={`theme-card ${themeIdx === i ? 'selected' : ''}`}
-                onClick={() => setTheme(i)}
+                key={i + 1}
+                className={`theme-card ${!isDark && themeIdx === i + 1 ? 'selected' : ''}`}
+                onClick={() => { setTheme(i + 1); if (isDark) setIsDark(false); }}
               >
                 <div className="theme-swatches">
                   {t.preview.map((color, j) => (
