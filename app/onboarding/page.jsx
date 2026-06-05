@@ -1,13 +1,20 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authAPI, coursesAPI } from '@/lib/api-client';
+import { authAPI, coursesAPI, usersAPI } from '@/lib/api-client';
 import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import useStore from '@/lib/store';
 import './onboarding.css';
 
 const STEPS = ['기본 정보', '기수강 과목', '선호도'];
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
+const ELECTIVE_OPTIONS = [
+  { value: 'EN',   label: 'EN (창업)' },
+  { value: 'HASS', label: 'HASS (인문사회)' },
+  { value: 'MN',   label: 'MN (필수교양)' },
+  { value: 'EL',   label: 'EL (전공선택)' },
+  { value: 'FR',   label: 'FR (자유학점)' },
+];
 export default function OnboardingPage() {
   const router = useRouter();
   const { setToken, setUser } = useStore();
@@ -27,7 +34,10 @@ export default function OnboardingPage() {
 
   const [prefs, setPrefs] = useState({
     preferred_tracks: [],
-    avoid_morning: false,
+    max_credits: 16,
+    last_semester: false,
+    prefer_compact: false,
+    elective_cats: [],
   });
 
   useEffect(() => {
@@ -106,6 +116,8 @@ export default function OnboardingPage() {
       sessionStorage.removeItem('authState');
       setToken(res.data.token);
       setUser(res.data.user);
+      // 추천 설정 전체 저장 (설정 화면과 동일 항목)
+      try { await usersAPI.savePreferences(prefs); } catch {}
       router.push('/');
     } catch (err) {
       const msg = err.response?.data?.error || '가입에 실패했습니다.';
@@ -340,31 +352,82 @@ export default function OnboardingPage() {
             <div className="pref-section">
               <label className="pref-label">관심 트랙</label>
               <div className="chip-group">
-                {TRACKS.map(track => (
-                  <button
-                    key={track}
-                    type="button"
-                    className={`chip ${prefs.preferred_tracks.includes(track) ? 'selected' : ''}`}
-                    onClick={() => togglePrefArray('preferred_tracks', track)}
-                  >
-                    {track}
-                  </button>
-                ))}
+                {TRACKS.map(track => {
+                  const idx = prefs.preferred_tracks.indexOf(track);
+                  const selected = idx !== -1;
+                  return (
+                    <button
+                      key={track}
+                      type="button"
+                      className={`chip ${selected ? 'selected' : ''}`}
+                      onClick={() => togglePrefArray('preferred_tracks', track)}
+                    >
+                      {selected && <span className="chip-order">{idx + 1}</span>}
+                      {track}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="pref-hint">선택한 순서대로 EL 과목 우선순위가 정해집니다.</p>
+            </div>
+
+            <div className="pref-section">
+              <label className="pref-label">최대 학점</label>
+              <div className="toggle-row">
+                <input
+                  type="number"
+                  min={4} max={24}
+                  value={prefs.max_credits}
+                  onChange={e => setPrefs(p => ({ ...p, max_credits: parseInt(e.target.value) || 16 }))}
+                  style={{ width: 72 }}
+                />
+                <span style={{ fontSize: 12, color: '#888' }}>학점 / 학기 (기본 16)</span>
               </div>
             </div>
 
             <div className="pref-section">
-              <label className="pref-label">아침 수업 기피 (9:00 이전)</label>
+              <label className="pref-label">막학기 모드</label>
               <div className="toggle-row">
-                <span>{prefs.avoid_morning ? '기피함' : '상관없음'}</span>
+                <span>{prefs.last_semester ? '최소 4학점만 채움' : '끄면 최소 10학점'}</span>
                 <button
                   type="button"
-                  className={`toggle ${prefs.avoid_morning ? 'on' : ''}`}
-                  onClick={() => setPrefs(p => ({ ...p, avoid_morning: !p.avoid_morning }))}
+                  className={`toggle ${prefs.last_semester ? 'on' : ''}`}
+                  onClick={() => setPrefs(p => ({ ...p, last_semester: !p.last_semester }))}
                 >
                   <div className="toggle-thumb" />
                 </button>
               </div>
+            </div>
+
+            <div className="pref-section">
+              <label className="pref-label">공강 최소화</label>
+              <div className="toggle-row">
+                <span>{prefs.prefer_compact ? '과목 간 빈 시간 최소로 추천' : '끄면 우선순위 순'}</span>
+                <button
+                  type="button"
+                  className={`toggle ${prefs.prefer_compact ? 'on' : ''}`}
+                  onClick={() => setPrefs(p => ({ ...p, prefer_compact: !p.prefer_compact }))}
+                >
+                  <div className="toggle-thumb" />
+                </button>
+              </div>
+            </div>
+
+            <div className="pref-section">
+              <label className="pref-label">남는 학점 채울 선호 영역</label>
+              <div className="chip-group">
+                {ELECTIVE_OPTIONS.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`chip ${prefs.elective_cats.includes(value) ? 'selected' : ''}`}
+                    onClick={() => togglePrefArray('elective_cats', value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="pref-hint">선택 안 하면 기본 순서로 채웁니다.</p>
             </div>
 
             <div className="step-footer">
