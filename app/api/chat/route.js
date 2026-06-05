@@ -26,7 +26,9 @@ export async function POST(request) {
 
   const supabase = getSupabaseAdmin();
   const latestSemester = await getLatestSemester(supabase);
-  const [{ data: allCourses }, { data: completedRows }] = await Promise.all([
+  const scheduleCodes = (currentSchedule || []).map(c => c.code).filter(Boolean);
+
+  const [{ data: allCourses }, { data: completedRows }, { data: scheduleDescRows }] = await Promise.all([
     supabase
       .from('courses')
       .select('id, code, name, credits, track, category, timeslots')
@@ -35,7 +37,14 @@ export async function POST(request) {
       .from('completed_courses')
       .select('course_id, semester, courses(code, name, category)')
       .eq('user_id', auth.userId),
+    scheduleCodes.length
+      ? supabase.from('courses').select('code, description').in('code', scheduleCodes)
+      : Promise.resolve({ data: [] }),
   ]);
+
+  const scheduleDescMap = Object.fromEntries(
+    (scheduleDescRows || []).filter(r => r.description).map(r => [r.code, r.description])
+  );
 
   const courseListText = (allCourses || []).length
     ? allCourses.map(c => {
@@ -47,7 +56,9 @@ export async function POST(request) {
   const scheduleText = (currentSchedule || []).length
     ? currentSchedule.map(c => {
         const slots = (c.timeslots || []).map(s => `${s.day} ${s.start}-${s.end}`).join(', ');
-        return `[${c.code}] ${c.name} | ${slots}`;
+        const desc = scheduleDescMap[c.code];
+        const descLine = desc ? `\n     → ${desc.slice(0, 160)}${desc.length > 160 ? '...' : ''}` : '';
+        return `[${c.code}] ${c.name} | ${slots}${descLine}`;
       }).join('\n')
     : '(없음)';
 
