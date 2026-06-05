@@ -91,7 +91,7 @@ function sortCourses(courses, userGrade, trackOrder) {
   });
 }
 
-export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, coursesLoading = false }) {
+export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, coursesLoading = false, readOnly = false }) {
   const [pickerSlot, setPickerSlot] = useState(null);
 
   const colorMap = {};
@@ -172,14 +172,14 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
               return (
                 <div
                   key={day}
-                  className={`cell ${course ? 'occupied' : 'empty'} ${isActive ? 'active-cell' : ''}`}
+                  className={`cell ${course ? 'occupied' : 'empty'} ${isActive ? 'active-cell' : ''} ${readOnly ? 'read-only' : ''}`}
                   style={course ? { background: colorMap[course.id] } : {}}
-                  onClick={() => setPickerSlot({ day, hour })}
+                  onClick={readOnly ? undefined : () => setPickerSlot({ day, hour })}
                   title={course?.name}
                 >
                   {course
                     ? <span className="cell-text">{course.name}</span>
-                    : <span className="cell-plus">+</span>
+                    : (!readOnly && <span className="cell-plus">+</span>)
                   }
                 </div>
               );

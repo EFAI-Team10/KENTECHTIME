@@ -14,16 +14,41 @@ export async function GET(request) {
   const semester = searchParams.get('semester');
 
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('planned_schedules')
-    .select('*, courses(id, code, name, credits, timeslots, track, category, target_grade)')
-    .eq('user_id', auth.userId)
-    .eq('semester', semester);
+  const [{ data, error }, activeRes] = await Promise.all([
+    supabase
+      .from('planned_schedules')
+      .select('slot, courses(id, code, name, credits, timeslots, track, category, target_grade)')
+      .eq('user_id', auth.userId)
+      .eq('semester', semester),
+    supabase
+      .from('active_schedule')
+      .select('slot')
+      .eq('user_id', auth.userId)
+      .eq('semester', semester)
+      .maybeSingle(),
+  ]);
 
   if (error) {
     console.error('GET /api/schedule/my error:', error);
     return errorJson('서버 오류', 500);
   }
 
-  return Response.json({ schedule: data });
+  // 슬롯별로 그룹핑
+  const bySlot = {};
+  for (const row of data || []) {
+    const slot = row.slot ?? 0;
+    if (!bySlot[slot]) bySlot[slot] = [];
+    if (row.courses?.id) bySlot[slot].push(row.courses);
+  }
+  const timetables = Object.keys(bySlot)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map(slot => ({ slot, courses: bySlot[slot] }));
+
+  return Response.json({
+    timetables,
+    activeSlot: activeRes?.data?.slot ?? null,
+    // 하위호환: 기존 코드가 쓰던 schedule 필드 (slot 0 과목)
+    schedule: (data || []).filter(r => (r.slot ?? 0) === 0),
+  });
 }
