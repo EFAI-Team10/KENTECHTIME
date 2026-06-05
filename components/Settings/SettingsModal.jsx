@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { coursesAPI, usersAPI } from '@/lib/api-client';
 import { parseGradeData, CONSOLE_COMMAND, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import useStore from '@/lib/store';
+import { useTheme } from '@/contexts/ThemeContext';
+import { THEMES } from '@/lib/themes';
 import './SettingsModal.css';
 
 const CATEGORIES = ['VC','EF','EL','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
@@ -24,6 +26,7 @@ const ELECTIVE_OPTIONS = [
 
 export default function SettingsModal({ onClose, onTrackOrderChange }) {
   const { user, setUser } = useStore(s => ({ user: s.user, setUser: s.setUser }));
+  const { themeIdx, setTheme } = useTheme();
 
   // ── 내 정보 ──
   const [profile, setProfile] = useState({ name: '', student_id: '', grade: 0 });
@@ -269,6 +272,27 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
             >
               {profileSaving ? '저장 중...' : '저장'}
             </button>
+          </div>
+        </div>
+
+        {/* ── 색상 테마 ── */}
+        <div className="settings-section">
+          <h3>색상 테마</h3>
+          <div className="theme-grid">
+            {THEMES.map((t, i) => (
+              <button
+                key={i}
+                className={`theme-card ${themeIdx === i ? 'selected' : ''}`}
+                onClick={() => setTheme(i)}
+              >
+                <div className="theme-swatches">
+                  {t.preview.map((color, j) => (
+                    <span key={j} className="theme-swatch" style={{ background: color }} />
+                  ))}
+                </div>
+                <span className="theme-name">{t.name}</span>
+              </button>
+            ))}
           </div>
         </div>
 

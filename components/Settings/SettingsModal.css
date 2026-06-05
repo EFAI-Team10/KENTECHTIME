@@ -599,3 +599,50 @@
   font-size: 12px;
   cursor: pointer;
 }
+
+/* ── 색상 테마 피커 ── */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.theme-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 8px;
+  border: 2px solid #e8eaf0;
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.theme-card:hover {
+  border-color: #b0b8d0;
+}
+
+.theme-card.selected {
+  border-color: #4A90D9;
+  box-shadow: 0 0 0 3px rgba(74,144,217,0.15);
+}
+
+.theme-swatches {
+  display: flex;
+  gap: 3px;
+}
+
+.theme-swatch {
+  width: 18px;
+  height: 24px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.theme-name {
+  font-size: 11px;
+  color: #555;
+  font-weight: 500;
+}

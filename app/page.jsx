@@ -27,6 +27,7 @@ import TimetableGrid from '@/components/Timetable/TimetableGrid';
 import Dashboard from '@/components/Dashboard/Dashboard';
 import Chat from '@/components/Chat/Chat';
 import Tracker from '@/components/Tracker/Tracker';
+import { useTheme } from '@/contexts/ThemeContext';
 import SettingsModal from '@/components/Settings/SettingsModal';
 import { scheduleAPI, usersAPI, coursesAPI } from '@/lib/api-client';
 import useStore from '@/lib/store';
@@ -39,6 +40,8 @@ const slotsConflict = (a = [], b = []) =>
 export default function MainPage() {
   const router = useRouter();
   const { semester, currentSchedule, setCurrentSchedule, user, token, logout } = useStore();
+  const { theme } = useTheme();
+  const irColor = theme?.catColors?.IR ?? '#EF8862';
 
   const [mounted, setMounted] = useState(false);
 
@@ -454,6 +457,10 @@ export default function MainPage() {
                 <button
                   key={key}
                   className={`ir-chip${irTaking[key] ? ' ir-chip--taking' : ''}${locked ? ' ir-chip--locked' : ''}`}
+                  style={!locked ? {
+                    borderColor: irColor,
+                    ...(irTaking[key] ? { background: irColor } : {}),
+                  } : {}}
                   disabled={locked}
                   onClick={() => setIrTaking(prev => {
                     if (locked) return prev;

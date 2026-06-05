@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import './TimetableGrid.css';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const ESP_STAGES = [
   ['ES1001', 'ES1002'],
@@ -18,20 +19,19 @@ function getEspNextCodes(completedCodes) {
 }
 
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
-const TRACK_COLOR = {
+const DEFAULT_TRACK_COLOR = {
   '전기/전자': '#7289FF',
   '재료/화학': '#6CDD8F',
   '인공지능': '#F05268',
 };
-// DB에 '원자력'으로 저장된 과목은 '재료/화학'으로 통합
-const normalizeTrack = (t) => t === '원자력' ? '재료/화학' : t;
-// 카테고리별 고정 색상 (도넛 차트와 동일)
-const CAT_COLORS = {
+const DEFAULT_CAT_COLORS = {
   EL: '#002E73', EF: '#007CBD', VC: '#1CB9EC',
   MN: '#AE8EBD', HASS: '#8781AD', ESP: '#D488B7',
   IR: '#EF8862', CAPS: '#D2634E', EN: '#6F55B8',
   FR: '#666666', RC: '#3F8881', GR: '#CA6F1E', GS: '#00186E',
 };
+// DB에 '원자력'으로 저장된 과목은 '재료/화학'으로 통합
+const normalizeTrack = (t) => t === '원자력' ? '재료/화학' : t;
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 9);
@@ -94,6 +94,10 @@ function sortCourses(courses, userGrade, trackOrder) {
 }
 
 export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, onReplace, coursesLoading = false, readOnly = false }) {
+  const { theme } = useTheme();
+  const CAT_COLORS  = theme?.catColors   ?? DEFAULT_CAT_COLORS;
+  const TRACK_COLOR = theme?.trackColors ?? DEFAULT_TRACK_COLOR;
+
   const [pickerSlot, setPickerSlot] = useState(null);
 
   const colorMap = {};

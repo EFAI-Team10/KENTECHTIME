@@ -353,13 +353,12 @@
 }
 
 .ir-chip:hover {
-  border-color: #EF8862;
-  color: #EF8862;
+  color: currentColor;
+  opacity: 0.8;
 }
 
 .ir-chip--taking {
-  background: #EF8862;
-  border-color: #EF8862;
+  border-color: inherit;
   color: white;
 }
 

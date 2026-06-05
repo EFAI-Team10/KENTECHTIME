@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { coursesAPI } from '@/lib/api-client';
 import { parseGradeData, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
+import { useTheme } from '@/contexts/ThemeContext';
 import './Dashboard.css';
 
 // 졸업요건 학점 (학사편람 기준)
 const REQUIRED = { VC: 8, EF: 28, EL: 40, MN: 16, HASS: 4, ESP: 4, IR: 4, CAPS: 4, EN: 4, FR: 12, RC: 4, total: 128 };
 // FR overflow 계산 대상 카테고리 (요구학점이 있는 카테고리)
 const CAT_OVERFLOW_TARGET = { VC: 8, EF: 28, EL: 40, MN: 16, HASS: 4, IR: 4, CAPS: 4, EN: 4, RC: 4 };
-const CAT_COLORS = {
+const DEFAULT_CAT_COLORS = {
   EL: '#002E73', EF: '#007CBD', VC: '#1CB9EC',
   MN: '#AE8EBD', HASS: '#8781AD', ESP: '#D488B7',
   IR: '#EF8862', CAPS: '#D2634E', EN: '#6F55B8',
@@ -39,6 +40,9 @@ function semSortKey(sem) {
 }
 
 export default function Dashboard({ onImportSuccess, currentSchedule = [], irTaking = {} }) {
+  const { theme } = useTheme();
+  const CAT_COLORS = theme?.catColors ?? DEFAULT_CAT_COLORS;
+
   const [earned, setEarned] = useState({ VC: 0, EF: 0, EL: 0, MN: 0, HASS: 0, ESP: 0, IR: 0, GR: 0, CAPS: 0, EN: 0, RC: 0, FR: 0, total: 0 });
   const [overflows, setOverflows] = useState({});
   const [espStages, setEspStages] = useState([]);
