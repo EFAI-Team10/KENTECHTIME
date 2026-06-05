@@ -904,3 +904,34 @@
   margin: 6px 0 0;
   text-align: right;
 }
+/* 수강과목 체크 탭 */
+.check-course-list {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-top: 8px;
+}
+.check-cat-group { margin-bottom: 10px; }
+.check-cat-title {
+  margin: 6px 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4A90D9;
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.check-item:hover { background: #f5f8fc; }
+.check-item.checked { background: #eef6ff; }
+.check-item input { accent-color: #4A90D9; cursor: pointer; flex-shrink: 0; }
+.check-name { flex: 1; color: #333; }
+.check-meta { font-size: 11px; color: #999; flex-shrink: 0; }
+.check-count { font-size: 12px; color: #888; margin-right: auto; align-self: center; }
