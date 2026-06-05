@@ -37,6 +37,8 @@ const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 9);
 
 function pad(h) { return `${String(h).padStart(2, '0')}:00`; }
+// 'HH:MM' → 시(소수). 13:30 → 13.5
+function toH(t) { const [h, m] = String(t || '0:0').split(':').map(Number); return (h || 0) + (m || 0) / 60; }
 
 function slotsConflict(a = [], b = []) {
   return a.some(sa => b.some(sb => sa.day === sb.day && sa.start < sb.end && sb.start < sa.end));
@@ -91,7 +93,7 @@ function sortCourses(courses, userGrade, trackOrder) {
   });
 }
 
-export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, coursesLoading = false, readOnly = false }) {
+export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, onReplace, coursesLoading = false, readOnly = false }) {
   const [pickerSlot, setPickerSlot] = useState(null);
 
   const colorMap = {};
@@ -169,17 +171,31 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
             {DAYS.map(day => {
               const course = getCourseAt(day, hour);
               const isActive = pickerSlot?.day === day && pickerSlot?.hour === hour;
+              // 이 셀(hour~hour+1)을 덮는 실제 시간대 → 비율 계산
+              const slot = course && (course.timeslots || []).find(s => coversCell(s, day, hour));
+              const startH = slot ? toH(slot.start) : 0;
+              const endH   = slot ? toH(slot.end)   : 0;
+              // 과목 시작 칸에서만 '전체 시간' 블록 하나를 그림 → 병합된 단일 블록 + 중앙 정렬
+              const showBlock = slot && startH >= hour;
+              const fillStyle = showBlock ? {
+                background: colorMap[course.id],
+                top: `${(startH - hour) * 100}%`,
+                height: `${(endH - startH) * 100}%`,
+              } : null;
               return (
                 <div
                   key={day}
                   className={`cell ${course ? 'occupied' : 'empty'} ${isActive ? 'active-cell' : ''} ${readOnly ? 'read-only' : ''}`}
-                  style={course ? { background: colorMap[course.id] } : {}}
                   onClick={readOnly ? undefined : () => setPickerSlot({ day, hour })}
                   title={course?.name}
                 >
-                  {course
-                    ? <span className="cell-text">{course.name}</span>
-                    : (!readOnly && <span className="cell-plus">+</span>)
+                  {showBlock
+                    ? (
+                      <div className="cell-fill" style={fillStyle}>
+                        <span className="cell-text">{course.name}</span>
+                      </div>
+                    )
+                    : (!course && !readOnly && <span className="cell-plus">+</span>)
                   }
                 </div>
               );
@@ -240,7 +256,12 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                       <li
                         key={c.id}
                         className={`pk-item ${conflict ? 'pk-conflict' : ''} ${added ? 'pk-added' : ''}`}
-                        onClick={() => !conflict && !added && (onAdd?.(c), setPickerSlot(null))}
+                        onClick={() => {
+                          if (added) return;
+                          if (conflict) onReplace?.(c);   // 충돌 과목 교체
+                          else onAdd?.(c);
+                          setPickerSlot(null);
+                        }}
                       >
                         <div className="pk-item-tags">
                           {c.track && (
@@ -251,7 +272,6 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                           {c.target_grade > 0 && (
                             <span className="pk-grade-badge">{c.target_grade}학년</span>
                           )}
-                          {conflict && <span className="pk-status conflict">충돌</span>}
                           {added && <span className="pk-status added">추가됨</span>}
                         </div>
                         <div className="pk-item-name">{c.name}</div>

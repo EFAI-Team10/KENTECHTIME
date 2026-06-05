@@ -178,6 +178,15 @@ export default function MainPage() {
     updateMyCourses(cs => cs.filter(c => c.id !== course.id));
   };
 
+  // 충돌 과목을 클릭하면 겹치는 기존 과목을 제거하고 교체
+  const handleReplaceCourse = (course) => {
+    if (view.type !== 'my') return;
+    updateMyCourses(cs => [
+      ...cs.filter(c => c.id !== course.id && !slotsConflict(c.timeslots, course.timeslots)),
+      course,
+    ]);
+  };
+
   // ── 복사/붙여넣기 (추천·내 시간표 모두 복사 가능) ──
   const copyCurrent = () => {
     setCopyBuffer(currentCourses);
@@ -325,30 +334,6 @@ export default function MainPage() {
                   추천 {String.fromCharCode(65 + i)}
                 </button>
               ))}
-
-              <span className="tab-divider" />
-
-              {myTimetables.map((t, i) => {
-                const saved = savedSlots.has(t.slot);
-                return (
-                  <button
-                    key={`my-${t.slot}`}
-                    className={`my-tab ${!isRec && view.idx === i ? 'active' : ''} ${saved ? 'saved' : 'unsaved'}`}
-                    onClick={() => selectMy(i)}
-                    onDoubleClick={() => renameMyTimetable(i)}
-                    title={
-                      (confirmedSlot === t.slot ? '확정됨 (경쟁률 반영) · ' : '') +
-                      (saved ? '저장됨' : '미저장 (변경사항 있음)') +
-                      ' · 더블클릭하여 이름 변경'
-                    }
-                  >
-                    {t.name || `내 시간표 ${i + 1}`}
-                    {confirmedSlot === t.slot && <span className="confirmed-mark"> ✓</span>}
-                    <span className="save-dot">{saved ? '저장됨' : '●'}</span>
-                  </button>
-                );
-              })}
-              <button className="tab-add" onClick={addMyTimetable} title="내 시간표 추가">＋</button>
             </div>
 
             <div className="action-btns">
@@ -380,6 +365,31 @@ export default function MainPage() {
             </div>
           </div>
 
+          {/* 내 시간표 탭 — 추천 탭 아래 별도 줄 */}
+          <div className="plan-tabs my-tabs-row">
+            {myTimetables.map((t, i) => {
+              const saved = savedSlots.has(t.slot);
+              return (
+                <button
+                  key={`my-${t.slot}`}
+                  className={`my-tab ${!isRec && view.idx === i ? 'active' : ''} ${saved ? 'saved' : 'unsaved'}`}
+                  onClick={() => selectMy(i)}
+                  onDoubleClick={() => renameMyTimetable(i)}
+                  title={
+                    (confirmedSlot === t.slot ? '확정됨 (경쟁률 반영) · ' : '') +
+                    (saved ? '저장됨' : '미저장 (변경사항 있음)') +
+                    ' · 더블클릭하여 이름 변경'
+                  }
+                >
+                  {t.name || `내 시간표 ${i + 1}`}
+                  {confirmedSlot === t.slot && <span className="confirmed-mark"> ✓</span>}
+                  <span className="save-dot">{saved ? '저장됨' : '●'}</span>
+                </button>
+              );
+            })}
+            <button className="tab-add" onClick={addMyTimetable} title="내 시간표 추가">＋</button>
+          </div>
+
           {isRec && (
             <p className="rec-hint">추천은 읽기 전용입니다. <b>📋 복사</b> 후 <b>내 시간표</b> 탭에서 <b>붙여넣기</b> 하세요.</p>
           )}
@@ -393,6 +403,7 @@ export default function MainPage() {
             onTrackOrderChange={setTrackOrder}
             onAdd={handleAddCourse}
             onRemove={handleRemoveCourse}
+            onReplace={handleReplaceCourse}
             coursesLoading={coursesLoading}
             readOnly={isRec}
           />
