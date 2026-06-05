@@ -100,6 +100,59 @@
   color: white;
 }
 
+/* 추천 탭 옆 트랙 우선순위 (버튼 위치 고정) */
+.track-mini {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 10px;
+  padding-left: 12px;
+  border-left: 1px solid #e2e6ec;
+  flex-wrap: wrap;
+}
+.track-mini-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+}
+.plan-tabs .track-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border: 1.5px solid #ddd;
+  border-radius: 20px;
+  background: white;
+  color: #555;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.plan-tabs .track-chip.sel {
+  color: #222;
+  font-weight: 600;
+}
+.track-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  flex-shrink: 0;
+}
+.plan-tabs .track-reset {
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: #aaa;
+  font-size: 12px;
+  cursor: pointer;
+}
+
 /* 내 시간표 탭 줄 (추천 탭 아래) */
 .my-tabs-row {
   margin-bottom: 16px;
@@ -308,6 +361,18 @@
   background: #EF8862;
   border-color: #EF8862;
   color: white;
+}
+
+.ir-chip--locked {
+  border-color: #ddd;
+  color: #aaa;
+  background: #f5f5f5;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+.ir-chip--locked:hover {
+  border-color: #ddd;
+  color: #aaa;
 }
 
 .ir-chip-desc {

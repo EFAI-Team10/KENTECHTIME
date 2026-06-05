@@ -99,13 +99,6 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
   const colorMap = {};
   courses.forEach(c => { colorMap[c.id] = CAT_COLORS[c.category] || '#4A90D9'; });
 
-  const toggleTrack = (track) => {
-    const next = trackOrder.includes(track)
-      ? trackOrder.filter(t => t !== track)
-      : [...trackOrder, track];
-    onTrackOrderChange?.(next);
-  };
-
   // 셀 [hour:00, hour+1:00) 구간과 겹치는 과목 탐색 (30분 단위 시작 과목 포함)
   const coversCell = (s, day, hour) =>
     s.day === day && s.start < pad(hour + 1) && s.end > pad(hour);
@@ -131,34 +124,6 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
 
   return (
     <div className="timetable-wrapper">
-      {/* 트랙 우선순위 선택 */}
-      <div className="track-selector">
-        <span className="ts-label">트랙 우선순위</span>
-        <div className="ts-checks">
-          {[
-            ...trackOrder.filter(t => TRACKS.includes(t)),   // 선택된 트랙: 우선순위 순
-            ...TRACKS.filter(t => !trackOrder.includes(t)),  // 미선택 트랙: 기본 순
-          ].map(track => {
-            const idx = trackOrder.indexOf(track);
-            const sel = idx !== -1;
-            return (
-              <label
-                key={track}
-                className={`ts-item ${sel ? 'sel' : ''}`}
-                style={sel ? { borderColor: TRACK_COLOR[track], background: TRACK_COLOR[track] + '18' } : {}}
-              >
-                <input type="checkbox" checked={sel} onChange={() => toggleTrack(track)} />
-                {sel && <span className="ts-num" style={{ background: TRACK_COLOR[track] }}>{idx + 1}</span>}
-                <span className="ts-name">{track}</span>
-              </label>
-            );
-          })}
-        </div>
-        {trackOrder.length > 0 && (
-          <button className="ts-reset" onClick={() => onTrackOrderChange?.([])}>초기화</button>
-        )}
-      </div>
-
       {/* 시간표 그리드 */}
       <div className="timetable-grid">
         <div className="timetable-header">
