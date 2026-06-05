@@ -1,10 +1,16 @@
 import './globals.css';
 import './dark.css';
+import './responsive.css';
 import Providers from './providers';
 
 export const metadata = {
   title: 'KENTECHTIME',
   description: 'KENTECH 시간표 추천 서비스',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }) {
