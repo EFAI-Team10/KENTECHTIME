@@ -250,10 +250,19 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
           </div>
         </div>
         <div className="donut-legend">
-          {Object.entries(REQUIRED).filter(([cat]) => cat !== 'total').map(([cat]) => (
-            <div key={cat} className="legend-item">
-              <span className="legend-dot" style={{ background: CAT_COLORS[cat] || '#4A90D9' }} />
-              <span className="legend-label">{cat}</span>
+          {[3, 4, 4].reduce((acc, count) => {
+            const start = acc.offset;
+            acc.rows.push(acc.cats.slice(start, start + count));
+            acc.offset += count;
+            return acc;
+          }, { cats: Object.keys(REQUIRED).filter(c => c !== 'total'), rows: [], offset: 0 }).rows.map((row, ri) => (
+            <div key={ri} className="legend-row">
+              {row.map(cat => (
+                <div key={cat} className="legend-item">
+                  <span className="legend-dot" style={{ background: CAT_COLORS[cat] || '#4A90D9' }} />
+                  <span className="legend-label">{cat}</span>
+                </div>
+              ))}
             </div>
           ))}
         </div>
