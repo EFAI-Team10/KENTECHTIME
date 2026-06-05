@@ -53,6 +53,7 @@ export default function MainPage() {
   const [view, setView] = useState({ type: 'rec', idx: 0 });           // 현재 보고있는 탭
   const [copyBuffer, setCopyBuffer] = useState(null);                  // 추천 → 내 시간표 복사 버퍼
   const [copied, setCopied] = useState(false);                         // 복사 완료 피드백
+  const [pendingEdit, setPendingEdit] = useState(null);                // 확정 취소 확인 대기 중인 편집
   const [trackerKey, setTrackerKey] = useState(0);                     // 확정 시 경쟁률 새로고침
 
   const [loading, setLoading] = useState(false);
@@ -185,25 +186,44 @@ export default function MainPage() {
     if (slot != null) markDirty(slot); // 수정되면 '미저장' 상태로
   };
 
+  // 현재 보고있는 내 시간표가 '확정'된 슬롯인지
+  const isEditingConfirmed = () =>
+    view.type === 'my' && confirmedSlot != null && myTimetables[view.idx]?.slot === confirmedSlot;
+
+  // 확정된 시간표 수정 시 → 확정 취소 확인 모달, 그 외엔 바로 편집
+  const runEdit = (editFn) => {
+    if (isEditingConfirmed()) setPendingEdit(() => editFn);
+    else editFn();
+  };
+
+  // 모달 '예' → 확정 취소 후 편집 진행
+  const confirmCancelActive = async () => {
+    try { await scheduleAPI.cancelActive(semester); } catch {}
+    setConfirmedSlot(null);
+    setTrackerKey(k => k + 1);
+    pendingEdit?.();
+    setPendingEdit(null);
+  };
+
   const handleAddCourse = (course) => {
     if (view.type !== 'my') return;
     const cur = myTimetables[view.idx]?.courses || [];
-    const conflict = cur.some(c => slotsConflict(c.timeslots, course.timeslots));
-    if (!conflict) updateMyCourses(cs => [...cs, course]);
+    if (cur.some(c => slotsConflict(c.timeslots, course.timeslots))) return;
+    runEdit(() => updateMyCourses(cs => [...cs, course]));
   };
 
   const handleRemoveCourse = (course) => {
     if (view.type !== 'my') return;
-    updateMyCourses(cs => cs.filter(c => c.id !== course.id));
+    runEdit(() => updateMyCourses(cs => cs.filter(c => c.id !== course.id)));
   };
 
   // 충돌 과목을 클릭하면 겹치는 기존 과목을 제거하고 교체
   const handleReplaceCourse = (course) => {
     if (view.type !== 'my') return;
-    updateMyCourses(cs => [
+    runEdit(() => updateMyCourses(cs => [
       ...cs.filter(c => c.id !== course.id && !slotsConflict(c.timeslots, course.timeslots)),
       course,
-    ]);
+    ]));
   };
 
   // ── 복사/붙여넣기 (추천·내 시간표 모두 복사 가능) ──
@@ -214,7 +234,7 @@ export default function MainPage() {
   };
   const pasteIntoMy = () => {
     if (view.type !== 'my' || !copyBuffer) return;
-    updateMyCourses(() => [...copyBuffer]);
+    runEdit(() => updateMyCourses(() => [...copyBuffer]));
   };
 
   // ── 내 시간표 추가/삭제/이름변경 ──
@@ -365,6 +385,21 @@ export default function MainPage() {
             </div>
             <div className="withdraw-modal-btns">
               <button onClick={() => setShowWithdrawModal(false)} disabled={withdrawLoading}>취소</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingEdit && (
+        <div className="modal-overlay" onClick={() => setPendingEdit(null)}>
+          <div className="withdraw-modal" onClick={e => e.stopPropagation()}>
+            <h3>시간표 확정 취소</h3>
+            <p>이 시간표는 <strong>확정(경쟁률 반영)</strong>된 상태입니다.<br />
+              수정하려면 확정을 취소해야 합니다.</p>
+            <p>시간표 확정을 취소하시겠습니까?</p>
+            <div className="withdraw-modal-btns">
+              <button onClick={() => setPendingEdit(null)}>아니오</button>
+              <button className="btn-danger" onClick={confirmCancelActive}>예</button>
             </div>
           </div>
         </div>
