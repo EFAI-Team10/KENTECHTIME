@@ -23,12 +23,17 @@
   .action-btns { flex-wrap: wrap; }
   .track-mini { margin-left: 0; padding-left: 0; border-left: none; width: 100%; }
 
-  /* 시간표 — 시간열 좁게 + 폰트 축소 */
-  .timetable-header,
-  .timetable-row { grid-template-columns: 36px repeat(5, 1fr); }
-  .time-col, .day-col, .cell { font-size: 11px; min-height: 40px; }
+  /* 시간표 — 시간열 좁게 + 폰트 축소 (우선순위 ↑: TimetableGrid.css보다 늦게 로드돼도 이기도록) */
+  .timetable-grid .timetable-header,
+  .timetable-grid .timetable-row { grid-template-columns: 36px repeat(5, 1fr); }
+  .timetable-grid .time-col,
+  .timetable-grid .day-col,
+  .timetable-grid .cell { font-size: 11px; min-height: 40px; }
   /* 좁은 칸에서 한글 과목명이 잘리지 않고 줄바꿈되도록 */
-  .cell-text { font-size: 10px; line-height: 1.15; word-break: break-all; white-space: normal; }
+  .timetable-grid .cell-text {
+    font-size: 10px; line-height: 1.15;
+    word-break: break-all; white-space: normal;
+  }
   .track-selector { gap: 6px; }
 
   /* 과목 선택 패널 — 전체폭 시트 */
@@ -49,9 +54,11 @@
 @media (max-width: 480px) {
   .header-right .username { display: none; } /* 좁은 화면에선 이름 숨김 */
   .main-content { padding: 10px; }
-  .timetable-header,
-  .timetable-row { grid-template-columns: 28px repeat(5, 1fr); }
-  .time-col, .day-col, .cell { font-size: 10px; min-height: 38px; }
-  .cell-text { font-size: 9px; line-height: 1.12; word-break: break-all; white-space: normal; }
+  .timetable-grid .timetable-header,
+  .timetable-grid .timetable-row { grid-template-columns: 28px repeat(5, 1fr); }
+  .timetable-grid .time-col,
+  .timetable-grid .day-col,
+  .timetable-grid .cell { font-size: 10px; min-height: 38px; }
+  .timetable-grid .cell-text { font-size: 9px; line-height: 1.12; word-break: break-all; white-space: normal; }
   .plan-tabs button { padding: 6px 12px; font-size: 13px; }
 }
