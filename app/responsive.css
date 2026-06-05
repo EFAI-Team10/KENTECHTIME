@@ -21,7 +21,15 @@
   /* 탭/액션 컨트롤 세로 정렬 */
   .plan-controls { flex-direction: column; align-items: stretch; gap: 10px; }
   .action-btns { flex-wrap: wrap; }
-  .track-mini { margin-left: 0; padding-left: 0; border-left: none; width: 100%; }
+
+  /* 트랙 우선순위: 1행=라벨(가운데)+초기화(오른쪽), 2행=트랙 버튼들 */
+  .track-mini {
+    margin-left: 0; padding-left: 0; border-left: none; width: 100%;
+    flex-wrap: wrap; justify-content: center; position: relative; row-gap: 8px;
+  }
+  .track-mini .track-mini-label { order: 1; flex-basis: 100%; text-align: center; }
+  .track-mini .track-reset { order: 1; position: absolute; right: 0; top: 0; }
+  .track-mini .track-chip { order: 2; }
 
   /* 시간표 — 시간열 좁게 + 폰트 축소 (우선순위 ↑: TimetableGrid.css보다 늦게 로드돼도 이기도록) */
   .timetable-grid .timetable-header,
