@@ -103,6 +103,47 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [history, setHistory] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // 수강과목 체크 탭
+  const [checkCourses, setCheckCourses] = useState([]);
+  const [checkSelected, setCheckSelected] = useState(new Set());
+  const [checkSearch, setCheckSearch] = useState('');
+  const [checkLoaded, setCheckLoaded] = useState(false);
+  const [checkDone, setCheckDone] = useState(false);
+
+  // 체크 탭 진입 시 전체 과목 + 기존 수강이력 로드
+  useEffect(() => {
+    if (activeTab !== 'check' || checkLoaded) return;
+    Promise.all([coursesAPI.getAll(), coursesAPI.getCompleted()])
+      .then(([allRes, completedRes]) => {
+        setCheckCourses(allRes.data.courses || []);
+        setCheckSelected(new Set((completedRes.data.courses || []).map(c => c.id)));
+        setCheckLoaded(true);
+      })
+      .catch(() => {});
+  }, [activeTab, checkLoaded]);
+
+  const toggleCheck = (id) => setCheckSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+
+  const handleCheckSave = async () => {
+    setImporting(true);
+    try {
+      const courses = [...checkSelected].map(id => ({ course_id: id, semester: '입력', grade: 'P' }));
+      await coursesAPI.saveCompleted(courses);
+      setCheckDone(true);
+      loadRequirements();
+      setHistory(null);
+      onImportSuccess?.();
+    } catch {
+      alert('서버 오류가 발생했습니다.');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const loadRequirements = () => {
     coursesAPI.getRequirements()
       .then(res => {
@@ -169,6 +210,8 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
     setImportDone(false);
     setExtForm(EMPTY_EXT);
     setExtDone(false);
+    setCheckDone(false);
+    setCheckSearch('');
   };
 
   const handleExtSubmit = async () => {
@@ -227,7 +270,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
       <div className="dashboard-header">
         <h2>졸업 요건 현황</h2>
         <button className="import-btn" onClick={() => setShowImport(true)}>
-          수강이력 가져오기
+          수강이력 입력
         </button>
       </div>
 
@@ -494,13 +537,19 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                 className={`import-tab${activeTab === 'portal' ? ' active' : ''}`}
                 onClick={() => { setActiveTab('portal'); setPreview(null); setImportDone(false); }}
               >
-                포털 가져오기
+                수강이력 가져오기
+              </button>
+              <button
+                className={`import-tab${activeTab === 'check' ? ' active' : ''}`}
+                onClick={() => { setActiveTab('check'); setCheckDone(false); }}
+              >
+                수강과목 체크
               </button>
               <button
                 className={`import-tab${activeTab === 'manual' ? ' active' : ''}`}
                 onClick={() => { setActiveTab('manual'); setExtDone(false); }}
               >
-                기타 직접 입력
+                수강과목 직접 입력
               </button>
             </div>
 
@@ -583,6 +632,68 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                     <button onClick={handleClose}>취소</button>
                     <button className="confirm-import-btn" onClick={handleParse} disabled={!pasteText.trim()}>
                       분석
+                    </button>
+                  </div>
+                </>
+              )
+            )}
+
+            {/* ── 수강과목 체크 탭 ── */}
+            {activeTab === 'check' && (
+              checkDone ? (
+                <>
+                  <p className="import-success">수강이력이 저장되었습니다. ({checkSelected.size}과목)</p>
+                  <div className="import-modal-btns">
+                    <button className="confirm-import-btn" onClick={handleClose}>확인</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="ext-form-desc">체크한 과목으로 수강이력이 <b>교체</b>됩니다.</p>
+                  <input
+                    className="paste-area"
+                    style={{ fontFamily: 'inherit', minHeight: 0 }}
+                    type="text"
+                    placeholder="과목명 또는 코드 검색..."
+                    value={checkSearch}
+                    onChange={e => setCheckSearch(e.target.value)}
+                  />
+                  {!checkLoaded ? (
+                    <p className="ext-form-desc">과목 목록 불러오는 중...</p>
+                  ) : checkCourses.length === 0 ? (
+                    <p className="ext-form-desc">개설 과목 데이터가 없습니다.</p>
+                  ) : (
+                    <div className="check-course-list">
+                      {CATEGORIES.map(cat => {
+                        const list = checkCourses.filter(c =>
+                          c.category === cat &&
+                          (c.name?.includes(checkSearch) || c.code?.includes(checkSearch))
+                        );
+                        if (list.length === 0) return null;
+                        return (
+                          <div key={cat} className="check-cat-group">
+                            <h4 className="check-cat-title">{cat}</h4>
+                            {list.map(course => (
+                              <label key={course.id} className={`check-item${checkSelected.has(course.id) ? ' checked' : ''}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={checkSelected.has(course.id)}
+                                  onChange={() => toggleCheck(course.id)}
+                                />
+                                <span className="check-name">{course.name}</span>
+                                <span className="check-meta">{course.code} · {course.credits}학점</span>
+                              </label>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div className="import-modal-btns">
+                    <span className="check-count">선택: {checkSelected.size}과목</span>
+                    <button onClick={handleClose}>취소</button>
+                    <button className="confirm-import-btn" onClick={handleCheckSave} disabled={importing}>
+                      {importing ? '저장 중...' : '저장'}
                     </button>
                   </div>
                 </>
