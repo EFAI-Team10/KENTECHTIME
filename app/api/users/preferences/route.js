@@ -31,7 +31,7 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { preferred_tracks, avoid_morning, preferred_gap, day_off, last_semester, elective_cats, max_credits, prefer_compact } = body;
+  const { preferred_tracks, avoid_morning, preferred_gap, day_off, last_semester, elective_cats, max_credits, prefer_compact, esp_start_level } = body;
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase
@@ -46,6 +46,7 @@ export async function POST(request) {
       elective_cats:     elective_cats     || [],
       max_credits:       max_credits       ?? 16,
       prefer_compact:    !!prefer_compact,
+      esp_start_level:   [1,2,3].includes(esp_start_level) ? esp_start_level : 1,
     }, { onConflict: 'user_id' });
 
   if (error) {

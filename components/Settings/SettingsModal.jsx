@@ -58,9 +58,38 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
     prefer_compact: false,
     elective_cats: [],
     max_credits: 16,
+    esp_start_level: 1,
   });
   const [recPrefSaving, setRecPrefSaving] = useState(false);
   const [recPrefDone, setRecPrefDone] = useState(false);
+
+  // ── ESP 시작 레벨 (시작 이전 과목 자동 기수강) ──
+  // 1: Foundation 1(ES1001) 시작, 2: Foundation 2(ES1002) 시작, 3: Intermediate 시작
+  const ESP_PRIOR_CODES = {
+    1: [],
+    2: ['ES1001'],
+    3: ['ES1001', 'ES1002'],
+  };
+  const [espSaving, setEspSaving] = useState(false);
+  const [espDone, setEspDone] = useState(false);
+  const espStart = recPref.esp_start_level || 1; // 저장된 값으로 표시
+
+  const handleEspSave = async () => {
+    setEspSaving(true);
+    setEspDone(false);
+    try {
+      // 1) 선택값을 user_preferences에 저장 (재진입 시에도 그대로 표시)
+      await usersAPI.savePreferences(recPref);
+      // 2) 시작 이전 ESP 과목을 기수강에 추가 (졸업요건 반영, 비파괴)
+      const codes = (ESP_PRIOR_CODES[espStart] || []).map(code => ({ code, category: 'ESP', name: code, credits: 0 }));
+      if (codes.length > 0) await coursesAPI.importByCodes(codes, {});
+      setEspDone(true);
+    } catch {
+      alert('ESP 시작 레벨 저장에 실패했습니다.');
+    } finally {
+      setEspSaving(false);
+    }
+  };
 
   useEffect(() => {
     usersAPI.getPreferences()
@@ -72,6 +101,7 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
           prefer_compact:   !!p.prefer_compact,
           elective_cats:    p.elective_cats || [],
           max_credits:      p.max_credits   ?? 16,
+          esp_start_level:  p.esp_start_level ?? 1,
         });
       })
       .catch(() => {});
@@ -246,6 +276,21 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
                 {semesterSaving ? '...' : '저장'}
               </button>
               {semesterDone && <span className="profile-saved">✓</span>}
+            </div>
+            <div className="profile-view-row">
+              <span className="profile-view-label">ESP 시작 레벨</span>
+              <select
+                value={espStart}
+                onChange={e => { setRecPref(p => ({ ...p, esp_start_level: parseInt(e.target.value) })); setEspDone(false); }}
+              >
+                <option value={1}>Foundation 1 시작</option>
+                <option value={2}>Foundation 2 시작</option>
+                <option value={3}>Intermediate 시작</option>
+              </select>
+              <button className="btn-sm" onClick={handleEspSave} disabled={espSaving}>
+                {espSaving ? '...' : '저장'}
+              </button>
+              {espDone && <span className="profile-saved">✓</span>}
             </div>
           </div>
         </div>

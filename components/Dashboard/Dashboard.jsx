@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { coursesAPI } from '@/lib/api-client';
+import { coursesAPI, usersAPI } from '@/lib/api-client';
 import { parseGradeData, BOOKMARKLET_HREF_HTML } from '@/lib/gradeParser';
 import { useTheme } from '@/contexts/ThemeContext';
 import './Dashboard.css';
@@ -21,6 +21,9 @@ const CAT_ORDER = ['EF', 'VC', 'EL', 'MN', 'HASS', 'EN', 'IR', 'CAPS', 'ESP', 'R
 
 
 const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
+
+// ESP 시작 레벨 → 시작 이전(자동 기수강) 과목 코드 (입력은 설정에서만)
+const ESP_PRIOR_CODES = { 1: [], 2: ['ES1001'], 3: ['ES1001', 'ES1002'] };
 
 function formatSemLabel(sem) {
   if (!sem || sem === 'imported') return '가져온 이력';
@@ -109,18 +112,25 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [checkSearch, setCheckSearch] = useState('');
   const [checkLoaded, setCheckLoaded] = useState(false);
   const [checkDone, setCheckDone] = useState(false);
+  const [espStartLevel, setEspStartLevel] = useState(1); // 설정에서 저장된 값 (읽기 전용 반영)
 
-  // 체크 탭 진입 시 전체 과목 + 기존 수강이력 로드
+  // 체크 탭 진입 시 전체 과목 + 기존 수강이력 + ESP 시작 레벨(설정) 로드
   useEffect(() => {
     if (activeTab !== 'check' || checkLoaded) return;
-    Promise.all([coursesAPI.getAll(), coursesAPI.getCompleted()])
-      .then(([allRes, completedRes]) => {
+    Promise.all([coursesAPI.getAll(), coursesAPI.getCompleted(), usersAPI.getPreferences()])
+      .then(([allRes, completedRes, prefRes]) => {
         setCheckCourses(allRes.data.courses || []);
         setCheckSelected(new Set((completedRes.data.courses || []).map(c => c.id)));
+        setEspStartLevel(prefRes.data.preferences?.esp_start_level ?? 1);
         setCheckLoaded(true);
       })
       .catch(() => {});
   }, [activeTab, checkLoaded]);
+
+  // 설정의 ESP 시작 레벨 이전 과목 = 자동 기수강(잠금, 입력은 설정에서만)
+  const espPriorCodes = ESP_PRIOR_CODES[espStartLevel] || [];
+  const espLockedIds = (checkCourses || []).filter(c => espPriorCodes.includes(c.code)).map(c => c.id);
+  const effectiveCheckCount = new Set([...checkSelected, ...espLockedIds]).size;
 
   const toggleCheck = (id) => setCheckSelected(prev => {
     const next = new Set(prev);
@@ -131,7 +141,9 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const handleCheckSave = async () => {
     setImporting(true);
     try {
-      const courses = [...checkSelected].map(id => ({ course_id: id, semester: '입력', grade: 'P' }));
+      // 체크된 과목 + 설정의 ESP 시작 레벨 이전(자동 기수강) 합산
+      const ids = new Set([...checkSelected, ...espLockedIds]);
+      const courses = [...ids].map(id => ({ course_id: id, semester: '입력', grade: 'P' }));
       await coursesAPI.saveCompleted(courses);
       setCheckDone(true);
       loadRequirements();
@@ -674,24 +686,32 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                         return (
                           <div key={cat} className="check-cat-group">
                             <h4 className="check-cat-title">{cat}</h4>
-                            {list.map(course => (
-                              <label key={course.id} className={`check-item${checkSelected.has(course.id) ? ' checked' : ''}`}>
-                                <input
-                                  type="checkbox"
-                                  checked={checkSelected.has(course.id)}
-                                  onChange={() => toggleCheck(course.id)}
-                                />
-                                <span className="check-name">{course.name}</span>
-                                <span className="check-meta">{course.code} · {course.credits}학점</span>
-                              </label>
-                            ))}
+                            {list.map(course => {
+                              // 설정의 ESP 시작 레벨 이전 과목 = 자동 기수강(체크 고정·잠금)
+                              const espLocked = espPriorCodes.includes(course.code);
+                              const checked = espLocked || checkSelected.has(course.id);
+                              return (
+                                <label key={course.id} className={`check-item${checked ? ' checked' : ''}${espLocked ? ' locked' : ''}`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    disabled={espLocked}
+                                    onChange={() => { if (!espLocked) toggleCheck(course.id); }}
+                                  />
+                                  <span className="check-name">{course.name}</span>
+                                  <span className="check-meta">
+                                    {course.code} · {course.credits}학점{espLocked ? ' · 기수강(ESP 시작레벨 이전)' : ''}
+                                  </span>
+                                </label>
+                              );
+                            })}
                           </div>
                         );
                       })}
                     </div>
                   )}
                   <div className="import-modal-btns">
-                    <span className="check-count">선택: {checkSelected.size}과목</span>
+                    <span className="check-count">선택: {effectiveCheckCount}과목</span>
                     <button onClick={handleClose}>취소</button>
                     <button className="confirm-import-btn" onClick={handleCheckSave} disabled={importing}>
                       {importing ? '저장 중...' : '저장'}
