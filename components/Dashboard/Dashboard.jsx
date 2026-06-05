@@ -15,8 +15,8 @@ const CAT_COLORS = {
   IR: '#EF8862', CAPS: '#D2634E', EN: '#6F55B8',
   FR: '#666666', RC: '#3F8881', GR: '#CA6F1E', GS: '#00186E',
 };
-const CATEGORIES = ['EF','EL','VC','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
-const CAT_ORDER = ['EF','VC','EL','MN','HASS','EN','IR','CAPS','ESP','RC','FR','GR'];
+const CATEGORIES = ['EF', 'EL', 'VC', 'MN', 'HASS', 'ESP', 'IR', 'GR', 'CAPS', 'EN', 'RC', 'FR', 'GS'];
+const CAT_ORDER = ['EF', 'VC', 'EL', 'MN', 'HASS', 'EN', 'IR', 'CAPS', 'ESP', 'RC', 'FR', 'GR'];
 
 
 const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
@@ -68,14 +68,14 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
 
   // EL 바: 학점 기준 fill
   const elEarnedPct = Math.min(100, (earned.EL / REQUIRED.EL) * 100);
-  const elPlanPct   = Math.min(100, ((earned.EL + plannedElCredits) / REQUIRED.EL) * 100);
+  const elPlanPct = Math.min(100, ((earned.EL + plannedElCredits) / REQUIRED.EL) * 100);
 
   // 시간표 추가 시 각 카테고리 초과분 → FR 미리보기
   const plannedFRExtra = Object.entries(CAT_OVERFLOW_TARGET).reduce((sum, [cat, req]) => {
-    const got      = earned[cat] || 0;
-    const plan     = planned[cat] || 0;
+    const got = earned[cat] || 0;
+    const plan = planned[cat] || 0;
     const alreadyOver = Math.max(0, got - req);        // 이미 earned.FR에 반영된 초과분
-    const projected   = Math.max(0, got + plan - req); // earned+planned 기준 초과분
+    const projected = Math.max(0, got + plan - req); // earned+planned 기준 초과분
     return sum + Math.max(0, projected - alreadyOver);
   }, 0);
   // FR 바의 계획 학점 = 직접 FR 과목 + 타 카테고리 초과 예정분
@@ -108,7 +108,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
         setEfSub(d.efSub || { math: 0, physics: 0, chem: 0, dl: 0 });
         setElUpperCount(d.elUpperCount || 0);
       })
-      .catch(() => {});
+      .catch(() => { });
   };
 
   useEffect(() => { loadRequirements(); }, []);
@@ -121,7 +121,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
       const rem = req - got;
       const color = CAT_COLORS[cat] || '#4A90D9';
       return [
-        ...(got > 0 ? [{ name: cat,          value: got, fill: color     }] : []),
+        ...(got > 0 ? [{ name: cat, value: got, fill: color }] : []),
         ...(rem > 0 ? [{ name: `${cat}_rem`, value: rem, fill: '#e8eaf0' }] : []),
       ];
     });
@@ -225,62 +225,62 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
 
       <div className="dashboard-body">
         <div className="donut-section">
-        <div className="donut-wrapper">
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-              <Pie
-                data={donutData}
-                cx="50%" cy="50%"
-                innerRadius="55%" outerRadius="80%"
-                startAngle={90} endAngle={-270}
-                dataKey="value"
-                paddingAngle={1}
-              >
-                {donutData.map((entry, i) => (
-                  <Cell key={i} fill={entry.fill} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="donut-center">
-            <span className="donut-pct">{totalPct}%</span>
-            <span className="donut-sub">
-              {earned.total}{plannedTotal > 0 && <span className="planned-count" style={{ fontSize: 11 }}>+{plannedTotal}</span>} / {REQUIRED.total}학점
-            </span>
-          </div>
-        </div>
-        <div className="donut-legend">
-          {[3, 4, 4].reduce((acc, count) => {
-            const start = acc.offset;
-            acc.rows.push(acc.cats.slice(start, start + count));
-            acc.offset += count;
-            return acc;
-          }, { cats: Object.keys(REQUIRED).filter(c => c !== 'total'), rows: [], offset: 0 }).rows.map((row, ri) => (
-            <div key={ri} className="legend-row">
-              {row.map(cat => (
-                <div key={cat} className="legend-item">
-                  <span className="legend-dot" style={{ background: CAT_COLORS[cat] || '#4A90D9' }} />
-                  <span className="legend-label">{cat}</span>
-                </div>
-              ))}
+          <div className="donut-wrapper">
+            <ResponsiveContainer width="100%" height={200}>
+              <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                <Pie
+                  data={donutData}
+                  cx="50%" cy="50%"
+                  innerRadius="55%" outerRadius="80%"
+                  startAngle={90} endAngle={-270}
+                  dataKey="value"
+                  paddingAngle={1}
+                >
+                  {donutData.map((entry, i) => (
+                    <Cell key={i} fill={entry.fill} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="donut-center">
+              <span className="donut-pct">{totalPct}%</span>
+              <span className="donut-sub">
+                {earned.total}{plannedTotal > 0 && <span className="planned-count" style={{ fontSize: 11 }}>+{plannedTotal}</span>} / {REQUIRED.total}학점
+              </span>
             </div>
-          ))}
-        </div>
+          </div>
+          <div className="donut-legend">
+            {[3, 4, 4].reduce((acc, count) => {
+              const start = acc.offset;
+              acc.rows.push(acc.cats.slice(start, start + count));
+              acc.offset += count;
+              return acc;
+            }, { cats: Object.keys(REQUIRED).filter(c => c !== 'total'), rows: [], offset: 0 }).rows.map((row, ri) => (
+              <div key={ri} className="legend-row">
+                {row.map(cat => (
+                  <div key={cat} className="legend-item">
+                    <span className="legend-dot" style={{ background: CAT_COLORS[cat] || '#4A90D9' }} />
+                    <span className="legend-label">{cat}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
         <div className="requirements-list">
           {Object.entries(REQUIRED).filter(([cat]) => cat !== 'total').map(([cat, req]) => {
-            const got       = earned[cat] || 0;
-            const plan      = planned[cat] || 0;
-            const overflow  = overflows[cat] || 0;
-            const color     = CAT_COLORS[cat] || '#4A90D9';
-            const met       = got >= req;
+            const got = earned[cat] || 0;
+            const plan = planned[cat] || 0;
+            const overflow = overflows[cat] || 0;
+            const color = CAT_COLORS[cat] || '#4A90D9';
+            const met = got >= req;
             const earnedPct = Math.min(100, (got / req) * 100);
-            const planPct   = Math.min(100, ((got + plan) / req) * 100);
+            const planPct = Math.min(100, ((got + plan) / req) * 100);
 
             // ESP: 전용 바 계산
             const espTotal = 6;
-            const espDone  = cat === 'ESP' ? espStages.reduce((s, st) => s + st.doneCount, 0) : 0;
-            const espPlan  = cat === 'ESP' ? espStages.reduce((s, st) =>
+            const espDone = cat === 'ESP' ? espStages.reduce((s, st) => s + st.doneCount, 0) : 0;
+            const espPlan = cat === 'ESP' ? espStages.reduce((s, st) =>
               s + Math.min(2 - st.doneCount, (currentSchedule || []).filter(c => st.codes.includes(c.code)).length), 0) : 0;
 
             return (
@@ -360,10 +360,10 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                 {cat === 'EF' && (
                   <div className="sub-requirements">
                     {[
-                      { key: 'math',    label: '수학',  req: efSubRequired.math    },
-                      { key: 'physics', label: '물리',  req: efSubRequired.physics },
-                      { key: 'chem',    label: '화학',  req: efSubRequired.chem    },
-                      { key: 'dl',      label: 'AI/DL', req: efSubRequired.dl      },
+                      { key: 'math', label: '수학', req: efSubRequired.math },
+                      { key: 'physics', label: '물리', req: efSubRequired.physics },
+                      { key: 'chem', label: '화학', req: efSubRequired.chem },
+                      { key: 'dl', label: 'AI/DL', req: efSubRequired.dl },
                     ].map(({ key, label, req: sr }) => {
                       const sg = efSub[key] || 0;
                       const ok = sg >= sr;
@@ -390,7 +390,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                 )}
 
                 {/* 기타 카테고리 초과분 */}
-                {!['EF','EL','ESP','FR'].includes(cat) && overflow > 0 && (
+                {!['EF', 'EL', 'ESP', 'FR'].includes(cat) && overflow > 0 && (
                   <div className="sub-requirements">
                     <span className="sub-req-chip overflow">+{overflow}학점 초과 → FR 산정</span>
                   </div>
@@ -556,13 +556,14 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                     <p className="guide-step"><span>1</span> KIS 포털 → 사용자서비스 → 성적 → <b>전체성적조회</b> → 조회</p>
                     <p className="guide-step"><span>2</span> 아래 버튼을 <b>북마크 바로 드래그</b>해서 설치 (한 번만) — 또는 클릭하면 F12 커맨드 복사</p>
                     <div className="bookmarklet-row">
-                      <span dangerouslySetInnerHTML={{ __html:
-                        `<a href="${BOOKMARKLET_HREF_HTML}" class="bookmarklet-drag-btn" title="북마크 바로 드래그해서 설치">📎 포털 성적 가져오기</a>`
+                      <span dangerouslySetInnerHTML={{
+                        __html:
+                          `<a href="${BOOKMARKLET_HREF_HTML}" class="bookmarklet-drag-btn" title="북마크 바로 드래그해서 설치">📎 포털 성적 가져오기</a>`
                       }} />
                       <span className="bookmarklet-hint">← 북마크 바로 드래그 (한 번만)</span>
                     </div>
                     <p className="guide-step"><span>3</span> 포털 전체성적조회 페이지에서 북마클릿 클릭 <span className="guide-note">(F12 방식: 콘솔에 붙여넣기 후 Enter)</span></p>
-                    <p className="guide-step"><span>4</span> 화면 우측 하단 <b>파란 버튼</b> 클릭 → 복사 후 아래에 붙여넣고 "분석"<br/><span className="guide-note">타대 계절학기 과목도 자동으로 감지됩니다.</span></p>
+                    <p className="guide-step"><span>4</span> 화면 우측 하단 <b>파란 버튼</b> 클릭 → 복사 후 아래에 붙여넣고 "분석"<br /><span className="guide-note">타대 계절학기 과목도 자동으로 감지됩니다.</span></p>
                   </div>
                   <textarea
                     className="paste-area"
@@ -594,7 +595,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                 <>
                   <div className="ext-form">
                     <p className="ext-form-desc">
-                      타대 계절학기 등 KENTECH 포털에 없는 과목을 직접 입력하세요.<br/>
+                      타대 계절학기 등 KENTECH 포털에 없는 과목을 직접 입력하세요.<br />
                       <span className="ext-example">예) 서울대 계절학기, 연세대 하계 수업</span>
                     </p>
                     <div className="ext-field">

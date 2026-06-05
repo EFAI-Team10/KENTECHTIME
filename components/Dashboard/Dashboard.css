@@ -172,8 +172,12 @@
 }
 
 .progress-planned {
-  background: #27AE60;
-  opacity: 0.4;
+  background-image: repeating-linear-gradient(-45deg,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0.25) 4px,
+      transparent 4px,
+      transparent 8px);
+  opacity: 0.65;
 }
 
 /* EL 바: 오른쪽 20%를 EL4/5 존으로 분리 */
@@ -213,7 +217,12 @@
 }
 
 .el-zone-slot.planned {
-  opacity: 0.3;
+  background-image: repeating-linear-gradient(-45deg,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0.25) 4px,
+      transparent 4px,
+      transparent 8px);
+  opacity: 0.6;
 }
 
 .el-zone-tag {
@@ -274,8 +283,13 @@
 }
 
 .esp-uni-fill.planned {
-  background: #27AE60;
-  opacity: 0.4;
+  background-color: #D488B7;
+  background-image: repeating-linear-gradient(-45deg,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0.25) 4px,
+      transparent 4px,
+      transparent 8px);
+  opacity: 0.65;
 }
 
 .esp-uni-divider {

@@ -9,7 +9,7 @@
   align-items: center;
   padding: 14px 32px;
   background: white;
-  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .1);
 }
 
 .logo {
@@ -39,7 +39,11 @@
   font-size: 13px;
   font-weight: 500;
 }
-.settings-btn:hover { background: #4A90D9; color: white; }
+
+.settings-btn:hover {
+  background: #4A90D9;
+  color: white;
+}
 
 .logout-btn {
   padding: 6px 14px;
@@ -63,7 +67,7 @@
   background: white;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
 }
 
 .plan-controls {
@@ -220,18 +224,20 @@
   border-top: 1px solid #f0f0f0;
   flex-wrap: wrap;
 }
+
 .ir-section-label {
   font-size: 13px;
   font-weight: 600;
-  color: #16A085;
+  color: #EF8862;
   min-width: 90px;
 }
+
 .ir-chip {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 5px 12px;
-  border: 1.5px solid #b2dfdb;
+  border: 1.5px solid #EF8862;
   border-radius: 20px;
   background: white;
   color: #555;
@@ -240,17 +246,32 @@
   cursor: pointer;
   transition: all 0.15s;
 }
-.ir-chip:hover { border-color: #16A085; color: #16A085; }
+
+.ir-chip:hover {
+  border-color: #EF8862;
+  color: #EF8862;
+}
+
 .ir-chip--taking {
-  background: #16A085;
-  border-color: #16A085;
+  background: #EF8862;
+  border-color: #EF8862;
   color: white;
 }
-.ir-chip-desc { font-size: 11px; opacity: 0.75; }
+
+.ir-chip-desc {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
 .ir-chip-badge {
   font-size: 11px;
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 10px;
   padding: 1px 6px;
 }
-.ir-section-hint { font-size: 11px; color: #aaa; margin-left: auto; }
+
+.ir-section-hint {
+  font-size: 11px;
+  color: #aaa;
+  margin-left: auto;
+}
