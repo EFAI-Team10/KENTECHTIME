@@ -260,6 +260,12 @@ export default function MainPage() {
   const confirmMyTimetable = async () => {
     if (view.type !== 'my') return;
     const t = myTimetables[view.idx];
+
+    if (!savedSlots.has(t.slot)) {
+      alert('먼저 시간표를 저장해주세요.');
+      return;
+    }
+
     const totalCr = (t.courses || []).reduce((s, c) => s + (c.credits || 0), 0);
     const minCr = preferences.last_semester ? 4 : 10;
     if (totalCr === 0) { alert('빈 시간표는 확정할 수 없습니다.'); return; }
@@ -267,12 +273,21 @@ export default function MainPage() {
       alert(`확정하려면 최소 ${minCr}학점이 필요합니다. (현재 ${totalCr}학점)`);
       return;
     }
+
+    // 이미 다른 슬롯이 확정되어 있으면 교체 경고
+    if (confirmedSlot !== null && confirmedSlot !== t.slot) {
+      const prevName = myTimetables.find(x => x.slot === confirmedSlot)?.name
+        || `내 시간표 ${myTimetables.findIndex(x => x.slot === confirmedSlot) + 1}`;
+      const ok = window.confirm(
+        `이미 '${prevName}'이(가) 확정되어 있습니다.\n\n이 시간표로 교체하면 기존 확정이 취소됩니다.\n계속하시겠습니까?`
+      );
+      if (!ok) return;
+    }
+
     try {
-      await scheduleAPI.save({ courseIds: t.courses.map(c => c.id), semester, slot: t.slot });
       await scheduleAPI.setActive({ semester, slot: t.slot });
-      setSavedSlots(prev => new Set(prev).add(t.slot));
       setConfirmedSlot(t.slot);
-      setTrackerKey(k => k + 1); // 경쟁률 새로고침
+      setTrackerKey(k => k + 1);
       alert('이 시간표가 확정되어 경쟁률에 반영됩니다.');
     } catch {
       alert('확정에 실패했습니다.');
@@ -417,15 +432,19 @@ export default function MainPage() {
                   {confirmedSlot === myTimetables[view.idx]?.slot ? (
                     <button className="cancel-confirm-btn" onClick={cancelConfirmMyTimetable}>확정 취소</button>
                   ) : (() => {
+                    const curSlot = myTimetables[view.idx]?.slot;
                     const courses = myTimetables[view.idx]?.courses || [];
+                    const isSaved = savedSlots.has(curSlot);
                     const totalCr = courses.reduce((s, c) => s + (c.credits || 0), 0);
                     const minCr = preferences.last_semester ? 4 : 10;
-                    const disabled = totalCr < minCr;
-                    const title = totalCr === 0
-                      ? '빈 시간표는 확정할 수 없습니다'
-                      : disabled
-                        ? `최소 ${minCr}학점 필요 (현재 ${totalCr}학점)${preferences.last_semester ? '' : ' — 막학기 모드 시 4학점'}`
-                        : '';
+                    const disabled = !isSaved || totalCr < minCr;
+                    const title = !isSaved
+                      ? '먼저 시간표를 저장해야 확정할 수 있습니다'
+                      : totalCr === 0
+                        ? '빈 시간표는 확정할 수 없습니다'
+                        : totalCr < minCr
+                          ? `최소 ${minCr}학점 필요 (현재 ${totalCr}학점)${preferences.last_semester ? '' : ' — 막학기 모드 시 4학점'}`
+                          : '';
                     return (
                       <button className="confirm-btn" onClick={confirmMyTimetable} disabled={disabled} title={title}>확정</button>
                     );
