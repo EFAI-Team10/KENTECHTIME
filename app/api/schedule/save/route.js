@@ -80,5 +80,13 @@ export async function DELETE(request) {
     .eq('semester', semester)
     .eq('slot', slot);
 
+  // 이름 메타도 정리
+  await supabase
+    .from('schedule_meta')
+    .delete()
+    .eq('user_id', auth.userId)
+    .eq('semester', semester)
+    .eq('slot', slot);
+
   return Response.json({ success: true });
 }
