@@ -389,10 +389,16 @@
 }
 
 /* 도넛 차트 */
+.donut-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
 .donut-wrapper {
   position: relative;
   width: 200px;
-  flex-shrink: 0;
 }
 
 .donut-center {
