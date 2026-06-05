@@ -112,7 +112,9 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
       await usersAPI.savePreferences(recPref);
       onTrackOrderChange?.(recPref.preferred_tracks || []);
       setRecPrefDone(true);
-    } catch {}
+    } catch {
+      alert('추천 설정 저장에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
     finally { setRecPrefSaving(false); }
   };
 
