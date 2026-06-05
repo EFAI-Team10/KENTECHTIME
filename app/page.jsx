@@ -2,6 +2,11 @@
 import { useEffect, useState } from 'react';
 
 const VALID_TRACKS = ['전기/전자', '재료/화학', '인공지능'];
+const TRACK_COLOR = {
+  '전기/전자': '#7289FF',
+  '재료/화학': '#6CDD8F',
+  '인공지능': '#F05268',
+};
 const TRACK_ALIAS = { '원자력': '재료/화학', 'AI': '인공지능', '신소재': '재료/화학' };
 function normalizePreferredTracks(arr) {
   return (arr || [])
@@ -152,6 +157,13 @@ export default function MainPage() {
   // ── 탭 선택 ──
   const selectRec = (i) => setView({ type: 'rec', idx: i });
   const selectMy  = (i) => setView({ type: 'my',  idx: i });
+
+  // ── 트랙 우선순위 토글 (버튼 위치 고정, 순위 숫자만 변동) ──
+  const toggleTrack = (track) => {
+    setTrackOrder(prev => prev.includes(track)
+      ? prev.filter(t => t !== track)
+      : [...prev, track]);
+  };
 
   // ── 내 시간표 편집 ──
   const markDirty = (slot) => setSavedSlots(prev => {
@@ -334,6 +346,32 @@ export default function MainPage() {
                   추천 {String.fromCharCode(65 + i)}
                 </button>
               ))}
+
+              {/* 트랙 우선순위 — 추천 탭에서만 표시, 버튼 위치 고정 */}
+              {isRec && (
+                <div className="track-mini">
+                  <span className="track-mini-label">트랙 우선순위</span>
+                  {VALID_TRACKS.map(track => {
+                    const idx = trackOrder.indexOf(track);
+                    const sel = idx !== -1;
+                    return (
+                      <button
+                        key={track}
+                        type="button"
+                        className={`track-chip ${sel ? 'sel' : ''}`}
+                        style={sel ? { borderColor: TRACK_COLOR[track], background: TRACK_COLOR[track] + '18' } : {}}
+                        onClick={() => toggleTrack(track)}
+                      >
+                        {sel && <span className="track-num" style={{ background: TRACK_COLOR[track] }}>{idx + 1}</span>}
+                        {track}
+                      </button>
+                    );
+                  })}
+                  {trackOrder.length > 0 && (
+                    <button className="track-reset" onClick={() => setTrackOrder([])}>초기화</button>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="action-btns">
@@ -390,10 +428,6 @@ export default function MainPage() {
             <button className="tab-add" onClick={addMyTimetable} title="내 시간표 추가">＋</button>
           </div>
 
-          {isRec && (
-            <p className="rec-hint">추천은 읽기 전용입니다. <b>📋 복사</b> 후 <b>내 시간표</b> 탭에서 <b>붙여넣기</b> 하세요.</p>
-          )}
-
           <TimetableGrid
             courses={currentCourses}
             allCourses={allCourses}
@@ -413,18 +447,34 @@ export default function MainPage() {
             {[
               { key: 'ir1', label: 'IR1', desc: '필수' },
               { key: 'ir2', label: 'IR2', desc: '선택' },
-            ].map(({ key, label, desc }) => (
-              <button
-                key={key}
-                className={`ir-chip${irTaking[key] ? ' ir-chip--taking' : ''}`}
-                onClick={() => setIrTaking(prev => ({ ...prev, [key]: !prev[key] }))}
-                title={irTaking[key] ? '수강 중 — 클릭하여 해제' : '클릭하면 수강 중으로 표시'}
-              >
-                {label}
-                <span className="ir-chip-desc">{desc}</span>
-                {irTaking[key] && <span className="ir-chip-badge">수강 중</span>}
-              </button>
-            ))}
+            ].map(({ key, label, desc }) => {
+              // IR2는 IR1(개별연구 1, IR1001)을 기수강해야 선택 가능
+              const locked = key === 'ir2' && !completedCodes.has('IR1001');
+              return (
+                <button
+                  key={key}
+                  className={`ir-chip${irTaking[key] ? ' ir-chip--taking' : ''}${locked ? ' ir-chip--locked' : ''}`}
+                  disabled={locked}
+                  onClick={() => setIrTaking(prev => {
+                    if (locked) return prev;
+                    const turningOn = !prev[key];
+                    // IR1·IR2는 같은 학기 동시 수강 불가 → 하나 켜면 다른 하나 해제
+                    if (turningOn) return key === 'ir1' ? { ir1: true, ir2: false } : { ir1: false, ir2: true };
+                    return { ...prev, [key]: false };
+                  })}
+                  title={
+                    locked ? 'IR1(개별연구 1)을 기수강해야 IR2를 신청할 수 있습니다'
+                    : irTaking[key] ? '수강 중 — 클릭하여 해제'
+                    : '클릭하면 수강 중으로 표시'
+                  }
+                >
+                  {label}
+                  <span className="ir-chip-desc">{desc}</span>
+                  {irTaking[key] && <span className="ir-chip-badge">수강 중</span>}
+                  {locked && <span className="ir-chip-badge">🔒 IR1 기수강 필요</span>}
+                </button>
+              );
+            })}
             <span className="ir-section-hint">수강 중인 IR 과목을 체크하면 졸업요건에 반영됩니다</span>
           </div>
         </section>
