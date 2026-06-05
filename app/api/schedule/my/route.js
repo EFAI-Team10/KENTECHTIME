@@ -17,7 +17,7 @@ export async function GET(request) {
   const [{ data, error }, activeRes, metaRes] = await Promise.all([
     supabase
       .from('planned_schedules')
-      .select('slot, courses(id, code, name, credits, timeslots, track, category, target_grade)')
+      .select('slot, courses(id, code, name, credits, timeslots, track, category, target_grade, grad_excluded)')
       .eq('user_id', auth.userId)
       .eq('semester', semester),
     supabase

@@ -61,6 +61,7 @@ export async function POST(request) {
     timetable: headers.indexOf('시간표'),
     credits:   headers.indexOf('학점'),
     grade:     headers.indexOf('Unnamed: 1'),
+    note:      headers.indexOf('비고'),
   };
 
   if (colMap.code === -1 || colMap.name === -1) {
@@ -90,6 +91,9 @@ export async function POST(request) {
       semester,
       target_grade: parseGrade(row[colMap.grade]),
       timeslots:    parseTimeslots(row[colMap.timetable]),
+      // 비고에 '졸업학점 미포함' 표기 시 졸업학점 계산에서 제외
+      grad_excluded: colMap.note !== -1 &&
+                     String(row[colMap.note] || '').includes('졸업학점 미포함'),
     };
 
     const { error } = await supabase
