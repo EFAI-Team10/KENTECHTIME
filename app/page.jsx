@@ -39,7 +39,7 @@ const slotsConflict = (a = [], b = []) =>
 
 export default function MainPage() {
   const router = useRouter();
-  const { semester, currentSchedule, setCurrentSchedule, user, token, logout } = useStore();
+  const { semester, currentSchedule, setCurrentSchedule, user, setUser, token, logout } = useStore();
   const { theme } = useTheme();
   const irColor = theme?.catColors?.IR ?? '#EF8862';
 
@@ -72,6 +72,10 @@ export default function MainPage() {
   useEffect(() => {
     if (!mounted) return;
     if (!token) { router.replace('/auth'); return; }
+    // 새로고침 시 사용자 정보 복원 (이름·학번·학년 등)
+    if (!user) {
+      usersAPI.getMe().then(res => setUser(res.data.user)).catch(() => {});
+    }
     initializePage();
     setCoursesLoading(true);
     Promise.all([
