@@ -25,7 +25,13 @@ const TRACK_COLOR = {
 };
 // DB에 '원자력'으로 저장된 과목은 '재료/화학'으로 통합
 const normalizeTrack = (t) => t === '원자력' ? '재료/화학' : t;
-const SCHEDULE_COLORS = ['#4A90D9', '#E67E22', '#27AE60', '#8E44AD', '#E74C3C', '#16A085', '#D35400'];
+// 카테고리별 고정 색상 (도넛 차트와 동일)
+const CAT_COLORS = {
+  EL: '#27AE60', EF: '#4A90D9', VC: '#8E44AD',
+  MN: '#F39C12', HASS: '#E74C3C', ESP: '#1A5276',
+  IR: '#16A085', CAPS: '#626567', EN: '#2471A3',
+  FR: '#717D7E', RC: '#196F3D', GR: '#CA6F1E', GS: '#6C3483',
+};
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
 const HOURS = Array.from({ length: 11 }, (_, i) => i + 9);
@@ -89,7 +95,7 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
   const [pickerSlot, setPickerSlot] = useState(null);
 
   const colorMap = {};
-  courses.forEach((c, i) => { colorMap[c.id] = SCHEDULE_COLORS[i % SCHEDULE_COLORS.length]; });
+  courses.forEach(c => { colorMap[c.id] = CAT_COLORS[c.category] || '#4A90D9'; });
 
   const toggleTrack = (track) => {
     const next = trackOrder.includes(track)
