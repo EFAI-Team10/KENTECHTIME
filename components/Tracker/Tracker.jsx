@@ -41,7 +41,7 @@ export default function Tracker({ refreshKey = 0, isConfirmed = false }) {
       ) : (
         <table>
           <thead>
-            <tr><th>과목명</th><th>코드</th><th>수강 희망자</th></tr>
+            <tr><th>과목명</th><th>코드</th><th>수강 희망자</th><th>제한 인원</th></tr>
           </thead>
           <tbody>
             {data.map((row, i) => (
@@ -49,6 +49,7 @@ export default function Tracker({ refreshKey = 0, isConfirmed = false }) {
                 <td>{row.course?.name}</td>
                 <td>{row.course?.code}</td>
                 <td>{row.applicants}명</td>
+                <td>{row.capacity != null ? `${row.capacity}명` : '-'}</td>
               </tr>
             ))}
           </tbody>

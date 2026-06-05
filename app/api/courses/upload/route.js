@@ -62,6 +62,8 @@ export async function POST(request) {
     credits:   headers.indexOf('학점'),
     grade:     headers.indexOf('Unnamed: 1'),
     note:      headers.indexOf('비고'),
+    // '수강\n제한\n인원' — 공백 제거 후 '제한인원' 포함 헤더 탐색
+    capacity:  headers.findIndex(h => String(h || '').replace(/\s/g, '').includes('제한인원')),
   };
 
   if (colMap.code === -1 || colMap.name === -1) {
@@ -94,6 +96,7 @@ export async function POST(request) {
       // 비고에 '졸업학점 미포함' 표기 시 졸업학점 계산에서 제외
       grad_excluded: colMap.note !== -1 &&
                      String(row[colMap.note] || '').includes('졸업학점 미포함'),
+      capacity:     colMap.capacity !== -1 ? (parseInt(row[colMap.capacity], 10) || null) : null,
     };
 
     const { error } = await supabase
