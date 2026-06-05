@@ -26,9 +26,8 @@ export async function POST(request) {
 
   const supabase = getSupabaseAdmin();
   const latestSemester = await getLatestSemester(supabase);
-  const scheduleCodes = (currentSchedule || []).map(c => c.code).filter(Boolean);
 
-  const [{ data: allCourses }, { data: completedRows }, { data: scheduleDescRows }] = await Promise.all([
+  const [{ data: allCourses }, { data: completedRows }] = await Promise.all([
     supabase
       .from('courses')
       .select('id, code, name, credits, track, category, timeslots')
@@ -37,14 +36,7 @@ export async function POST(request) {
       .from('completed_courses')
       .select('course_id, semester, courses(code, name, category)')
       .eq('user_id', auth.userId),
-    scheduleCodes.length
-      ? supabase.from('courses').select('code, description').in('code', scheduleCodes)
-      : Promise.resolve({ data: [] }),
   ]);
-
-  const scheduleDescMap = Object.fromEntries(
-    (scheduleDescRows || []).filter(r => r.description).map(r => [r.code, r.description])
-  );
 
   const courseListText = (allCourses || []).length
     ? allCourses.map(c => {
@@ -56,9 +48,7 @@ export async function POST(request) {
   const scheduleText = (currentSchedule || []).length
     ? currentSchedule.map(c => {
         const slots = (c.timeslots || []).map(s => `${s.day} ${s.start}-${s.end}`).join(', ');
-        const desc = scheduleDescMap[c.code];
-        const descLine = desc ? `\n     → ${desc.slice(0, 160)}${desc.length > 160 ? '...' : ''}` : '';
-        return `[${c.code}] ${c.name} | ${slots}${descLine}`;
+        return `[${c.code}] ${c.name} | ${slots}`;
       }).join('\n')
     : '(없음)';
 
@@ -111,64 +101,97 @@ FR (Free Elective): 졸업요건 초과 이수 학점, 타대학 학점교류 �
   "exclude_before": "HH:MM 형식 이 시간 이전 수업 제외, 없으면 null",
   "include_codes": ["추가/우선 포함할 과목코드 배열, 없으면 []"],
   "max_credits": 학점 제한 숫자 없으면 null,
+  "description_needed": ["상세 설명이 필요한 과목코드 배열. 사용자가 특정 과목 내용·특징·난이도를 물어볼 때만 지정. 없으면 []"],
   "reply": "사용자에게 보여줄 한국어 응답 메시지 1~2문장"
 }
-action이 "chat"이면 시간표를 변경하지 않고 reply만 반환합니다. 과목 정보 질문, 일반 대화 등에 사용하세요.`;
+action이 "chat"이면 시간표를 변경하지 않고 reply만 반환합니다.
+description_needed에 코드를 넣으면 해당 과목의 상세 설명을 받아 reply를 보완할 수 있습니다.`;
 
   try {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
       baseURL: 'https://factchat-cloud.mindlogic.ai/v1/gateway',
     });
-    // 이전 대화 히스토리 + 현재 메시지 구성 (system 제외한 user/assistant 메시지만)
+
     const historyMessages = history
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .map(m => ({ role: m.role, content: m.content }));
 
-    const completion = await openai.chat.completions.create({
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...historyMessages,
+      { role: 'user', content: message },
+    ];
+
+    // 1차 LLM 호출
+    const firstCompletion = await openai.chat.completions.create({
       model: 'gpt-5-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...historyMessages,
-        { role: 'user', content: message },
-      ],
+      messages,
       response_format: { type: 'json_object' },
     });
 
     let intent;
     try {
-      intent = JSON.parse(completion.choices[0].message.content);
+      intent = JSON.parse(firstCompletion.choices[0].message.content);
     } catch {
       return errorJson('LLM 응답 파싱 실패. 다시 시도해주세요.', 500);
     }
 
     if (!intent.action) return errorJson('LLM 응답 형식 오류. 다시 시도해주세요.', 500);
 
-    // action이 chat이면 시간표 변경 없이 reply만 반환
+    // description_needed가 있으면 DB에서 가져와 2차 LLM 호출
+    if (intent.description_needed?.length) {
+      const { data: descRows } = await supabase
+        .from('courses')
+        .select('code, name, description')
+        .in('code', intent.description_needed);
+
+      const descText = (descRows || [])
+        .filter(r => r.description)
+        .map(r => `[${r.code}] ${r.name}\n${r.description}`)
+        .join('\n\n');
+
+      if (descText) {
+        const secondCompletion = await openai.chat.completions.create({
+          model: 'gpt-5-mini',
+          messages: [
+            ...messages,
+            { role: 'assistant', content: firstCompletion.choices[0].message.content },
+            { role: 'user', content: `[요청한 과목 상세 설명]\n${descText}\n\n위 설명을 참고하여 reply를 보완한 최종 JSON을 응답하세요.` },
+          ],
+          response_format: { type: 'json_object' },
+        });
+
+        try {
+          intent = JSON.parse(secondCompletion.choices[0].message.content);
+        } catch {
+          // 2차 파싱 실패 시 1차 결과 유지
+        }
+      }
+    }
+
+    // action: chat
     if (intent.action === 'chat') {
       return Response.json({ intent, plans: null, reply: intent.reply });
     }
 
-    // add/remove/replace: 현재 시간표를 기반으로 직접 편집 (전체 재추천 X)
+    // action: add/remove/replace — 현재 시간표 직접 편집
     if (['add', 'remove', 'replace'].includes(intent.action)) {
       let result = [...(currentSchedule || [])];
 
-      // 제거
       if (intent.remove_codes?.length) {
         result = result.filter(c => !intent.remove_codes.includes(c.code));
       }
 
-      // 추가
       if (intent.include_codes?.length) {
-        const sem = await getLatestSemester(supabase);
         const { data: toAdd } = await supabase
           .from('courses')
           .select('id, code, name, credits, track, category, timeslots')
           .in('code', intent.include_codes)
-          .eq('semester', sem);
+          .eq('semester', latestSemester);
 
         for (const course of (toAdd || [])) {
-          if (result.find(c => c.code === course.code)) continue; // 이미 있음
+          if (result.find(c => c.code === course.code)) continue;
           const conflict = result.some(c => hasTimeConflict(c, course));
           if (!conflict) result.push(course);
         }
@@ -177,7 +200,7 @@ action이 "chat"이면 시간표를 변경하지 않고 reply만 반환합니다
       return Response.json({ intent, plans: [result], reply: intent.reply });
     }
 
-    // filter: 전체 추천 엔진 사용
+    // action: filter — 전체 추천 엔진
     const maxCredits = intent.max_credits || 21;
     const plans = await generateRecommendations(auth.userId, null, {}, 3, intent, maxCredits);
     return Response.json({ intent, plans, reply: intent.reply });
