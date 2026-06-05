@@ -22,14 +22,17 @@
   .plan-controls { flex-direction: column; align-items: stretch; gap: 10px; }
   .action-btns { flex-wrap: wrap; }
 
-  /* 트랙 우선순위: 1행=라벨(가운데)+초기화(오른쪽), 2행=트랙 버튼들 */
-  .track-mini {
+  /* 추천 A/B/C 버튼 가운데 정렬 */
+  .plan-controls .plan-tabs { justify-content: center; }
+
+  /* 트랙 우선순위: 1행=라벨(가운데)+초기화(오른쪽), 2행=트랙 버튼들 (좌측 패딩/테두리 제거) */
+  .plan-tabs .track-mini {
     margin-left: 0; padding-left: 0; border-left: none; width: 100%;
     flex-wrap: wrap; justify-content: center; position: relative; row-gap: 8px;
   }
-  .track-mini .track-mini-label { order: 1; flex-basis: 100%; text-align: center; }
-  .track-mini .track-reset { order: 1; position: absolute; right: 0; top: 0; }
-  .track-mini .track-chip { order: 2; }
+  .plan-tabs .track-mini .track-mini-label { order: 1; flex-basis: 100%; text-align: center; }
+  .plan-tabs .track-mini .track-reset { order: 1; position: absolute; right: 0; top: 0; }
+  .plan-tabs .track-mini .track-chip { order: 2; }
 
   /* 시간표 — 시간열 좁게 + 폰트 축소 (우선순위 ↑: TimetableGrid.css보다 늦게 로드돼도 이기도록) */
   .timetable-grid .timetable-header,
