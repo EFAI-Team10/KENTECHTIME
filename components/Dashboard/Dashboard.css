@@ -935,3 +935,24 @@
 .check-name { flex: 1; color: #333; }
 .check-meta { font-size: 11px; color: #999; flex-shrink: 0; }
 .check-count { font-size: 12px; color: #888; margin-right: auto; align-self: center; }
+
+/* ESP 시작 레벨 */
+.esp-start-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: 13px;
+}
+.esp-start-label { font-weight: 600; color: #555; }
+.esp-start-row select {
+  padding: 6px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.check-item.locked {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.check-item.locked input { cursor: not-allowed; }
