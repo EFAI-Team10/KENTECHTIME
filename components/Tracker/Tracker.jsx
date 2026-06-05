@@ -4,7 +4,7 @@ import { trackerAPI } from '@/lib/api-client';
 import useStore from '@/lib/store';
 import './Tracker.css';
 
-export default function Tracker() {
+export default function Tracker({ refreshKey = 0 }) {
   const [data, setData] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const semester = useStore(s => s.semester);
@@ -21,7 +21,7 @@ export default function Tracker() {
     fetchData();
     const interval = setInterval(fetchData, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [semester]);
+  }, [semester, refreshKey]);
 
   return (
     <div className="tracker">

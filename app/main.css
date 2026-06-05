@@ -80,6 +80,8 @@
 .plan-tabs {
   display: flex;
   gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .plan-tabs button {
@@ -97,6 +99,56 @@
   background: #4A90D9;
   color: white;
 }
+
+/* 추천 / 내 시간표 구분선 */
+.tab-divider {
+  width: 1px;
+  height: 22px;
+  background: #d0d4dc;
+  margin: 0 2px;
+}
+
+/* 내 시간표 탭 (녹색 계열) */
+.plan-tabs button.my-tab {
+  border-color: #27AE60;
+  color: #27AE60;
+}
+.plan-tabs button.my-tab.active {
+  background: #27AE60;
+  color: white;
+}
+.confirmed-mark { font-weight: 700; }
+
+/* 내 시간표 추가 (+) */
+.plan-tabs button.tab-add {
+  padding: 7px 12px;
+  border-style: dashed;
+  font-weight: 700;
+}
+
+/* 추천 탭 안내 문구 */
+.rec-hint {
+  margin: 0 0 12px;
+  font-size: 12.5px;
+  color: #888;
+}
+
+/* 액션 버튼 색상 */
+.copy-btn  { background: #4A90D9 !important; color: #fff !important; border-color: #4A90D9 !important; }
+.copy-btn.copied { background: #27AE60 !important; border-color: #27AE60 !important; }
+
+/* 내 시간표 저장 상태 표시 */
+.my-tab .save-dot {
+  margin-left: 6px;
+  font-size: 10px;
+  vertical-align: middle;
+}
+.my-tab.saved .save-dot   { color: #27AE60; font-weight: 700; }
+.my-tab.unsaved .save-dot { color: #E67E22; }            /* ● 미저장 */
+.plan-tabs button.my-tab.active .save-dot { color: #fff; }
+.paste-btn { background: #eef6ff !important; color: #2c6fb3 !important; border-color: #4A90D9 !important; }
+.confirm-btn { background: #E67E22 !important; color: #fff !important; border-color: #E67E22 !important; }
+.delete-tt-btn { background: #fff !important; color: #e74c3c !important; border-color: #e74c3c !important; }
 
 .action-btns {
   display: flex;

@@ -14,18 +14,32 @@ export async function GET(request) {
   const semester = searchParams.get('semester') || process.env.CURRENT_SEMESTER;
 
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('planned_schedules')
-    .select('course_id, courses(id, code, name)')
-    .eq('semester', semester);
+  const [plannedRes, activeRes] = await Promise.all([
+    supabase
+      .from('planned_schedules')
+      .select('user_id, slot, course_id, courses(id, code, name)')
+      .eq('semester', semester),
+    supabase
+      .from('active_schedule')
+      .select('user_id, slot')
+      .eq('semester', semester),
+  ]);
 
-  if (error) {
-    console.error('GET /api/tracker error:', error);
+  if (plannedRes.error) {
+    console.error('GET /api/tracker error:', plannedRes.error);
     return errorJson('서버 오류', 500);
   }
 
+  // 사용자별 '확정' 슬롯 (없으면 0번 슬롯을 기본 확정으로 간주)
+  const activeSlotByUser = new Map();
+  for (const r of activeRes.data || []) activeSlotByUser.set(r.user_id, r.slot);
+
   const countMap = {};
-  for (const row of data || []) {
+  for (const row of plannedRes.data || []) {
+    const activeSlot = activeSlotByUser.has(row.user_id)
+      ? activeSlotByUser.get(row.user_id)
+      : 0;
+    if ((row.slot ?? 0) !== activeSlot) continue; // 확정된 시간표만 집계
     const id = row.course_id;
     if (!countMap[id]) countMap[id] = { course: row.courses, applicants: 0 };
     countMap[id].applicants += 1;
