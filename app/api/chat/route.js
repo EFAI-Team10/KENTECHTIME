@@ -26,10 +26,16 @@ export async function POST(request) {
 
   const supabase = getSupabaseAdmin();
   const latestSemester = await getLatestSemester(supabase);
-  const { data: allCourses } = await supabase
-    .from('courses')
-    .select('id, code, name, credits, track, category, timeslots')
-    .eq('semester', latestSemester);
+  const [{ data: allCourses }, { data: completedRows }] = await Promise.all([
+    supabase
+      .from('courses')
+      .select('id, code, name, credits, track, category, timeslots')
+      .eq('semester', latestSemester),
+    supabase
+      .from('completed_courses')
+      .select('course_id, semester, courses(code, name, category)')
+      .eq('user_id', auth.userId),
+  ]);
 
   const courseListText = (allCourses || []).length
     ? allCourses.map(c => {
@@ -45,7 +51,17 @@ export async function POST(request) {
       }).join('\n')
     : '(없음)';
 
+  const completedText = (completedRows || []).length
+    ? completedRows
+        .filter(r => r.courses)
+        .map(r => `[${r.courses.code}] ${r.courses.name} (${r.courses.category})${r.semester && r.semester !== 'imported' ? ` — ${r.semester}` : ''}`)
+        .join('\n')
+    : '(없음)';
+
   const systemPrompt = `당신은 KENTECH 시간표 추천 도우미입니다. 아래 정보를 바탕으로 사용자의 요청을 분석하세요.
+
+[기이수 과목 (수강이력)]
+${completedText}
 
 [현재 시간표]
 ${scheduleText}
