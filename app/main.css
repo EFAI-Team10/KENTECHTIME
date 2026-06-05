@@ -302,6 +302,12 @@
   cursor: not-allowed;
 }
 
+.withdraw-modal-btns .btn-danger {
+  background: #e74c3c;
+  color: #fff;
+  border-color: #e74c3c;
+}
+
 .withdraw-google-wrapper {
   display: flex;
   justify-content: center;
