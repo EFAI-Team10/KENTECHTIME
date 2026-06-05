@@ -36,6 +36,13 @@ const EF_DL   = new Set(['EF1003','EF2003','EF2006','EF2035','EF2039']);
 // 카테고리별 필수 학점 (초과분 → FR 산정 기준)
 const CAT_REQUIRED = { VC:8, EF:28, EL:40, MN:16, HASS:4, IR:4, CAPS:4, EN:4, RC:4 };
 
+// EF 수학 필수 학점: 22·23·24학번 = 4, 25학번 이후 = 8 (학번 앞 4자리 = 입학년도)
+function efMathReq(studentId) {
+  const y = parseInt(String(studentId || '').slice(0, 4));
+  if (!y || y < 2000) return 8; // 알 수 없으면 최신(8) 기준
+  return y >= 2025 ? 8 : 4;
+}
+
 export async function GET(request) {
   let auth;
   try {
@@ -46,15 +53,20 @@ export async function GET(request) {
   }
 
   const supabase = getSupabaseAdmin();
-  const { data, error } = await supabase
-    .from('completed_courses')
-    .select('courses(code, category, credits, grad_excluded)')
-    .eq('user_id', auth.userId);
+  const [{ data, error }, userRes] = await Promise.all([
+    supabase
+      .from('completed_courses')
+      .select('courses(code, category, credits, grad_excluded)')
+      .eq('user_id', auth.userId),
+    supabase.from('users').select('student_id').eq('id', auth.userId).maybeSingle(),
+  ]);
 
   if (error) {
     console.error('GET /api/courses/requirements error:', error);
     return errorJson('서버 오류', 500);
   }
+
+  const mathReq = efMathReq(userRes?.data?.student_id);
 
   const earned = { VC:0, EF:0, EL:0, MN:0, HASS:0, ESP:0, IR:0, GR:0, CAPS:0, EN:0, RC:0, FR:0, total:0 };
   const efSub = { math:0, physics:0, chem:0, dl:0 };
@@ -179,7 +191,7 @@ export async function GET(request) {
     apCreditCount,
     apCounted,
     efSub,
-    efSubRequired: { math:8, physics:4, chem:4, dl:4 },
+    efSubRequired: { math: mathReq, physics:4, chem:4, dl:4 },
     elUpperCount,
     elUpperRequired: 2,
     elCount: elTotalCount,

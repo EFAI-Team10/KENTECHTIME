@@ -53,7 +53,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [apCreditCount, setApCreditCount] = useState(0);
   const [apCounted, setApCounted] = useState(0);
   const [efSub, setEfSub] = useState({ math: 0, physics: 0, chem: 0, dl: 0 });
-  const [efSubRequired] = useState({ math: 8, physics: 4, chem: 4, dl: 4 });
+  const [efSubRequired, setEfSubRequired] = useState({ math: 8, physics: 4, chem: 4, dl: 4 });
   const [elUpperCount, setElUpperCount] = useState(0);
 
   // 시간표 과목 → 카테고리별 계획 학점 (졸업학점 미포함 과목 제외)
@@ -189,6 +189,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
         setApCreditCount(d.apCreditCount || 0);
         setApCounted(d.apCounted || 0);
         setEfSub(d.efSub || { math: 0, physics: 0, chem: 0, dl: 0 });
+        if (d.efSubRequired) setEfSubRequired(d.efSubRequired);
         setElUpperCount(d.elUpperCount || 0);
       })
       .catch(() => { });
