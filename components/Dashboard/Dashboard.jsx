@@ -113,14 +113,18 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
 
   useEffect(() => { loadRequirements(); }, []);
 
-  // 카테고리별 도넛 차트
+  // 카테고리별 도넛 차트 — earned(색) + remaining(회색) 두 조각으로 분리해 실제 비율 반영
   const donutData = Object.entries(REQUIRED)
     .filter(([cat]) => cat !== 'total')
-    .map(([cat, req]) => ({
-      name: cat,
-      value: req,
-      fill: (earned[cat] || 0) >= req ? (CAT_COLORS[cat] || '#4A90D9') : '#e8eaf0',
-    }));
+    .flatMap(([cat, req]) => {
+      const got = Math.min(earned[cat] || 0, req);
+      const rem = req - got;
+      const color = CAT_COLORS[cat] || '#4A90D9';
+      return [
+        ...(got > 0 ? [{ name: cat,          value: got, fill: color     }] : []),
+        ...(rem > 0 ? [{ name: `${cat}_rem`, value: rem, fill: '#e8eaf0' }] : []),
+      ];
+    });
   const totalPct = Math.round((earned.total / REQUIRED.total) * 100);
   const plannedTotal = Object.values(planned).reduce((s, v) => s + v, 0);
 
