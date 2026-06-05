@@ -24,6 +24,8 @@ export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   const { message, currentSchedule, history = [] } = body;
 
+  if (!message?.trim()) return errorJson('메시지를 입력해주세요.', 400);
+
   const supabase = getSupabaseAdmin();
   const latestSemester = await getLatestSemester(supabase);
 
@@ -102,7 +104,7 @@ FR (Free Elective): 졸업요건 초과 이수 학점, 타대학 학점교류 �
   "include_codes": ["추가/우선 포함할 과목코드 배열, 없으면 []"],
   "max_credits": 학점 제한 숫자 없으면 null,
   "description_needed": ["상세 설명이 필요한 과목코드 배열. 사용자가 특정 과목 내용·특징·난이도를 물어볼 때만 지정. 없으면 []"],
-  "reply": "사용자에게 보여줄 한국어 응답 메시지 1~2문장"
+  "reply": "사용자에게 보여줄 한국어 응답 메시지. 시간표 변경 시 1~2문장, 과목 정보·설명 질문 시 충분히 자세하게."
 }
 action이 "chat"이면 시간표를 변경하지 않고 reply만 반환합니다.
 description_needed에 코드를 넣으면 해당 과목의 상세 설명을 받아 reply를 보완할 수 있습니다.`;
@@ -113,8 +115,10 @@ description_needed에 코드를 넣으면 해당 과목의 상세 설명을 받�
       baseURL: 'https://factchat-cloud.mindlogic.ai/v1/gateway',
     });
 
+    // 최근 10개 메시지만 유지 (토큰 폭발 방지)
     const historyMessages = history
       .filter(m => m.role === 'user' || m.role === 'assistant')
+      .slice(-10)
       .map(m => ({ role: m.role, content: m.content }));
 
     const messages = [
@@ -139,8 +143,9 @@ description_needed에 코드를 넣으면 해당 과목의 상세 설명을 받�
 
     if (!intent.action) return errorJson('LLM 응답 형식 오류. 다시 시도해주세요.', 500);
 
-    // description_needed가 있으면 DB에서 가져와 2차 LLM 호출
+    // description_needed가 있으면 DB에서 가져와 2차 LLM 호출 (최대 5개)
     if (intent.description_needed?.length) {
+      intent.description_needed = intent.description_needed.slice(0, 5);
       const { data: descRows } = await supabase
         .from('courses')
         .select('code, name, description')
