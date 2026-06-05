@@ -100,12 +100,11 @@
   color: white;
 }
 
-/* 추천 / 내 시간표 구분선 */
-.tab-divider {
-  width: 1px;
-  height: 22px;
-  background: #d0d4dc;
-  margin: 0 2px;
+/* 내 시간표 탭 줄 (추천 탭 아래) */
+.my-tabs-row {
+  margin-bottom: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #e2e6ec;
 }
 
 /* 내 시간표 탭 (녹색 계열) */
