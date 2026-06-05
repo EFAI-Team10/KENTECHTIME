@@ -53,26 +53,30 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [efSubRequired] = useState({ math: 8, physics: 4, chem: 4, dl: 4 });
   const [elUpperCount, setElUpperCount] = useState(0);
 
-  // 시간표 과목 → 카테고리별 계획 학점
+  // 시간표 과목 → 카테고리별 계획 학점 (졸업학점 미포함 과목 제외)
+  const gradCounted = (currentSchedule || []).filter(c => !c.grad_excluded);
   const planned = {};
-  for (const c of currentSchedule) {
+  for (const c of gradCounted) {
     const cat = c.category || 'EL';
     planned[cat] = (planned[cat] || 0) + Number(c.credits || 0);
   }
 
   // 시간표 EL 학점 합계 / EL4/5 과목 수
-  const plannedElCredits = (currentSchedule || [])
-    .filter(c => c.category === 'EL')
-    .reduce((s, c) => s + Number(c.credits || 0), 0);
-  const plannedElUpper = (currentSchedule || []).filter(c => {
+  const isElUpper = (c) => {
     if (c.category !== 'EL') return false;
     const level = parseInt(String(c.code || '').replace(/^EL/, '')[0]);
     return level >= 4;
-  }).length;
+  };
+  // 왼쪽 학점 바에는 EL4/5를 제외 (EL4/5는 오른쪽 슬롯으로만 표기)
+  const plannedElCredits = gradCounted
+    .filter(c => c.category === 'EL' && !isElUpper(c))
+    .reduce((s, c) => s + Number(c.credits || 0), 0);
+  const plannedElUpper = gradCounted.filter(isElUpper).length;
 
-  // EL 바: 학점 기준 fill
-  const elEarnedPct = Math.min(100, (earned.EL / REQUIRED.EL) * 100);
-  const elPlanPct = Math.min(100, ((earned.EL + plannedElCredits) / REQUIRED.EL) * 100);
+  // EL 바: 학점 기준 fill — 왼쪽 80%가 학점 영역(오른쪽 20%는 EL4/5 슬롯 전용)
+  // → 0~80% 범위로 매핑해 EL4/5 존과 겹쳐 중복 표기되지 않도록 함
+  const elEarnedPct = Math.min(80, (earned.EL / REQUIRED.EL) * 80);
+  const elPlanPct = Math.min(80, ((earned.EL + plannedElCredits) / REQUIRED.EL) * 80);
 
   // 시간표 추가 시 각 카테고리 초과분 → FR 미리보기
   const plannedFRExtra = Object.entries(CAT_OVERFLOW_TARGET).reduce((sum, [cat, req]) => {

@@ -34,7 +34,7 @@ const DEFAULT_CAT_COLORS = {
 const normalizeTrack = (t) => t === '원자력' ? '재료/화학' : t;
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
-const HOURS = Array.from({ length: 11 }, (_, i) => i + 9);
+const HOURS = Array.from({ length: 12 }, (_, i) => i + 9); // 9:00 ~ 21:00
 
 function pad(h) { return `${String(h).padStart(2, '0')}:00`; }
 // 'HH:MM' → 시(소수). 13:30 → 13.5

@@ -48,7 +48,7 @@ export async function GET(request) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('completed_courses')
-    .select('courses(code, category, credits)')
+    .select('courses(code, category, credits, grad_excluded)')
     .eq('user_id', auth.userId);
 
   if (error) {
@@ -67,9 +67,10 @@ export async function GET(request) {
 
   const seenCodes = new Set(); // 같은 과목 코드가 여러 학기로 중복 저장된 경우 1번만 집계
   for (const row of data) {
-    const { code, category: storedCat, credits: rawCredits } = row.courses || {};
+    const { code, category: storedCat, credits: rawCredits, grad_excluded } = row.courses || {};
     if (!code || seenCodes.has(code)) continue;
     seenCodes.add(code);
+    if (grad_excluded) continue; // 비고 '졸업학점 미포함' 과목은 졸업학점 계산에서 제외
     const category = resolveCategory(code, storedCat);
 
     let cr = Number(rawCredits) || 0;
