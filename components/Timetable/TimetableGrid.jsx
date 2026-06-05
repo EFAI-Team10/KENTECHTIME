@@ -2,6 +2,21 @@
 import { useState } from 'react';
 import './TimetableGrid.css';
 
+const ESP_STAGES = [
+  ['ES1001', 'ES1002'],
+  ['ES2001', 'ES2002'],
+  ['ES3001', 'ES3002'],
+];
+
+function getEspNextCodes(completedCodes) {
+  let maxDone = -1;
+  for (let i = 0; i < ESP_STAGES.length; i++) {
+    if (ESP_STAGES[i].every(c => completedCodes.has(c))) maxDone = i;
+  }
+  if (maxDone === ESP_STAGES.length - 1) return new Set();
+  return new Set(ESP_STAGES[maxDone + 1]);
+}
+
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
 const TRACK_COLOR = {
   '전기/전자': '#4A90D9',
@@ -92,10 +107,13 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
 
   const pickerCourse = pickerSlot ? getCourseAt(pickerSlot.day, pickerSlot.hour) : null;
 
+  const espNextCodes = getEspNextCodes(completedCodes);
+
   const pickerList = pickerSlot
     ? sortCourses(
         allCourses.filter(c =>
-          !completedCodes.has(c.code) &&  // 기수강 과목 제외
+          !completedCodes.has(c.code) &&
+          (c.category !== 'ESP' || espNextCodes.has(c.code)) &&  // ESP는 유효 단계만 노출
           (c.timeslots || []).some(s => coversCell(s, pickerSlot.day, pickerSlot.hour))
         ),
         userGrade,
