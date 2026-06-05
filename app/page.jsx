@@ -260,6 +260,13 @@ export default function MainPage() {
   const confirmMyTimetable = async () => {
     if (view.type !== 'my') return;
     const t = myTimetables[view.idx];
+    const totalCr = (t.courses || []).reduce((s, c) => s + (c.credits || 0), 0);
+    const minCr = preferences.last_semester ? 4 : 10;
+    if (totalCr === 0) { alert('빈 시간표는 확정할 수 없습니다.'); return; }
+    if (totalCr < minCr) {
+      alert(`확정하려면 최소 ${minCr}학점이 필요합니다. (현재 ${totalCr}학점)`);
+      return;
+    }
     try {
       await scheduleAPI.save({ courseIds: t.courses.map(c => c.id), semester, slot: t.slot });
       await scheduleAPI.setActive({ semester, slot: t.slot });
@@ -269,6 +276,16 @@ export default function MainPage() {
       alert('이 시간표가 확정되어 경쟁률에 반영됩니다.');
     } catch {
       alert('확정에 실패했습니다.');
+    }
+  };
+
+  const cancelConfirmMyTimetable = async () => {
+    try {
+      await scheduleAPI.cancelActive(semester);
+      setConfirmedSlot(null);
+      setTrackerKey(k => k + 1);
+    } catch {
+      alert('확정 취소에 실패했습니다.');
     }
   };
 
@@ -397,7 +414,22 @@ export default function MainPage() {
                   </button>
                   <button className="rename-btn" onClick={() => renameMyTimetable(view.idx)}>✎ 이름</button>
                   <button className="save-btn" onClick={saveMyTimetable}>저장</button>
-                  <button className="confirm-btn" onClick={confirmMyTimetable}>확정</button>
+                  {confirmedSlot === myTimetables[view.idx]?.slot ? (
+                    <button className="cancel-confirm-btn" onClick={cancelConfirmMyTimetable}>확정 취소</button>
+                  ) : (() => {
+                    const courses = myTimetables[view.idx]?.courses || [];
+                    const totalCr = courses.reduce((s, c) => s + (c.credits || 0), 0);
+                    const minCr = preferences.last_semester ? 4 : 10;
+                    const disabled = totalCr < minCr;
+                    const title = totalCr === 0
+                      ? '빈 시간표는 확정할 수 없습니다'
+                      : disabled
+                        ? `최소 ${minCr}학점 필요 (현재 ${totalCr}학점)${preferences.last_semester ? '' : ' — 막학기 모드 시 4학점'}`
+                        : '';
+                    return (
+                      <button className="confirm-btn" onClick={confirmMyTimetable} disabled={disabled} title={title}>확정</button>
+                    );
+                  })()}
                   {myTimetables.length > 1 && (
                     <button className="delete-tt-btn" onClick={() => deleteMyTimetable(view.idx)}>삭제</button>
                   )}
@@ -495,7 +527,7 @@ export default function MainPage() {
             setView({ type: 'my', idx: 0 });
           }
         }} />
-        <Tracker refreshKey={trackerKey} />
+        <Tracker refreshKey={trackerKey} isConfirmed={confirmedSlot !== null} />
       </div>
     </div>
   );

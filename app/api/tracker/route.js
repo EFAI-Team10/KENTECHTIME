@@ -36,9 +36,8 @@ export async function GET(request) {
 
   const countMap = {};
   for (const row of plannedRes.data || []) {
-    const activeSlot = activeSlotByUser.has(row.user_id)
-      ? activeSlotByUser.get(row.user_id)
-      : 0;
+    if (!activeSlotByUser.has(row.user_id)) continue; // 미확정 유저 제외
+    const activeSlot = activeSlotByUser.get(row.user_id);
     if ((row.slot ?? 0) !== activeSlot) continue; // 확정된 시간표만 집계
     const id = row.course_id;
     if (!countMap[id]) countMap[id] = { course: row.courses, applicants: 0 };

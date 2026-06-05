@@ -8,6 +8,36 @@
 
 .empty { color: #888; text-align: center; padding: 20px; }
 
+.tracker-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 4px;
+  padding: 16px;
+  background: #fff5f5;
+  border: 1.5px solid #f5b8b8;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.tracker-locked-icon {
+  font-size: 22px;
+}
+
+.tracker-locked-main {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #c0392b;
+  line-height: 1.5;
+}
+
+.tracker-locked-sub {
+  font-size: 12px;
+  color: #e07070;
+  line-height: 1.4;
+}
+
 table { width: 100%; border-collapse: collapse; }
 
 th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }

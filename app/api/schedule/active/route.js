@@ -27,3 +27,31 @@ export async function POST(request) {
   }
   return Response.json({ success: true });
 }
+
+// 확정 취소
+export async function DELETE(request) {
+  let auth;
+  try {
+    auth = requireAuth(request);
+  } catch (err) {
+    if (err instanceof AuthError) return errorJson(err.message, err.status);
+    return errorJson('서버 오류', 500);
+  }
+
+  const { searchParams } = new URL(request.url);
+  const semester = searchParams.get('semester');
+  if (!semester) return errorJson('semester가 필요합니다.', 400);
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from('active_schedule')
+    .delete()
+    .eq('user_id', auth.userId)
+    .eq('semester', semester);
+
+  if (error) {
+    console.error('DELETE /api/schedule/active error:', error);
+    return errorJson('확정 취소 실패', 500);
+  }
+  return Response.json({ success: true });
+}

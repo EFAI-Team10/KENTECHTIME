@@ -4,7 +4,7 @@ import { trackerAPI } from '@/lib/api-client';
 import useStore from '@/lib/store';
 import './Tracker.css';
 
-export default function Tracker({ refreshKey = 0 }) {
+export default function Tracker({ refreshKey = 0, isConfirmed = false }) {
   const [data, setData] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const semester = useStore(s => s.semester);
@@ -18,18 +18,25 @@ export default function Tracker({ refreshKey = 0 }) {
   };
 
   useEffect(() => {
+    if (!isConfirmed) return;
     fetchData();
     const interval = setInterval(fetchData, 10 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [semester, refreshKey]);
+  }, [semester, refreshKey, isConfirmed]);
 
   return (
     <div className="tracker">
       <div className="tracker-header">
         <h3>수강 희망 경쟁률</h3>
-        {lastUpdated && <span className="updated">업데이트: {lastUpdated}</span>}
+        {isConfirmed && lastUpdated && <span className="updated">업데이트: {lastUpdated}</span>}
       </div>
-      {data.length === 0 ? (
+      {!isConfirmed ? (
+        <div className="tracker-locked">
+          <span className="tracker-locked-icon">🔒</span>
+          <span className="tracker-locked-main">시간표를 &apos;확정&apos;해야 경쟁률을 조회할 수 있습니다.</span>
+          <span className="tracker-locked-sub">내 시간표 탭에서 저장 후 <strong>확정</strong> 버튼을 눌러주세요.</span>
+        </div>
+      ) : data.length === 0 ? (
         <p className="empty">데이터가 없습니다.</p>
       ) : (
         <table>
