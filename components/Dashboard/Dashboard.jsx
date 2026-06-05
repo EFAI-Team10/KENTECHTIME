@@ -10,10 +10,10 @@ const REQUIRED = { VC: 8, EF: 28, EL: 40, MN: 16, HASS: 4, ESP: 4, IR: 4, CAPS: 
 // FR overflow 계산 대상 카테고리 (요구학점이 있는 카테고리)
 const CAT_OVERFLOW_TARGET = { VC: 8, EF: 28, EL: 40, MN: 16, HASS: 4, IR: 4, CAPS: 4, EN: 4, RC: 4 };
 const CAT_COLORS = {
-  EL: '#27AE60', EF: '#4A90D9', VC: '#8E44AD',
-  MN: '#F39C12', HASS: '#E74C3C', ESP: '#1A5276',
-  IR: '#16A085', CAPS: '#626567', EN: '#2471A3',
-  FR: '#717D7E', RC: '#196F3D', GR: '#CA6F1E', GS: '#6C3483',
+  EL: '#002E73', EF: '#007CBD', VC: '#1CB9EC',
+  MN: '#AE8EBD', HASS: '#8781AD', ESP: '#D488B7',
+  IR: '#EF8862', CAPS: '#D2634E', EN: '#6F55B8',
+  FR: '#666666', RC: '#3F8881', GR: '#CA6F1E', GS: '#00186E',
 };
 const CATEGORIES = ['EF','EL','VC','MN','HASS','ESP','IR','GR','CAPS','EN','RC','FR','GS'];
 const CAT_ORDER = ['EF','VC','EL','MN','HASS','EN','IR','CAPS','ESP','RC','FR','GR'];

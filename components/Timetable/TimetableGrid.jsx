@@ -19,18 +19,18 @@ function getEspNextCodes(completedCodes) {
 
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
 const TRACK_COLOR = {
-  '전기/전자': '#4A90D9',
-  '재료/화학': '#27AE60',
-  '인공지능': '#8E44AD',
+  '전기/전자': '#7289FF',
+  '재료/화학': '#6CDD8F',
+  '인공지능': '#F05268',
 };
 // DB에 '원자력'으로 저장된 과목은 '재료/화학'으로 통합
 const normalizeTrack = (t) => t === '원자력' ? '재료/화학' : t;
 // 카테고리별 고정 색상 (도넛 차트와 동일)
 const CAT_COLORS = {
-  EL: '#27AE60', EF: '#4A90D9', VC: '#8E44AD',
-  MN: '#F39C12', HASS: '#E74C3C', ESP: '#1A5276',
-  IR: '#16A085', CAPS: '#626567', EN: '#2471A3',
-  FR: '#717D7E', RC: '#196F3D', GR: '#CA6F1E', GS: '#6C3483',
+  EL: '#002E73', EF: '#007CBD', VC: '#1CB9EC',
+  MN: '#AE8EBD', HASS: '#8781AD', ESP: '#D488B7',
+  IR: '#EF8862', CAPS: '#D2634E', EN: '#6F55B8',
+  FR: '#666666', RC: '#3F8881', GR: '#CA6F1E', GS: '#00186E',
 };
 const DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI'];
 const DAY_KO = { MON: '월', TUE: '화', WED: '수', THU: '목', FRI: '금' };
