@@ -247,6 +247,14 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
               {earned.total}{plannedTotal > 0 && <span className="planned-count" style={{ fontSize: 11 }}>+{plannedTotal}</span>} / {REQUIRED.total}학점
             </span>
           </div>
+          <div className="donut-legend">
+            {Object.entries(REQUIRED).filter(([cat]) => cat !== 'total').map(([cat]) => (
+              <div key={cat} className="legend-item">
+                <span className="legend-dot" style={{ background: CAT_COLORS[cat] || '#4A90D9' }} />
+                <span className="legend-label">{cat}</span>
+              </div>
+            ))}
+          </div>
         </div>
         <div className="requirements-list">
           {Object.entries(REQUIRED).filter(([cat]) => cat !== 'total').map(([cat, req]) => {
