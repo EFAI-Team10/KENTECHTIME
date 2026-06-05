@@ -28,34 +28,26 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
   const { user, setUser } = useStore(s => ({ user: s.user, setUser: s.setUser }));
   const { themeIdx, setTheme, isDark, setIsDark } = useTheme();
 
-  // ── 내 정보 ──
-  const [profile, setProfile] = useState({ name: '', student_id: '', grade: 0 });
-  const [profileSaving, setProfileSaving] = useState(false);
-  const [profileDone, setProfileDone] = useState(false);
-  const [profileError, setProfileError] = useState('');
+  // ── 내 정보 — 학기차만 수정 가능 ──
+  const [semesterEdit, setSemesterEdit] = useState(1);
+  const [semesterSaving, setSemesterSaving] = useState(false);
+  const [semesterDone, setSemesterDone] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setProfile({
-        name:       user.name       || '',
-        student_id: user.student_id || '',
-        grade:      user.grade      || 0,
-      });
-    }
+    if (user?.semester) setSemesterEdit(user.semester);
   }, [user]);
 
-  const handleProfileSave = async () => {
-    setProfileSaving(true);
-    setProfileError('');
-    setProfileDone(false);
+  const handleSemesterSave = async () => {
+    setSemesterSaving(true);
+    setSemesterDone(false);
     try {
-      const res = await usersAPI.updateProfile(profile);
-      setUser(res.data.user);
-      setProfileDone(true);
+      const res = await usersAPI.updateProfile({ semester: semesterEdit });
+      setUser(res.data.user);  // 학년도 자동 동기화되어 함께 갱신됨
+      setSemesterDone(true);
     } catch {
-      setProfileError('저장 중 오류가 발생했습니다.');
+      alert('학기차 저장에 실패했습니다.');
     } finally {
-      setProfileSaving(false);
+      setSemesterSaving(false);
     }
   };
 
@@ -228,52 +220,33 @@ export default function SettingsModal({ onClose, onTrackOrderChange }) {
           <button className="settings-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* ── 내 정보 ── */}
+        {/* ── 내 정보 (이름·학번 읽기전용, 학기차만 수정 가능) ── */}
         <div className="settings-section">
           <h3>내 정보</h3>
-          <div className="profile-form">
-            <div className="profile-field">
-              <label>이름</label>
-              <input
-                type="text"
-                value={profile.name}
-                onChange={e => { setProfile(p => ({ ...p, name: e.target.value })); setProfileDone(false); }}
-                placeholder="이름 입력"
-              />
+          <div className="profile-view">
+            <div className="profile-view-row">
+              <span className="profile-view-label">이름</span>
+              <span className="profile-view-value">{user?.name || '-'}</span>
             </div>
-            <div className="profile-field">
-              <label>학번</label>
-              <input
-                type="text"
-                value={profile.student_id}
-                onChange={e => { setProfile(p => ({ ...p, student_id: e.target.value })); setProfileDone(false); }}
-                placeholder="학번 입력 (예: 20240001)"
-              />
+            <div className="profile-view-row">
+              <span className="profile-view-label">학번</span>
+              <span className="profile-view-value">{user?.student_id || '-'}</span>
             </div>
-            <div className="profile-field">
-              <label>학년</label>
+            <div className="profile-view-row">
+              <span className="profile-view-label">학기차</span>
               <select
-                value={profile.grade}
-                onChange={e => { setProfile(p => ({ ...p, grade: parseInt(e.target.value) })); setProfileDone(false); }}
+                value={semesterEdit}
+                onChange={e => { setSemesterEdit(parseInt(e.target.value)); setSemesterDone(false); }}
               >
-                <option value={0}>선택</option>
-                <option value={1}>1학년</option>
-                <option value={2}>2학년</option>
-                <option value={3}>3학년</option>
-                <option value={4}>4학년</option>
+                {[1,2,3,4,5,6,7,8].map(s => (
+                  <option key={s} value={s}>{s}학기차 ({Math.min(4, Math.ceil(s/2))}학년)</option>
+                ))}
               </select>
+              <button className="btn-sm" onClick={handleSemesterSave} disabled={semesterSaving}>
+                {semesterSaving ? '...' : '저장'}
+              </button>
+              {semesterDone && <span className="profile-saved">✓</span>}
             </div>
-          </div>
-          {profileError && <p className="profile-error">{profileError}</p>}
-          <div className="settings-btns">
-            {profileDone && <span className="profile-saved">저장되었습니다</span>}
-            <button
-              className="btn-primary"
-              onClick={handleProfileSave}
-              disabled={profileSaving}
-            >
-              {profileSaving ? '저장 중...' : '저장'}
-            </button>
           </div>
         </div>
 

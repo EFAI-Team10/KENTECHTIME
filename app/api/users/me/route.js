@@ -14,7 +14,7 @@ export async function GET(request) {
   const supabase = getSupabaseAdmin();
   const { data: user, error } = await supabase
     .from('users')
-    .select('id, email, name, grade, student_id, role')
+    .select('id, email, name, grade, student_id, role, semester')
     .eq('id', auth.userId)
     .maybeSingle();
 
@@ -33,12 +33,20 @@ export async function PATCH(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { name, grade, student_id } = body;
+  const { name, grade, student_id, semester } = body;
 
   const updates = {};
   if (name      !== undefined) updates.name       = String(name).trim();
   if (grade     !== undefined) updates.grade      = parseInt(grade) || 0;
   if (student_id !== undefined) updates.student_id = String(student_id).trim();
+  // 학기차(1~8) 수정 — 학년은 DB 트리거로 자동 동기화
+  if (semester  !== undefined) {
+    const s = parseInt(semester);
+    if (!Number.isInteger(s) || s < 1 || s > 8) {
+      return errorJson('학기차는 1~8 사이의 정수여야 합니다.', 400);
+    }
+    updates.semester = s;
+  }
 
   if (Object.keys(updates).length === 0) return errorJson('수정할 항목이 없습니다.', 400);
 
@@ -47,7 +55,7 @@ export async function PATCH(request) {
     .from('users')
     .update(updates)
     .eq('id', auth.userId)
-    .select('id, email, name, grade, student_id, role')
+    .select('id, email, name, grade, student_id, role, semester')
     .maybeSingle();
 
   if (error) return errorJson('서버 오류', 500);

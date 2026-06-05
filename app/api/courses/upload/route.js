@@ -103,5 +103,24 @@ export async function POST(request) {
     if (!error) count++;
   }
 
-  return NextResponse.json({ success: true, count }, { status: 200 });
+  // 새 정규학기(봄/가을) 개설교과목이 업로드되어 학기가 진급하면 전 사용자 학기차 +1
+  let advanced = false;
+  if (/^\d{4}-(spring|fall)$/.test(semester)) {
+    const SEM_RANK = { spring: 1, summer: 2, fall: 3, winter: 4 };
+    const semKey = (s) => {
+      const [y, t] = String(s || '').split('-');
+      return parseInt(y || 0) * 10 + (SEM_RANK[t] || 0);
+    };
+    const { data: meta } = await supabase
+      .from('app_meta').select('value').eq('key', 'synced_semester').maybeSingle();
+    const synced = meta?.value || null;
+    if (!synced || semKey(semester) > semKey(synced)) {
+      await supabase.rpc('fn_advance_all_semesters');           // 학기차 +1 (학년은 트리거로 동기화)
+      await supabase.from('app_meta')
+        .upsert({ key: 'synced_semester', value: semester }, { onConflict: 'key' });
+      advanced = true;
+    }
+  }
+
+  return NextResponse.json({ success: true, count, advanced }, { status: 200 });
 }
