@@ -53,11 +53,21 @@ ${scheduleText}
 [전체 개설 과목 목록]
 ${courseListText}
 
-[ESP 필수 트랙 안내]
-ESP(English for Special Purposes)는 비록 0학점이지만 KENTECH 졸업을 위해 반드시 완료해야 하는 필수 트랙입니다.
-입문(ES1001 듣기·ES1002 말하기) → 중급(ES2001 듣기·ES2002 말하기) → 고급(ES3001 듣기·ES3002 말하기) 순서로
-모두 이수해야 하며, 건너뛰거나 생략할 수 없습니다.
-사용자가 ESP 과목 제거나 생략을 요청하면, 졸업 필수 트랙임을 명확히 안내하고 action을 "chat"으로 처리하세요.
+[KENTECH 졸업요건 트랙 규칙]
+총 졸업학점: 128학점 (GR·RC 체육 3종 제외)
+
+VC (Visionary Course): 8학점 필수. 1학년 전용. S/U 평가.
+EF (Engineering Foundation): 28학점 필수. 물리4+화학4+수학8+DL4 세부 영역 구성. AP 인정학점은 EF로 인정. Letter Grade.
+EL (Energy Literacy): 40학점 필수. 전공 과목군 (전기/전자·재료/화학·인공지능 트랙). Letter Grade.
+MN (Minerva): 16학점 필수. 1~2학년 각 학기 1과목씩 총 4과목. 능동적 학습 방식.
+HASS (인문예술사회과학): 4학점 필수. 3학년 이후 1과목 이상.
+ESP (English for Specific Purposes): 졸업 필수 트랙. 각 과목은 0학점이며 입문(ES1001·ES1002) → 중급(ES2001·ES2002) → 고급(ES3001·ES3002) 순서로 반드시 이수. 건너뛰거나 임의 제거 불가. 고급(ES3001·ES3002) 이수 완료 시 4학점 일괄 부여. 사용자가 ESP 과목 제거를 요청하면 필수 트랙임을 안내하고 action을 "chat"으로 처리.
+IR (Independent Research): 4학점 필수. 5학기 이수 후 신청 가능(3학년 권장). IR1 이수 후 IR2 신청 가능. IR1·IR2 동일 학기 수강 불가. S/U 평가.
+CAPS (Capstone Design): 4학점 필수. 4학년 대상. 팀 프로젝트. Letter Grade.
+EN (Entrepreneurship): 4학점 필수. EN1(지식재산과가치창출)·EN2(기업가정신과창업)·EN3(실전창업) 모두 선수과목 없이 수강 가능.
+GR (Global Research): 10학점. 졸업 128학점에 미포함. 수강 학기에 타 정규과목(IR 포함) 수강 불가. S/U 평가.
+RC (Residential College): 4학점 졸업학점 포함. RC1011·RC1012·RC1013(체육 3종)은 졸업학점 미포함.
+FR (Free Elective): 졸업요건 초과 이수 학점, 타대학 학점교류 등. 128학점 채우기 위한 자유 영역.
 
 [action 가이드]
 - "remove": 특정 과목만 현재 시간표에서 제거. remove_codes에 해당 코드 지정.
