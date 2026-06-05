@@ -316,7 +316,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                           style={{ width: `${elPlanPct}%`, backgroundColor: color }} />
                       )}
                       <div className="progress-fill"
-                        style={{ width: `${elEarnedPct}%`, backgroundColor: earned.EL >= REQUIRED.EL ? color : '#E74C3C' }} />
+                        style={{ width: `${elEarnedPct}%`, backgroundColor: color }} />
                       {/* EL4/5 슬롯 독립 fill — 이수/계획 시에만 렌더 */}
                       {(elUpperCount >= 1 || plannedElUpper >= 1) && (
                         <div className={`el-zone-slot ${elUpperCount >= 1 ? 'done' : 'planned'}`}
@@ -340,12 +340,12 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                           style={{ width: `${planPct}%`, backgroundColor: color }} />
                       )}
                       <div className="progress-fill"
-                        style={{ width: `${earnedPct}%`, backgroundColor: met ? color : '#E74C3C' }} />
+                        style={{ width: `${earnedPct}%`, backgroundColor: color }} />
                     </div>
                   )}
 
                   <div className="credits-col">
-                    <span className="credits-text" style={{ color: cat === 'EL' ? (earned.EL >= REQUIRED.EL ? color : '#555') : met ? color : '#555' }}>
+                    <span className="credits-text" style={{ color: met ? color : '#555' }}>
                       {cat === 'ESP'
                         ? `${got} / ${req}학점`
                         : cat === 'EL'
