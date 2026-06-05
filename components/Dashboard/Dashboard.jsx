@@ -130,11 +130,33 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   // 설정의 ESP 시작 레벨 이전 과목 = 자동 기수강(잠금, 입력은 설정에서만)
   const espPriorCodes = ESP_PRIOR_CODES[espStartLevel] || [];
   const espLockedIds = (checkCourses || []).filter(c => espPriorCodes.includes(c.code)).map(c => c.id);
-  const effectiveCheckCount = new Set([...checkSelected, ...espLockedIds]).size;
+  // 같은 코드 중복 제거된 목록 (분반/학기 무관, 코드당 1행)
+  const dedupedCheckCourses = (() => {
+    const seen = new Set();
+    const out = [];
+    for (const c of (checkCourses || [])) {
+      if (seen.has(c.code)) continue;
+      seen.add(c.code);
+      out.push(c);
+    }
+    return out;
+  })();
+  // 선택 과목 수 = 고유 코드 수 (+ ESP 잠금 코드)
+  const effectiveCheckCount = (() => {
+    const codes = new Set((checkCourses || []).filter(c => checkSelected.has(c.id)).map(c => c.code));
+    espPriorCodes.forEach(code => codes.add(code));
+    return codes.size;
+  })();
 
-  const toggleCheck = (id) => setCheckSelected(prev => {
+  // 분반/학기로 같은 코드가 여러 행 → 코드 단위로 체크/토글
+  const codeChecked = (code) =>
+    (checkCourses || []).some(c => c.code === code && checkSelected.has(c.id));
+
+  const toggleCheckByCode = (code) => setCheckSelected(prev => {
+    const ids = (checkCourses || []).filter(c => c.code === code).map(c => c.id);
     const next = new Set(prev);
-    next.has(id) ? next.delete(id) : next.add(id);
+    const anySel = ids.some(id => next.has(id));
+    ids.forEach(id => { anySel ? next.delete(id) : next.add(id); });
     return next;
   });
 
@@ -460,13 +482,6 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                   </div>
                 )}
 
-                {/* ESP 이전 단계 자동완료 안내 */}
-                {cat === 'ESP' && espStageReached > 0 && (
-                  <div className="sub-requirements">
-                    <span className="sub-req-chip ap">↑ 이전 단계 자동 이수 인정</span>
-                  </div>
-                )}
-
                 {/* FR: 실이수 + 초과 안내 */}
                 {cat === 'FR' && earned.FR > 0 && (
                   <div className="sub-requirements">
@@ -678,7 +693,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                   ) : (
                     <div className="check-course-list">
                       {CATEGORIES.map(cat => {
-                        const list = checkCourses.filter(c =>
+                        const list = dedupedCheckCourses.filter(c =>
                           c.category === cat &&
                           (c.name?.includes(checkSearch) || c.code?.includes(checkSearch))
                         );
@@ -689,14 +704,14 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                             {list.map(course => {
                               // 설정의 ESP 시작 레벨 이전 과목 = 자동 기수강(체크 고정·잠금)
                               const espLocked = espPriorCodes.includes(course.code);
-                              const checked = espLocked || checkSelected.has(course.id);
+                              const checked = espLocked || codeChecked(course.code);
                               return (
-                                <label key={course.id} className={`check-item${checked ? ' checked' : ''}${espLocked ? ' locked' : ''}`}>
+                                <label key={course.code} className={`check-item${checked ? ' checked' : ''}${espLocked ? ' locked' : ''}`}>
                                   <input
                                     type="checkbox"
                                     checked={checked}
                                     disabled={espLocked}
-                                    onChange={() => { if (!espLocked) toggleCheck(course.id); }}
+                                    onChange={() => { if (!espLocked) toggleCheckByCode(course.code); }}
                                   />
                                   <span className="check-name">{course.name}</span>
                                   <span className="check-meta">
@@ -773,7 +788,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                           value={extForm.category}
                           onChange={e => setExtForm(f => ({ ...f, category: e.target.value }))}
                         >
-                          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                          {CATEGORIES.filter(c => c !== 'GS').map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
                     </div>
