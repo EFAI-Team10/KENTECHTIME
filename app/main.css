@@ -149,6 +149,7 @@
 .paste-btn { background: #eef6ff !important; color: #2c6fb3 !important; border-color: #4A90D9 !important; }
 .confirm-btn { background: #E67E22 !important; color: #fff !important; border-color: #E67E22 !important; }
 .delete-tt-btn { background: #fff !important; color: #e74c3c !important; border-color: #e74c3c !important; }
+.rename-btn { background: #fff !important; color: #555 !important; border-color: #bbb !important; }
 
 .action-btns {
   display: flex;

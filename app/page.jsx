@@ -107,7 +107,7 @@ export default function MainPage() {
       try {
         const myRes = await scheduleAPI.getMy(semester);
         const tts = (myRes.data.timetables || [])
-          .map(t => ({ slot: t.slot, courses: (t.courses || []).filter(c => c.id) }));
+          .map(t => ({ slot: t.slot, name: t.name || null, courses: (t.courses || []).filter(c => c.id) }));
         setMyTimetables(tts.length > 0 ? tts : [{ slot: 0, courses: [] }]);
         setSavedSlots(new Set(tts.map(t => t.slot))); // 로드된 슬롯 = 저장된 상태
         setConfirmedSlot(myRes.data.activeSlot ?? null);
@@ -178,10 +178,9 @@ export default function MainPage() {
     updateMyCourses(cs => cs.filter(c => c.id !== course.id));
   };
 
-  // ── 추천 → 내 시간표 복사/붙여넣기 ──
-  const copyCurrentRec = () => {
-    if (view.type !== 'rec') return;
-    setCopyBuffer(recommendations[view.idx] || []);
+  // ── 복사/붙여넣기 (추천·내 시간표 모두 복사 가능) ──
+  const copyCurrent = () => {
+    setCopyBuffer(currentCourses);
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };
@@ -190,12 +189,22 @@ export default function MainPage() {
     updateMyCourses(() => [...copyBuffer]);
   };
 
-  // ── 내 시간표 추가/삭제 ──
+  // ── 내 시간표 추가/삭제/이름변경 ──
   const addMyTimetable = () => {
     const used = myTimetables.map(t => t.slot);
     let slot = 0; while (used.includes(slot)) slot++;
-    setMyTimetables(prev => [...prev, { slot, courses: [] }]);
+    setMyTimetables(prev => [...prev, { slot, courses: [], name: null }]);
     setView({ type: 'my', idx: myTimetables.length });
+  };
+
+  const renameMyTimetable = async (idx) => {
+    const t = myTimetables[idx];
+    if (!t) return;
+    const input = window.prompt('내 시간표 이름을 입력하세요 (비우면 기본 이름)', t.name || '');
+    if (input === null) return; // 취소
+    const name = input.trim().slice(0, 40);
+    setMyTimetables(prev => prev.map((x, i) => i === idx ? { ...x, name: name || null } : x));
+    try { await scheduleAPI.setName({ semester, slot: t.slot, name }); } catch {}
   };
 
   const deleteMyTimetable = async (idx) => {
@@ -326,12 +335,14 @@ export default function MainPage() {
                     key={`my-${t.slot}`}
                     className={`my-tab ${!isRec && view.idx === i ? 'active' : ''} ${saved ? 'saved' : 'unsaved'}`}
                     onClick={() => selectMy(i)}
+                    onDoubleClick={() => renameMyTimetable(i)}
                     title={
                       (confirmedSlot === t.slot ? '확정됨 (경쟁률 반영) · ' : '') +
-                      (saved ? '저장됨' : '미저장 (변경사항 있음)')
+                      (saved ? '저장됨' : '미저장 (변경사항 있음)') +
+                      ' · 더블클릭하여 이름 변경'
                     }
                   >
-                    내 시간표 {i + 1}
+                    {t.name || `내 시간표 ${i + 1}`}
                     {confirmedSlot === t.slot && <span className="confirmed-mark"> ✓</span>}
                     <span className="save-dot">{saved ? '저장됨' : '●'}</span>
                   </button>
@@ -346,15 +357,19 @@ export default function MainPage() {
                   <button onClick={loadRecommendations} disabled={loading}>
                     {loading ? '생성 중...' : '새 추천'}
                   </button>
-                  <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={copyCurrentRec}>
+                  <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={copyCurrent}>
                     {copied ? '✅ 복사 완료' : '📋 복사'}
                   </button>
                 </>
               ) : (
                 <>
+                  <button className={`copy-btn ${copied ? 'copied' : ''}`} onClick={copyCurrent}>
+                    {copied ? '✅ 복사 완료' : '📋 복사'}
+                  </button>
                   <button className="paste-btn" onClick={pasteIntoMy} disabled={!copyBuffer}>
                     붙여넣기{copyBuffer ? '' : ' (복사 먼저)'}
                   </button>
+                  <button className="rename-btn" onClick={() => renameMyTimetable(view.idx)}>✎ 이름</button>
                   <button className="save-btn" onClick={saveMyTimetable}>저장</button>
                   <button className="confirm-btn" onClick={confirmMyTimetable}>확정</button>
                   {myTimetables.length > 1 && (

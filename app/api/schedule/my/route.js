@@ -14,7 +14,7 @@ export async function GET(request) {
   const semester = searchParams.get('semester');
 
   const supabase = getSupabaseAdmin();
-  const [{ data, error }, activeRes] = await Promise.all([
+  const [{ data, error }, activeRes, metaRes] = await Promise.all([
     supabase
       .from('planned_schedules')
       .select('slot, courses(id, code, name, credits, timeslots, track, category, target_grade)')
@@ -26,12 +26,20 @@ export async function GET(request) {
       .eq('user_id', auth.userId)
       .eq('semester', semester)
       .maybeSingle(),
+    supabase
+      .from('schedule_meta')
+      .select('slot, name')
+      .eq('user_id', auth.userId)
+      .eq('semester', semester),
   ]);
 
   if (error) {
     console.error('GET /api/schedule/my error:', error);
     return errorJson('서버 오류', 500);
   }
+
+  const nameBySlot = {};
+  for (const m of metaRes?.data || []) nameBySlot[m.slot] = m.name;
 
   // 슬롯별로 그룹핑
   const bySlot = {};
@@ -43,7 +51,7 @@ export async function GET(request) {
   const timetables = Object.keys(bySlot)
     .map(Number)
     .sort((a, b) => a - b)
-    .map(slot => ({ slot, courses: bySlot[slot] }));
+    .map(slot => ({ slot, courses: bySlot[slot], name: nameBySlot[slot] || null }));
 
   return Response.json({
     timetables,
