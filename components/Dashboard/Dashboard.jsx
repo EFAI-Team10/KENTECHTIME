@@ -304,7 +304,12 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
     <div className="dashboard">
       <div className="dashboard-header">
         <h2>졸업 요건 현황</h2>
-        <button className="import-btn" onClick={() => setShowImport(true)}>
+        <button className="import-btn" onClick={() => {
+          // 모바일에선 포털 가져오기 탭을 숨기므로 기본 탭을 '수강과목 체크'로
+          const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+          setActiveTab(isMobile ? 'check' : 'portal');
+          setShowImport(true);
+        }}>
           수강이력 입력
         </button>
       </div>
@@ -563,7 +568,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
 
             <div className="import-tabs">
               <button
-                className={`import-tab${activeTab === 'portal' ? ' active' : ''}`}
+                className={`import-tab import-tab-portal${activeTab === 'portal' ? ' active' : ''}`}
                 onClick={() => { setActiveTab('portal'); setPreview(null); setImportDone(false); }}
               >
                 수강이력 가져오기

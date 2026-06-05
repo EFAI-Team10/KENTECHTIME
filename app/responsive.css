@@ -49,6 +49,9 @@
 
   /* 표 가로 스크롤 */
   .tracker table { display: block; overflow-x: auto; white-space: nowrap; }
+
+  /* 모바일에선 포털 '수강이력 가져오기' 탭 숨김 (북마클릿/콘솔 방식이라 모바일 부적합) */
+  .import-tab-portal { display: none; }
 }
 
 @media (max-width: 480px) {
