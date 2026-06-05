@@ -61,14 +61,14 @@ function sortCourses(courses, userGrade, trackOrder) {
     // 4순위: EL + 내 학년 (트랙 무관)
     if (isEL && gradeMatch)                  return [3, 0, 0];
 
-    // 5순위: EF + 학년 제한 없음
-    if (isEF && noGrade)                     return [4, 0, 0];
+    // 5순위: ESP (유효 단계만 picker에 노출되므로 EF 학년무관보다 우선)
+    if (isESP)                               return [4, 0, 0];
 
-    // 6순위: HASS·EN + 학년 제한 없음
-    if ((isHASS || isEN) && noGrade)         return [5, 0, 0];
+    // 6순위: EF + 학년 제한 없음
+    if (isEF && noGrade)                     return [5, 0, 0];
 
-    // 7순위: ESP
-    if (isESP)                               return [6, 0, 0];
+    // 7순위: HASS·EN + 학년 제한 없음
+    if ((isHASS || isEN) && noGrade)         return [6, 0, 0];
 
     // 8순위: 나머지 — 학년 거리순, 그 안에서 선택 트랙 우선
     const gradeDist = noGrade ? 0.5 : Math.abs(c.target_grade - userGrade);
