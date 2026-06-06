@@ -175,9 +175,9 @@
 [data-dark="true"] .el-zone-tag           { color: #787882; }         /* EL 구역 레이블 */
 [data-dark="true"] .esp-uni-bar           { background: #252529; }
 [data-dark="true"] .esp-uni-bar-inline    { background: #252529; }
-[data-dark="true"] .esp-uni-fill.done     { background: #646680; }
+[data-dark="true"] .esp-uni-fill.done     { background: #626480; }
 [data-dark="true"] .esp-uni-fill.planned  {
-  background-color: #646680;
+  background-color: #626480;
   background-image: repeating-linear-gradient(
     -45deg,
     rgba(255,255,255,0.15),
