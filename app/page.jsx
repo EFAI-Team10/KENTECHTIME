@@ -14,7 +14,6 @@ function normalizePreferredTracks(arr) {
     .filter((t, i, a) => VALID_TRACKS.includes(t) && a.indexOf(t) === i);
 }
 import { useRouter } from 'next/navigation';
-import { GoogleLogin } from '@react-oauth/google';
 
 function formatSemester(sem) {
   if (!sem) return '';
@@ -330,28 +329,17 @@ export default function MainPage() {
 
   const openWithdrawModal = () => { setWithdrawError(''); setShowWithdrawModal(true); };
 
-  const handleWithdrawSuccess = async (credentialResponse) => {
+  const handleWithdraw = async () => {
     setWithdrawError('');
     setWithdrawLoading(true);
-    const idToken = credentialResponse?.credential;
-    if (!idToken) {
-      setWithdrawError('Google 인증 응답이 비어있습니다.');
-      setWithdrawLoading(false);
-      return;
-    }
     try {
-      await usersAPI.deleteAccount(idToken);
+      await usersAPI.deleteAccount();
       logout();
       router.replace('/auth');
     } catch (err) {
       setWithdrawError(err.response?.data?.error || '탈퇴 처리 중 오류가 발생했습니다.');
-    } finally {
       setWithdrawLoading(false);
     }
-  };
-
-  const handleWithdrawError = () => {
-    setWithdrawError('Google 재인증이 취소되었거나 실패했습니다.');
   };
 
   if (!mounted) return null;
@@ -377,14 +365,13 @@ export default function MainPage() {
           <div className="withdraw-modal" onClick={e => e.stopPropagation()}>
             <h3>회원 탈퇴</h3>
             <p>탈퇴하면 시간표, 수강 기록, 선호도 등 모든 데이터가 <strong>영구 삭제</strong>됩니다.</p>
-            <p>계속하려면 Google 계정으로 다시 인증해주세요.</p>
+            <p>정말 탈퇴하시겠습니까?</p>
             {withdrawError && <p className="withdraw-error">{withdrawError}</p>}
-            <div className="withdraw-google-wrapper">
-              {withdrawLoading ? <p>처리 중...</p>
-                : <GoogleLogin onSuccess={handleWithdrawSuccess} onError={handleWithdrawError} />}
-            </div>
             <div className="withdraw-modal-btns">
-              <button onClick={() => setShowWithdrawModal(false)} disabled={withdrawLoading}>취소</button>
+              <button onClick={() => setShowWithdrawModal(false)} disabled={withdrawLoading}>아니오</button>
+              <button className="btn-danger" onClick={handleWithdraw} disabled={withdrawLoading}>
+                {withdrawLoading ? '처리 중...' : '예'}
+              </button>
             </div>
           </div>
         </div>
@@ -485,7 +472,10 @@ export default function MainPage() {
                           ? `최소 ${minCr}학점 필요 (현재 ${totalCr}학점)${preferences.last_semester ? '' : ' — 막학기 모드 시 4학점'}`
                           : '';
                     return (
-                      <button className="confirm-btn" onClick={confirmMyTimetable} disabled={disabled} title={title}>확정</button>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <button className="confirm-btn" onClick={confirmMyTimetable} disabled={disabled} title={title}>확정</button>
+                        {disabled && title && <span className="confirm-hint">{!isSaved ? '저장 후 확정 가능' : title}</span>}
+                      </div>
                     );
                   })()}
                   {myTimetables.length > 1 && (

@@ -223,6 +223,20 @@
   cursor: not-allowed;
 }
 
+.confirm-btn:disabled {
+  background: #ddd !important;
+  border-color: #ccc !important;
+  color: #999 !important;
+}
+
+.confirm-hint {
+  font-size: 11px;
+  color: #e67e22;
+  margin-top: 2px;
+  text-align: right;
+  white-space: nowrap;
+}
+
 .save-btn {
   background: #27AE60 !important;
   color: white !important;

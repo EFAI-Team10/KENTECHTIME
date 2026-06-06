@@ -71,29 +71,18 @@ export async function DELETE(request) {
     return errorJson('서버 오류', 500);
   }
 
-  const body = await request.json().catch(() => ({}));
-  const { id_token } = body;
-  if (!id_token) return errorJson('Google 재인증이 필요합니다.', 400);
-
-  let payload;
-  try {
-    payload = await verifyIdToken(id_token);
-  } catch (err) {
-    if (err instanceof GoogleAuthError) return errorJson(err.message, err.status);
-    return errorJson('서버 오류', 500);
-  }
-
   const supabase = getSupabaseAdmin();
-  const { error } = await supabase.rpc('fn_delete_user', {
+  const { error } = await supabase.rpc('fn_delete_user_by_id', {
     p_user_id: auth.userId,
-    p_google_sub: payload.sub,
   });
 
   if (error) {
-    if (error.message?.includes('USER_NOT_FOUND')) return errorJson('유저 없음', 404);
-    if (error.message?.includes('SUB_MISMATCH')) return errorJson('본인 계정으로 재인증해주세요.', 403);
-    console.error('fn_delete_user error:', error);
-    return errorJson('서버 오류', 500);
+    // fn_delete_user_by_id 없으면 직접 삭제 시도
+    const { error: delError } = await supabase.from('users').delete().eq('id', auth.userId);
+    if (delError) {
+      console.error('delete user error:', delError);
+      return errorJson('서버 오류', 500);
+    }
   }
 
   return Response.json({ success: true });
