@@ -70,6 +70,19 @@
 .profile-view-label { width: 56px; font-size: 13px; font-weight: 600; color: #555; flex-shrink: 0; }
 .profile-view-value { font-size: 14px; color: #2c3e50; }
 .profile-view-hint { margin: 8px 0 0; font-size: 11px; color: #aaa; }
+.profile-view-row select {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #333;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  appearance: auto;
+}
+.profile-view-row select:focus { border-color: #4A90D9; }
 .profile-view-row .btn-sm {
   padding: 5px 12px;
   border: 1.5px solid #4A90D9;
@@ -79,6 +92,7 @@
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
 }
 .profile-view-row .btn-sm:disabled { opacity: 0.6; cursor: default; }
 .profile-view-row .profile-saved { font-size: 13px; color: #27AE60; font-weight: 700; }
