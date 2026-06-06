@@ -259,6 +259,25 @@
 [data-dark="true"] .profile-field select  { background: #252529; border-color: #2e2e34; color: #c8c8d0; }
 [data-dark="true"] .profile-field input:focus,
 [data-dark="true"] .profile-field select:focus { border-color: #505058; }
+
+/* 내 정보 — profile-view-row (학기차, ESP 시작 레벨) */
+[data-dark="true"] .profile-view-label { color: #9898a4; }
+[data-dark="true"] .profile-view-value { color: #c8c8d0; }
+[data-dark="true"] .profile-view-hint  { color: #787882; }
+[data-dark="true"] .profile-view-row select {
+  background: #252529;
+  border: 1.5px solid #2e2e34;
+  border-radius: 8px;
+  color: #c8c8d0;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+[data-dark="true"] .profile-view-row select:focus { border-color: #505058; }
+[data-dark="true"] .profile-view-row .btn-sm      { background: #2a3a4a !important; border-color: #3a5060 !important; color: #9ab0c8 !important; }
+[data-dark="true"] .profile-view-row .profile-saved { color: #5aaa70; }
+
 [data-dark="true"] .pref-toggle-field .toggle-row { background: #1c1c20; border-color: #2e2e34; color: #9898a4; }
 [data-dark="true"] .pref-toggle-field .toggle     { background: #2e2e34; }
 [data-dark="true"] .pref-toggle-field .toggle.on  { background: #3a4a5a; }
