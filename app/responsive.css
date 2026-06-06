@@ -37,7 +37,7 @@
   /* 시간표 — 시간열 좁게 + 폰트 축소 (우선순위 ↑: TimetableGrid.css보다 늦게 로드돼도 이기도록) */
   .timetable-grid { overflow-x: auto; }
   .timetable-grid .timetable-header,
-  .timetable-grid .timetable-row { grid-template-columns: 36px repeat(5, 1fr); min-width: 280px; box-sizing: border-box; }
+  .timetable-grid .timetable-row { grid-template-columns: 36px repeat(5, minmax(0, 1fr)); min-width: 280px; box-sizing: border-box; }
   .timetable-grid .time-col,
   .timetable-grid .day-col,
   .timetable-grid .cell { font-size: 11px; min-height: 40px; box-sizing: border-box; }
@@ -81,7 +81,7 @@
   .header-right .username { display: none; } /* 좁은 화면에선 이름 숨김 */
   .main-content { padding: 10px; }
   .timetable-grid .timetable-header,
-  .timetable-grid .timetable-row { grid-template-columns: 28px repeat(5, 1fr); min-width: 260px; }
+  .timetable-grid .timetable-row { grid-template-columns: 28px repeat(5, minmax(0, 1fr)); min-width: 260px; }
   .timetable-grid .time-col,
   .timetable-grid .day-col,
   .timetable-grid .cell { font-size: 10px; min-height: 38px; }
