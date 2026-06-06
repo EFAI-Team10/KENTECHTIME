@@ -90,7 +90,8 @@
 .timetable-header,
 .timetable-row {
   display: grid;
-  grid-template-columns: 60px repeat(5, 1fr);
+  /* minmax(0,1fr): 셀 내용과 무관하게 5개 요일 칸을 항상 균등 분할 */
+  grid-template-columns: 60px repeat(5, minmax(0, 1fr));
 }
 
 .timetable-header {
