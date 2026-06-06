@@ -71,7 +71,7 @@
 .profile-view-value { font-size: 14px; color: #2c3e50; }
 .profile-view-hint { margin: 8px 0 0; font-size: 11px; color: #aaa; }
 .profile-view-row select {
-  flex: 1;
+  width: auto;
   padding: 7px 10px;
   border: 1.5px solid #ddd;
   border-radius: 8px;
