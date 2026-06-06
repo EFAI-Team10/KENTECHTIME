@@ -15,6 +15,8 @@ const ELECTIVE_OPTIONS = [
   { value: 'EL',   label: 'EL (전공선택)' },
   { value: 'FR',   label: 'FR (자유학점)' },
 ];
+// ESP 시작 레벨 → 시작 이전(자동 기수강) 과목 코드
+const ESP_PRIOR_CODES = { 1: [], 2: ['ES1001'], 3: ['ES1001', 'ES1002'] };
 export default function OnboardingPage() {
   const router = useRouter();
   const { setToken, setUser } = useStore();
@@ -38,6 +40,7 @@ export default function OnboardingPage() {
     last_semester: false,
     prefer_compact: false,
     elective_cats: [],
+    esp_start_level: 1,
   });
 
   useEffect(() => {
@@ -118,6 +121,12 @@ export default function OnboardingPage() {
       setUser(res.data.user);
       // 추천 설정 전체 저장 (설정 화면과 동일 항목)
       try { await usersAPI.savePreferences(prefs); } catch {}
+      // ESP 시작 레벨 이전 과목을 기수강에 추가 (비파괴)
+      try {
+        const codes = (ESP_PRIOR_CODES[prefs.esp_start_level] || [])
+          .map(code => ({ code, category: 'ESP', name: code, credits: 0 }));
+        if (codes.length > 0) await coursesAPI.importByCodes(codes, {});
+      } catch {}
       router.push('/');
     } catch (err) {
       const msg = err.response?.data?.error || '가입에 실패했습니다.';
@@ -428,6 +437,20 @@ export default function OnboardingPage() {
                 ))}
               </div>
               <p className="pref-hint">선택 안 하면 기본 순서로 채웁니다.</p>
+            </div>
+
+            <div className="pref-section">
+              <label className="pref-label">ESP 시작 레벨</label>
+              <select
+                value={prefs.esp_start_level}
+                onChange={e => setPrefs(p => ({ ...p, esp_start_level: parseInt(e.target.value) }))}
+                style={{ padding: '8px 12px', border: '1.5px solid #ddd', borderRadius: 8, fontSize: 14 }}
+              >
+                <option value={1}>Foundation 1 시작</option>
+                <option value={2}>Foundation 2 시작</option>
+                <option value={3}>Intermediate 시작</option>
+              </select>
+              <p className="pref-hint">시작 레벨 이전 ESP 과목은 기수강으로 처리됩니다.</p>
             </div>
 
             <div className="step-footer">
