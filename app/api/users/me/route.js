@@ -72,17 +72,25 @@ export async function DELETE(request) {
   }
 
   const supabase = getSupabaseAdmin();
-  const { error } = await supabase.rpc('fn_delete_user_by_id', {
-    p_user_id: auth.userId,
-  });
+  const uid = auth.userId;
 
-  if (error) {
-    // fn_delete_user_by_id 없으면 직접 삭제 시도
-    const { error: delError } = await supabase.from('users').delete().eq('id', auth.userId);
-    if (delError) {
-      console.error('delete user error:', delError);
-      return errorJson('서버 오류', 500);
-    }
+  // users를 참조하는 자식 행을 먼저 삭제 (FK 제약 회피) — 일부 테이블은 없을 수 있어 오류 무시
+  const childTables = [
+    'active_schedule',
+    'schedule_meta',
+    'planned_schedules',
+    'completed_courses',
+    'user_preferences',
+    'reviews',
+  ];
+  for (const tbl of childTables) {
+    await supabase.from(tbl).delete().eq('user_id', uid);
+  }
+
+  const { error: delError } = await supabase.from('users').delete().eq('id', uid);
+  if (delError) {
+    console.error('delete user error:', delError);
+    return errorJson('서버 오류', 500);
   }
 
   return Response.json({ success: true });
