@@ -1,5 +1,14 @@
--- fn_register_user: atomic user registration + completed courses + preferences
--- Called via supabase.rpc('fn_register_user', {...}) in app/api/auth/google/register/route.js
+-- 014_drop_unused_preferences
+-- Remove unused preference fields that had no UI input and were never applied:
+--   avoid_morning, preferred_gap, day_off
+-- Run this on existing databases. (schema.sql and 001 are already updated for fresh setups.)
+
+-- 1) Recreate fn_register_user without the removed parameters.
+--    (Parameter list changes require dropping the old signature first.)
+DROP FUNCTION IF EXISTS fn_register_user(
+  TEXT, TEXT, TEXT, INT, TEXT, INT[], TEXT[], BOOLEAN, INT, TEXT[]
+);
+
 CREATE OR REPLACE FUNCTION fn_register_user(
   p_email            TEXT,
   p_name             TEXT,
@@ -25,7 +34,6 @@ DECLARE
   v_grade   INT;
   v_course  INT;
 BEGIN
-  -- Guard: bounce if already registered
   IF EXISTS (
     SELECT 1 FROM users u WHERE u.google_sub = p_google_sub OR u.email = p_email
   ) THEN
@@ -54,3 +62,8 @@ BEGIN
     FROM users u WHERE u.id = v_user_id;
 END;
 $$;
+
+-- 2) Drop the unused columns.
+ALTER TABLE user_preferences DROP COLUMN IF EXISTS avoid_morning;
+ALTER TABLE user_preferences DROP COLUMN IF EXISTS preferred_gap;
+ALTER TABLE user_preferences DROP COLUMN IF EXISTS day_off;
