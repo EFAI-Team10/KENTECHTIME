@@ -146,8 +146,32 @@ bullets([
     'Optionally edit via AI chat in natural language',
 ])
 
-# ============ 4. Service Features ============
-para('4. Service Features', h1)
+# ============ 4. Service Design Rationale ============
+para('4. Service Design Rationale', h1)
+para('This section explains <b>why</b> the system is designed the way it is and '
+     '<b>why</b> each design choice is useful for the target users (KENTECH '
+     'undergraduates) described in Section 3.', body)
+gap(2)
+para('Design decisions and their rationale', h2)
+tbl([
+    ['Design decision', 'Why (rationale for the target user)'],
+    ['Recommend from graduation requirements, not raw course search',
+     'Students struggle most with "which requirement does this course satisfy?" Encoding the rules (per-area credits, EF sub-areas, EL4/5, ESP stages, admission-year branching) removes the manual cross-referencing that is the real pain point.'],
+    ['LLM parses intent only; deterministic code makes all judgments',
+     'A timetable with a time conflict or a credit overflow is useless to a student. By letting the LLM only translate language into a JSON intent and having code verify conflicts/credits/requirements, the service never produces an invalid timetable, which builds trust.'],
+    ['Return three plans (A/B/C) instead of one',
+     'Course selection is a personal trade-off (track, morning load, gaps). Offering distinct alternatives lets the student choose rather than accept a single opaque answer.'],
+    ['Visual requirement dashboard (donut + gauges)',
+     'Reduces the cognitive load of reading a dense requirement sheet, so a student can see at a glance what is left to graduate.'],
+    ['Preference settings (track, max credits, compact, last semester)',
+     'Recommendations must fit each student\'s situation; preferences personalize the result without requiring manual timetable assembly.'],
+    ['Unified Next.js stack + Supabase + OAuth',
+     'A single framework for UI and API simplifies the data flow and JWT auth; Supabase provides a managed PostgreSQL so the small team can focus on domain logic; @kentech.ac.kr OAuth restricts the service to real KENTECH students.'],
+], col_widths=[52*mm, 103*mm])
+
+# ============ 5. Service Features and User Flow ============
+para('5. Service Features and User Flow', h1)
+para('Core features', h2)
 tbl([
     ['Feature', 'Description'],
     ['Auth / Onboarding', 'Google OAuth (@kentech.ac.kr) + JWT; semester index auto-maps to grade; completed-course & preference input'],
@@ -158,9 +182,31 @@ tbl([
     ['AI Conversational Edit', 'LLM converts a natural-language request into a JSON intent and edits the timetable'],
     ['UX', 'Dark mode + 9 color themes, mobile responsive'],
 ], col_widths=[40*mm, 115*mm])
+gap(4)
+para('Service flow: from user input to AI processing to final output', h2)
+para('<b>(A) Recommendation flow.</b> (1) <b>Input</b> &mdash; the student provides '
+     'completed courses (via portal import or manual selection) and preferences '
+     '(track, max credits, compact, last semester). (2) <b>Processing</b> &mdash; '
+     'the client calls POST /api/schedule/recommend; the server analyzes earned '
+     'credits per requirement, filters out completed/satisfied/prerequisite-failing '
+     'courses, sorts by grade and preferred track, then assembles conflict-free '
+     'timetables under the credit cap. (3) <b>Output</b> &mdash; three distinct '
+     'plans (A/B/C) are returned and rendered next to the requirement dashboard.', body)
+para('<b>(B) AI conversational-edit flow.</b> (1) <b>Input</b> &mdash; the student '
+     'types a natural-language request such as "remove Thursday morning classes." '
+     '(2) <b>AI processing</b> &mdash; POST /api/chat sends the message together with '
+     'the current timetable, offered courses, and requirement rules to gpt-5-mini, '
+     'which returns a structured JSON intent (action + target codes/days); a second '
+     'LLM call enriches the reply when course details are requested. (3) '
+     '<b>Output</b> &mdash; deterministic code applies the intent (direct edit for '
+     'add/remove/replace, or re-running the engine for filter) and returns the '
+     'updated timetable with a natural-language reply.', body)
+para('<b>(C) Confirm &amp; track flow.</b> The student copies a plan into My '
+     'Timetable, edits and saves it, then confirms it; confirmed timetables feed the '
+     'demand tracker, which shows the competition ratio against each course\'s capacity.', body)
 
-# ============ 5. System Architecture ============
-para('5. System Architecture', h1)
+# ============ 6. System Architecture ============
+para('6. System Architecture', h1)
 para('The client (Next.js / React) calls Next.js Route Handlers (server API) '
      'through an axios-based api-client that injects a Bearer JWT. The server '
      'verifies the JWT, then accesses PostgreSQL via Supabase (service role), and '
@@ -181,8 +227,8 @@ story.append(Paragraph(
     'Tracker) - lib/server/ (recommender, auth, googleVerify, supabase, parser) - '
     'database/ (schema + migrations) - public/bookmarklet.js', code))
 
-# ============ 6. Implementation Details ============
-para('6. Implementation Details', h1)
+# ============ 7. Implementation Details ============
+para('7. Implementation Details', h1)
 para('Core file: lib/server/recommender.js (timetable recommendation engine)', h2)
 para('The entry function generateRecommendations() performs the following steps in order.', body)
 tbl([
@@ -214,8 +260,8 @@ para('Together with the user message, the system prompt injects the completed-co
      'needed it issues a second LLM call to enrich the reply. add/remove/replace '
      'edit the current timetable directly, while filter re-runs the recommendation engine.')
 
-# ============ 7. AI-Assisted Development ============
-para('7. AI-Assisted Development Process', h1)
+# ============ 8. AI-Assisted Development ============
+para('8. AI-Assisted Development Process', h1)
 para('Claude, ChatGPT, and GitHub Copilot were used as development assistants, and '
      'the OpenAI API (gpt-5-mini) was used as a runtime LLM feature. AI helped with '
      'component/API scaffolding, the Express-to-Next.js migration, schema design, '
@@ -230,8 +276,8 @@ bullets([
     'Account-deletion FK violation (500) &rarr; fixed by deleting child rows first',
 ])
 
-# ============ 8. Testing ============
-para('8. Testing and Demonstration', h1)
+# ============ 9. Testing ============
+para('9. Testing and Demonstration', h1)
 bullets([
     'Validated recommendations with real KENTECH course-offering xlsx data (no time conflicts, credit caps respected)',
     'Verified admission-year EF Math branching (4 cr. before 2025 / 8 cr. from 2025)',
@@ -240,8 +286,8 @@ bullets([
     'Visual check of mobile responsiveness, dark mode, and 9 color themes',
 ])
 
-# ============ 9. Discussion ============
-para('9. Discussion and Future Improvements', h1)
+# ============ 10. Discussion ============
+para('10. Discussion and Future Improvements', h1)
 para('Limitations', h2)
 bullets([
     'Recommendation uses a greedy (priority-ordered) approach and does not guarantee a globally optimal combination',
@@ -255,8 +301,8 @@ bullets([
     'Strengthen recommendation rationale (which requirement is satisfied) and learn from user feedback',
 ])
 
-# ============ 10. References ============
-para('10. References', h1)
+# ============ 11. References ============
+para('11. References', h1)
 bullets([
     'KENTECH 2026 Spring academic handbook (source of graduation-requirement rules)',
     'School-provided course-offering list (xlsx)',
