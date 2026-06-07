@@ -23,11 +23,6 @@ CREATE TABLE courses (
   timeslots     JSONB
 );
 
-CREATE TABLE prerequisites (
-  course_id   INTEGER REFERENCES courses(id) ON DELETE CASCADE,
-  required_id INTEGER REFERENCES courses(id) ON DELETE CASCADE,
-  PRIMARY KEY (course_id, required_id)
-);
 
 CREATE TABLE completed_courses (
   user_id   INTEGER REFERENCES users(id),
@@ -65,4 +60,3 @@ CREATE INDEX IF NOT EXISTS idx_planned_schedules_user_id  ON planned_schedules(u
 CREATE INDEX IF NOT EXISTS idx_planned_schedules_semester  ON planned_schedules(semester);
 CREATE INDEX IF NOT EXISTS idx_courses_semester            ON courses(semester);
 CREATE INDEX IF NOT EXISTS idx_courses_category            ON courses(category);
-CREATE INDEX IF NOT EXISTS idx_prerequisites_course_id    ON prerequisites(course_id);

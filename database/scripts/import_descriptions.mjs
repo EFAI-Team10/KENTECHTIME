@@ -36,9 +36,6 @@ if (!jsonPath) {
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 const data = JSON.parse(readFileSync(resolve(jsonPath), 'utf-8'));
 
-// 알려진 JSON 오류 수정: 선수과목 전체 제거할 과목 코드
-const REMOVE_ALL_PREREQS = new Set(['EN1003']); // 실전창업 선수과목 없음
-
 async function main() {
   const courses = data.courses;
   console.log(`📚 ${courses.length}개 과목 처리 시작...\n`);
@@ -73,32 +70,6 @@ async function main() {
   }
 
   console.log(`\n📊 결과: ${updated}개 업데이트, ${notFound}개 DB 미존재, ${skipped}개 description 없음`);
-
-  // prerequisites 정리 — EN1003 등 선수과목 제거
-  console.log('\n🔧 잘못된 선수과목 정리...');
-  for (const code of REMOVE_ALL_PREREQS) {
-    const { data: courseRow } = await supabase
-      .from('courses')
-      .select('id')
-      .eq('code', code)
-      .maybeSingle();
-
-    if (!courseRow) {
-      console.log(`  ⚠️  ${code} — DB에 없음`);
-      continue;
-    }
-
-    const { error } = await supabase
-      .from('prerequisites')
-      .delete()
-      .eq('course_id', courseRow.id);
-
-    if (error) {
-      console.error(`  ❌ ${code} 선수과목 제거 실패:`, error.message);
-    } else {
-      console.log(`  ✅ ${code} 선수과목 제거 완료`);
-    }
-  }
 
   console.log('\n🎉 import 완료');
 }

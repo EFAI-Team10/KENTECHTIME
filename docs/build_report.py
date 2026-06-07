@@ -122,7 +122,7 @@ gap(2)
 tbl([
     ['Problem', 'How the service solves it'],
     ['Complex requirement calculation', 'Dashboard visualizing requirements from completed-course history'],
-    ['"What should I take to graduate?"', 'Auto recommendation using unmet requirements, prerequisites, preferences'],
+    ['"What should I take to graduate?"', 'Auto recommendation using unmet requirements and preferences'],
     ['Tedious manual timetable assembly', 'Copy a recommendation, edit in My Timetable, click to swap conflicts'],
     ['Wanting to edit in natural language', 'LLM conversational editing ("remove Thursday morning classes")'],
 ], col_widths=[62*mm, 93*mm])
@@ -176,7 +176,7 @@ tbl([
     ['Feature', 'Description'],
     ['Auth / Onboarding', 'Google OAuth (@kentech.ac.kr) + JWT; semester index auto-maps to grade; completed-course & preference input'],
     ['Requirement Dashboard', 'Per-area earned/required credits as donut & gauges; EF sub-areas, EL4/5, ESP stages'],
-    ['Timetable Recommendation', 'Auto-generates Plan A/B/C from unmet requirements, prerequisites, preferences'],
+    ['Timetable Recommendation', 'Auto-generates Plan A/B/C from unmet requirements and preferences'],
     ['My Timetable', 'Copy, edit, multi-create, save, rename, confirm; click-to-swap conflicting courses'],
     ['Demand Tracker', 'Competition ratio vs. capacity based on confirmed timetables'],
     ['AI Conversational Edit', 'LLM converts a natural-language request into a JSON intent and edits the timetable'],
@@ -188,7 +188,7 @@ para('<b>(A) Recommendation flow.</b> (1) <b>Input</b> &mdash; the student provi
      'completed courses (via portal import or manual selection) and preferences '
      '(track, max credits, compact, last semester). (2) <b>Processing</b> &mdash; '
      'the client calls POST /api/schedule/recommend; the server analyzes earned '
-     'credits per requirement, filters out completed/satisfied/prerequisite-failing '
+     'credits per requirement, filters out completed and already-satisfied '
      'courses, sorts by grade and preferred track, then assembles conflict-free '
      'timetables under the credit cap. (3) <b>Output</b> &mdash; three distinct '
      'plans (A/B/C) are returned and rendered next to the requirement dashboard.', body)
@@ -235,11 +235,10 @@ tbl([
     ['Step', 'Function', 'Role'],
     ['1', 'getCompletedInfo', 'Aggregate completed courses into earned credits per category'],
     ['2', 'getRequiredCourses', 'Keep only unmet + still-required courses (mandatory / elective)'],
-    ['3', 'checkPrerequisites', 'Keep only courses whose prerequisites are all satisfied'],
-    ['4', 'applyIntent', 'Apply the LLM-parsed intent (add/remove courses, exclude days)'],
-    ['5', 'sortByGradeAndTrack / bumpEL45', 'Sort by my grade, preferred track, required EL first'],
-    ['6', 'buildPlan', 'Assemble a timetable checking time conflict, credit cap, category cap'],
-    ['7', 'loop (n=3)', 'De-prioritize used courses to produce distinct Plans A/B/C'],
+    ['3', 'applyIntent', 'Apply the LLM-parsed intent (add/remove courses, exclude days)'],
+    ['4', 'sortByGradeAndTrack / bumpEL45', 'Sort by my grade, preferred track, required EL first'],
+    ['5', 'buildPlan', 'Assemble a timetable checking time conflict, credit cap, category cap'],
+    ['6', 'loop (n=3)', 'De-prioritize used courses to produce distinct Plans A/B/C'],
 ], col_widths=[14*mm, 62*mm, 79*mm])
 gap(4)
 para('Key design decision: the LLM only "translates" natural language into a JSON '
