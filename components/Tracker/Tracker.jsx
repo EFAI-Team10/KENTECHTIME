@@ -44,15 +44,18 @@ export default function Tracker({ refreshKey = 0, isConfirmed = false }) {
             <tr><th>과목명</th><th>코드</th><th>수강 희망자</th><th>제한 인원</th><th>경쟁률</th></tr>
           </thead>
           <tbody>
-            {data.map((row, i) => (
+            {data.map((row, i) => {
+              const ratio = row.capacity > 0 ? (row.applicants / row.capacity).toFixed(2) : null;
+              return (
               <tr key={i}>
                 <td>{row.course?.name}</td>
                 <td>{row.course?.code}</td>
                 <td>{row.applicants}명</td>
                 <td>{row.capacity != null ? `${row.capacity}명` : '-'}</td>
-                <td>{row.capacity ? `${(row.applicants / row.capacity).toFixed(2)}:1` : '-'}</td>
+                <td>{ratio != null ? `1:${ratio}` : '-'}</td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       )}
