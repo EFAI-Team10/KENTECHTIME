@@ -90,7 +90,7 @@ para('Introduction to AI Programming &mdash; Final Project Technical Report', me
 gap(30)
 tbl([
     ['Team', 'EFAI Team 10'],
-    ['Members', 'Mingi Kang, Wooseong Kwon, Hyundam Park, Hyeongjun Koo'],
+    ['Members', 'Mingi Kang, Wooseong Kwon, Hyundam Park, Hyungjoon Koo'],
     ['Deployment', 'https://kentechtime.vercel.app'],
     ['Repository', 'https://github.com/EFAI-Team10/KENTECHTIME'],
     ['Tech Stack', 'Next.js 14 / React 18 / Supabase (PostgreSQL) / OpenAI API'],
@@ -146,13 +146,13 @@ bullets([
     'Optionally edit via AI chat in natural language',
 ])
 
-# ============ 4. Service Design Rationale ============
-para('4. Service Design Rationale', h1)
-para('This section explains <b>why</b> the system is designed the way it is and '
-     '<b>why</b> each design choice is useful for the target users (KENTECH '
-     'undergraduates) described in Section 3.', body)
-gap(2)
-para('Design decisions and their rationale', h2)
+# ============ 4. Service Features ============
+para('4. Service Features', h1)
+
+para('Design rationale', h2)
+para('Before the feature list, this subsection explains <b>why</b> the system is '
+     'designed this way and <b>why</b> each choice is useful for the target users '
+     '(KENTECH undergraduates) described in Section 3.', body)
 tbl([
     ['Design decision', 'Why (rationale for the target user)'],
     ['Recommend from graduation requirements, not raw course search',
@@ -168,9 +168,7 @@ tbl([
     ['Unified Next.js stack + Supabase + OAuth',
      'A single framework for UI and API simplifies the data flow and JWT auth; Supabase provides a managed PostgreSQL so the small team can focus on domain logic; @kentech.ac.kr OAuth restricts the service to real KENTECH students.'],
 ], col_widths=[52*mm, 103*mm])
-
-# ============ 5. Service Features and User Flow ============
-para('5. Service Features and User Flow', h1)
+gap(4)
 para('Core features', h2)
 tbl([
     ['Feature', 'Description'],
@@ -205,8 +203,8 @@ para('<b>(C) Confirm &amp; track flow.</b> The student copies a plan into My '
      'Timetable, edits and saves it, then confirms it; confirmed timetables feed the '
      'demand tracker, which shows the competition ratio against each course\'s capacity.', body)
 
-# ============ 6. System Architecture ============
-para('6. System Architecture', h1)
+# ============ 5. System Architecture ============
+para('5. System Architecture', h1)
 para('The client (Next.js / React) calls Next.js Route Handlers (server API) '
      'through an axios-based api-client that injects a Bearer JWT. The server '
      'verifies the JWT, then accesses PostgreSQL via Supabase (service role), and '
@@ -227,8 +225,8 @@ story.append(Paragraph(
     'Tracker) - lib/server/ (recommender, auth, googleVerify, supabase, parser) - '
     'database/ (schema + migrations) - public/bookmarklet.js', code))
 
-# ============ 7. Implementation Details ============
-para('7. Implementation Details', h1)
+# ============ 6. Implementation Details ============
+para('6. Implementation Details', h1)
 para('Core file: lib/server/recommender.js (timetable recommendation engine)', h2)
 para('The entry function generateRecommendations() performs the following steps in order.', body)
 tbl([
@@ -259,8 +257,8 @@ para('Together with the user message, the system prompt injects the completed-co
      'needed it issues a second LLM call to enrich the reply. add/remove/replace '
      'edit the current timetable directly, while filter re-runs the recommendation engine.')
 
-# ============ 8. AI-Assisted Development ============
-para('8. AI-Assisted Development Process', h1)
+# ============ 7. AI-Assisted Development ============
+para('7. AI-Assisted Development Process', h1)
 para('Claude, ChatGPT, and GitHub Copilot were used as development assistants, and '
      'the OpenAI API (gpt-5-mini) was used as a runtime LLM feature. AI helped with '
      'component/API scaffolding, the Express-to-Next.js migration, schema design, '
@@ -275,8 +273,8 @@ bullets([
     'Account-deletion FK violation (500) &rarr; fixed by deleting child rows first',
 ])
 
-# ============ 9. Testing ============
-para('9. Testing and Demonstration', h1)
+# ============ 8. Testing ============
+para('8. Testing and Demonstration', h1)
 bullets([
     'Validated recommendations with real KENTECH course-offering xlsx data (no time conflicts, credit caps respected)',
     'Verified admission-year EF Math branching (4 cr. before 2025 / 8 cr. from 2025)',
@@ -285,8 +283,8 @@ bullets([
     'Visual check of mobile responsiveness, dark mode, and 9 color themes',
 ])
 
-# ============ 10. Discussion ============
-para('10. Discussion and Future Improvements', h1)
+# ============ 9. Discussion ============
+para('9. Discussion and Future Improvements', h1)
 para('Limitations', h2)
 bullets([
     'Recommendation uses a greedy (priority-ordered) approach and does not guarantee a globally optimal combination',
@@ -300,8 +298,8 @@ bullets([
     'Strengthen recommendation rationale (which requirement is satisfied) and learn from user feedback',
 ])
 
-# ============ 11. References ============
-para('11. References', h1)
+# ============ 10. References ============
+para('10. References', h1)
 bullets([
     'KENTECH 2026 Spring academic handbook (source of graduation-requirement rules)',
     'School-provided course-offering list (xlsx)',

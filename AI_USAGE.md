@@ -79,7 +79,7 @@ project, and how the team validated, modified, and integrated the AI outputs.
 | `lib/gradeParser.js` / `public/bookmarklet.js` | Wooseong Kwon | Portal grade & course-offering parsing, auto-classification |
 | `components/Timetable/` | Mingi Kang | Timetable grid rendering, block merging, conflict-swap UI |
 | `components/Dashboard/` | Hyundam Park | Graduation-requirement donut & per-area gauges |
-| `lib/store.js` / `lib/api-client.js` | Hyeongjun Koo | Zustand global state, axios + Bearer-token injection |
+| `lib/store.js` / `lib/api-client.js` | Hyungjoon Koo | Zustand global state, axios + Bearer-token injection |
 
 ---
 
