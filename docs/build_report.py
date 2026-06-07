@@ -190,7 +190,7 @@ tbl([
     ['1', 'getCompletedInfo', 'Aggregate completed courses into earned credits per category'],
     ['2', 'getRequiredCourses', 'Keep only unmet + still-required courses (mandatory / elective)'],
     ['3', 'checkPrerequisites', 'Keep only courses whose prerequisites are all satisfied'],
-    ['4', 'applyHardConstraints / applyIntent', 'Apply preferences (avoid morning / day off) + LLM intent'],
+    ['4', 'applyIntent', 'Apply the LLM-parsed intent (add/remove courses, exclude days)'],
     ['5', 'sortByGradeAndTrack / bumpEL45', 'Sort by my grade, preferred track, required EL first'],
     ['6', 'buildPlan', 'Assemble a timetable checking time conflict, credit cap, category cap'],
     ['7', 'loop (n=3)', 'De-prioritize used courses to produce distinct Plans A/B/C'],

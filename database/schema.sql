@@ -39,10 +39,7 @@ CREATE TABLE completed_courses (
 
 CREATE TABLE user_preferences (
   user_id          INTEGER PRIMARY KEY REFERENCES users(id),
-  preferred_tracks TEXT[],
-  avoid_morning    BOOLEAN DEFAULT FALSE,
-  preferred_gap    INTEGER DEFAULT 60,
-  day_off          TEXT[]
+  preferred_tracks TEXT[]
 );
 
 CREATE TABLE planned_schedules (

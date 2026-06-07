@@ -31,7 +31,7 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { preferred_tracks, avoid_morning, preferred_gap, day_off, last_semester, elective_cats, max_credits, prefer_compact, esp_start_level } = body;
+  const { preferred_tracks, last_semester, elective_cats, max_credits, prefer_compact, esp_start_level } = body;
 
   const supabase = getSupabaseAdmin();
   const { error } = await supabase
@@ -39,9 +39,6 @@ export async function POST(request) {
     .upsert({
       user_id: auth.userId,
       preferred_tracks:  preferred_tracks  || [],
-      avoid_morning:     !!avoid_morning,
-      preferred_gap:     preferred_gap     ?? 0,
-      day_off:           day_off           || [],
       last_semester:     !!last_semester,
       elective_cats:     elective_cats     || [],
       max_credits:       max_credits       ?? 16,
