@@ -1,44 +1,108 @@
-# AI 활용 내역 (AI_USAGE.md)
+# AI Usage Report
 
-본 프로젝트에서 사용한 AI 도구 및 프롬프트를 기록합니다.
+This document records how generative AI tools were used in the **KENTECHTIME**
+project, and how the team validated, modified, and integrated the AI outputs.
 
----
-
-## 사용 AI 도구
-
-| 도구 | 용도 |
-|------|------|
-| OpenAI GPT-4o-mini | 자연어 시간표 수정 요청 해석 |
-| Claude (Anthropic) | 코드 구조 설계 및 백본 코드 생성 보조 |
+> Core principle: AI was used as a **development partner**. The team takes full
+> responsibility for problem definition, system design, code validation,
+> debugging, integration, and explanation. Every member can explain the code
+> they were responsible for.
 
 ---
 
-## LLM 연동 프롬프트
+## 1. AI Tools Used
 
-### `/api/chat` 엔드포인트 System Prompt
+| Tool | Primary use |
+|------|-------------|
+| **Claude (Anthropic)** | System design, recommendation-algorithm logic, code review & refactoring, documentation drafts |
+| **ChatGPT / GPT** | Component/API boilerplate generation, error-message debugging, SQL schema design support |
+| **GitHub Copilot** | In-editor autocompletion (repetitive code, JSX markup) |
+| **OpenAI API (`gpt-5-mini`)** | **Runtime feature** &mdash; converts a user's natural-language timetable-edit request into a structured JSON intent (`/api/chat`) |
 
-```
-현재 시간표: {currentSchedule}
-사용자의 요청을 분석하여 다음 JSON 형식으로만 응답하세요:
-{
-  "action": "remove" | "add" | "replace",
-  "target": "과목코드 또는 조건",
-  "constraint": "추가 제약 조건"
-}
-```
-
-**의도:** 사용자의 자연어 요청("목요일 오전 수업은 빼줘")을 구조화된 JSON 제약 조건으로 변환하여 추천 엔진에 전달
+> Note: `gpt-5-mini` above is not a development tool but an **LLM feature embedded
+> in the service**. It is called through an internal gateway
+> (`factchat-cloud.mindlogic.ai`).
 
 ---
 
-## 추천 알고리즘 설계
+## 2. Tasks Supported by AI
 
-AI 도구를 참고하여 설계한 3단계 파이프라인:
-
-1. **필수 미이수 과목 필터링** — `completed_courses`와 비교
-2. **선수 과목 소프트 매칭** — `prerequisites` 테이블 기반 검증
-3. **라이프스타일 제약 적용** — 시간 충돌 / 아침 기피 / 공강 요일 필터
+- Brainstorming the project idea (complexity of KENTECH graduation requirements &rarr; an automation service)
+- Generating initial React components / Next.js App Router structure
+- Assisting the **Express &rarr; Next.js Route Handlers migration**
+- Reviewing the Supabase (PostgreSQL) schema and migrations
+- Helping implement the Google OAuth + JWT authentication flow
+- Discussing the filter / sort / conflict-check logic of the recommendation algorithm
+- Debugging API connection, CORS, and token-verification errors
+- Drafting the README and documentation structure
+- Outlining the presentation
 
 ---
 
-> 이 파일은 팀원이 실제 사용한 AI 프롬프트를 계속 추가해주세요.
+## 3. Example Prompts
+
+1. *"How should I model the data and design the recommendation algorithm to
+   express KENTECH graduation requirements (per-area credits, EF sub-areas,
+   EL4/5, ESP stages) in code?"*
+2. *"Write a JavaScript recommendation function that excludes already-taken
+   courses and satisfied areas, and fills credits without time conflicts."*
+3. *"Refactor this Next.js Route Handler so it queries Supabase with the service
+   role after verifying a JWT, and returns 401 on auth failure."*
+4. *"Design a system prompt that converts natural language like 'remove Thursday
+   morning classes' into a JSON intent the recommendation engine can use."*
+5. *"Explain why this React state update is not being reflected, and fix it."*
+
+---
+
+## 4. AI Outputs We Modified
+
+| What AI generated/suggested | What the team modified/extended |
+|---|---|
+| A simple recommender (only filters unmet mandatory courses) | Added **per-category requirement checks** + **EF sub-areas (Math/Physics/Chem/DL)** + **admission-year EF Math branching** + **ESP stage enforcement** + **EL4/5 prioritization** |
+| `gpt-4o-mini` sample code | Replaced with the internal gateway + **`gpt-5-mini`**, extended into a **2-pass call** (intent parsing &rarr; course-detail enrichment) |
+| A basic LLM system prompt | Injected the **full KENTECH requirement track rules** and designed 5 `action` types (remove/add/replace/filter/chat) |
+| Default classification of AP / exchange courses | Found misclassification &rarr; parser auto-classifies **AP&rarr;EF, exchange&rarr;FR** + added an AP guard in `resolveCategory` |
+| Account-deletion API | FK constraint caused a 500 &rarr; fixed by **deleting child-table rows before the user** |
+| Settings upsert | Missing columns (`prefer_compact`, `esp_start_level`) failed the whole upsert &rarr; added a migration + failure alert |
+| Trusting raw LLM output | LLM hallucination risk &rarr; **time conflicts, credit caps, and requirement checks are verified 100% by deterministic code**; the LLM only does "intent parsing" |
+
+---
+
+## 5. Core Files We Can Explain
+
+| File | Can explain | Role |
+|------|-------------|------|
+| `lib/server/recommender.js` | Hyundam Park | Analyzes completed courses & requirements &rarr; generates Plans A/B/C (core algorithm) |
+| `app/api/chat/route.js` | Wooseong Kwon | Natural language &rarr; LLM JSON intent, 2-pass call, timetable editing |
+| `app/api/courses/requirements/route.js` | Hyundam Park | Per-area/sub-area earned-credit calculation, admission-year EF Math requirement |
+| `lib/server/auth.js` / `googleVerify.js` | Wooseong Kwon | JWT issuing/verification, Google id_token verification |
+| `lib/gradeParser.js` / `public/bookmarklet.js` | Wooseong Kwon | Portal grade & course-offering parsing, auto-classification |
+| `components/Timetable/` | Mingi Kang | Timetable grid rendering, block merging, conflict-swap UI |
+| `components/Dashboard/` | Hyundam Park | Graduation-requirement donut & per-area gauges |
+| `lib/store.js` / `lib/api-client.js` | Hyeongjun Koo | Zustand global state, axios + Bearer-token injection |
+
+---
+
+## 6. What We Learned
+
+- **AI-generated code cannot be used as-is.** For domain-heavy parts like
+  graduation requirements, we had to validate and correct AI drafts against the
+  official handbook to get them right.
+- **LLMs are safe for "translation," not "judgment."** Letting the LLM build the
+  timetable directly produced time-conflict/credit-overflow hallucinations, so we
+  separated intent parsing (LLM) from the actual assembly (code).
+- We learned how the **frontend and backend communicate** consistently via REST
+  APIs + JWT.
+- **The danger of unverified AI code**: AP misclassification and FK-constraint
+  violations were things AI missed, which we found and fixed by testing with real data.
+- A good project must show not only functionality but also **reasoning,
+  validation, and communication**.
+
+---
+
+## 7. Attribution
+
+- KENTECH 2026 Spring academic handbook (source of graduation-requirement rules)
+- School-provided course-offering list (xlsx)
+- OpenAI API (accessed via internal gateway)
+- Open-source libraries: Supabase, Next.js, React, Zustand, Recharts (licenses respected)
