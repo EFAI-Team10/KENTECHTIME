@@ -26,7 +26,6 @@ import TimetableGrid from '@/components/Timetable/TimetableGrid';
 import Dashboard from '@/components/Dashboard/Dashboard';
 import Chat from '@/components/Chat/Chat';
 import Tracker from '@/components/Tracker/Tracker';
-import PastTimetable from '@/components/PastTimetable/PastTimetable';
 import { useTheme } from '@/contexts/ThemeContext';
 import SettingsModal from '@/components/Settings/SettingsModal';
 import { scheduleAPI, usersAPI, coursesAPI } from '@/lib/api-client';
@@ -540,8 +539,6 @@ export default function MainPage() {
             })}
             <button className="tab-add" onClick={addMyTimetable} title="내 시간표 추가">＋</button>
           </div>
-
-          <PastTimetable />
 
           <TimetableGrid
             courses={currentCourses}
