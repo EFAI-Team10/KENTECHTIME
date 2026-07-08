@@ -60,10 +60,11 @@ export async function POST(request) {
     category:  headers.indexOf('영역\n구분'),
     timetable: headers.indexOf('시간표'),
     credits:   headers.indexOf('학점'),
-    grade:     headers.indexOf('Unnamed: 1'),
+    grade:     1, // 수강학년 열은 항상 인덱스 1 (헤더가 null이라 indexOf 불가)
     note:      headers.indexOf('비고'),
     // '수강\n제한\n인원' — 공백 제거 후 '제한인원' 포함 헤더 탐색
     capacity:  headers.findIndex(h => String(h || '').replace(/\s/g, '').includes('제한인원')),
+    section:   headers.indexOf('분반'),
   };
 
   if (colMap.code === -1 || colMap.name === -1) {
@@ -97,11 +98,14 @@ export async function POST(request) {
       grad_excluded: colMap.note !== -1 &&
                      String(row[colMap.note] || '').includes('졸업학점 미포함'),
       capacity:     colMap.capacity !== -1 ? (parseInt(row[colMap.capacity], 10) || null) : null,
+      section:      (colMap.section !== -1 && row[colMap.section])
+                      ? String(row[colMap.section]).trim().padStart(2, '0')
+                      : '01',
     };
 
     const { error } = await supabase
       .from('courses')
-      .upsert(record, { onConflict: 'code' });
+      .upsert(record, { onConflict: 'code,semester,section' });
 
     if (!error) count++;
   }

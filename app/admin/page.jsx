@@ -5,7 +5,7 @@ import { coursesAPI } from '@/lib/api-client';
 import './admin.css';
 
 export default function AdminPage() {
-  const [semester, setSemester] = useState('2026-spring');
+  const [semester, setSemester] = useState('2026-fall');
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
