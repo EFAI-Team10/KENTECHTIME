@@ -121,6 +121,7 @@ async function seed() {
         timetable: headers.indexOf('시간표'),
         credits:   headers.indexOf('학점'),
         section:   headers.indexOf('분반'),
+        professor: headers.indexOf('대표교수명'),
         grade:     1, // 수강학년 열은 항상 인덱스 1 (헤더가 null이라 indexOf 불가)
       };
 
@@ -137,6 +138,7 @@ async function seed() {
         const name = row[col.name];
         if (!code || !name) continue;
         const sectionRaw = col.section >= 0 ? row[col.section] : null;
+        const professorRaw = col.professor >= 0 ? row[col.professor] : null;
         records.push({
           code:         String(code).trim(),
           name:         String(name).trim(),
@@ -145,6 +147,7 @@ async function seed() {
           category:     row[col.category] ? String(row[col.category]).trim() : 'EL',
           semester:     fileInfo.semester,
           section:      sectionRaw ? String(sectionRaw).trim().padStart(2, '0') : '01',
+          professor:    professorRaw ? String(professorRaw).trim() : null,
           target_grade: parseGrade(row[col.grade]),
           timeslots:    parseTimeslots(row[col.timetable]),
         });

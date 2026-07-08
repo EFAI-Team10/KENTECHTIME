@@ -65,6 +65,7 @@ export async function POST(request) {
     // '수강\n제한\n인원' — 공백 제거 후 '제한인원' 포함 헤더 탐색
     capacity:  headers.findIndex(h => String(h || '').replace(/\s/g, '').includes('제한인원')),
     section:   headers.indexOf('분반'),
+    professor: headers.indexOf('대표교수명'),
   };
 
   if (colMap.code === -1 || colMap.name === -1) {
@@ -101,6 +102,9 @@ export async function POST(request) {
       section:      (colMap.section !== -1 && row[colMap.section])
                       ? String(row[colMap.section]).trim().padStart(2, '0')
                       : '01',
+      professor:    (colMap.professor !== -1 && row[colMap.professor])
+                      ? String(row[colMap.professor]).trim()
+                      : null,
     };
 
     const { error } = await supabase
