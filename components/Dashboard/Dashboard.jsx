@@ -42,7 +42,7 @@ function semSortKey(sem) {
   return `${m[1]}-${order[m[2]] || '0'}`;
 }
 
-export default function Dashboard({ onImportSuccess, currentSchedule = [], irTaking = {} }) {
+export default function Dashboard({ onImportSuccess, currentSchedule = [], irTaking = {}, openImportSignal }) {
   const { theme, isDark } = useTheme();
   const CAT_COLORS = theme?.catColors ?? DEFAULT_CAT_COLORS;
 
@@ -113,6 +113,11 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [checkLoaded, setCheckLoaded] = useState(false);
   const [checkDone, setCheckDone] = useState(false);
   const [espStartLevel, setEspStartLevel] = useState(1); // 설정에서 저장된 값 (읽기 전용 반영)
+
+  // 새 학기 알림 배너 → 수강이력 입력 모달 강제 오픈
+  useEffect(() => {
+    if (openImportSignal) setShowImport(true);
+  }, [openImportSignal]);
 
   // 체크 탭 진입 시 전체 과목 + 기존 수강이력 + ESP 시작 레벨(설정) 로드
   useEffect(() => {

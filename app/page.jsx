@@ -66,16 +66,19 @@ export default function MainPage() {
   const [preferences, setPreferences] = useState({});
   const [trackOrder, setTrackOrder] = useState([]);
   const [irTaking, setIrTaking] = useState({ ir1: false, ir2: false });
+  const [currentSemester, setCurrentSemester] = useState(null);   // 서버 기준 '현재 학기' (app_meta.synced_semester)
+  const [openImportSignal, setOpenImportSignal] = useState(0);    // 수강이력 입력 모달 강제 오픈 트리거
 
   useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!mounted) return;
     if (!token) { router.replace('/auth'); return; }
-    // 새로고침 시 사용자 정보 복원 (이름·학번·학년 등)
-    if (!user) {
-      usersAPI.getMe().then(res => setUser(res.data.user)).catch(() => {});
-    }
+    // 새로고침 시 사용자 정보 복원 (이름·학번·학년 등) + 서버 기준 현재 학기(신학기 알림용)
+    usersAPI.getMe().then(res => {
+      if (!user) setUser(res.data.user);
+      setCurrentSemester(res.data.current_semester || null);
+    }).catch(() => {});
     initializePage();
     setCoursesLoading(true);
     Promise.all([
@@ -327,6 +330,14 @@ export default function MainPage() {
     }
   };
 
+  // 새 학기 알림 배너 — 확인(dismiss) 처리, openImport=true면 수강이력 입력 모달도 함께 오픈
+  const ackSemesterBanner = async (openImport) => {
+    if (!currentSemester) return;
+    if (user) setUser({ ...user, last_ack_semester: currentSemester });
+    if (openImport) setOpenImportSignal(k => k + 1);
+    try { await usersAPI.ackSemester(currentSemester); } catch {}
+  };
+
   const openWithdrawModal = () => { setWithdrawError(''); setShowWithdrawModal(true); };
 
   const handleWithdraw = async () => {
@@ -359,6 +370,16 @@ export default function MainPage() {
           <button className="withdraw-btn" onClick={openWithdrawModal}>회원 탈퇴</button>
         </div>
       </header>
+
+      {user && currentSemester && user.last_ack_semester !== currentSemester && (
+        <div className="semester-notice">
+          <span>{formatSemester(currentSemester)}로 바뀌었어요. 지난 학기 수강이력을 업데이트해주세요.</span>
+          <div className="semester-notice-btns">
+            <button onClick={() => ackSemesterBanner(true)}>수강이력 입력하기</button>
+            <button className="semester-notice-close" onClick={() => ackSemesterBanner(false)}>닫기</button>
+          </div>
+        </div>
+      )}
 
       {showWithdrawModal && (
         <div className="modal-overlay" onClick={() => setShowWithdrawModal(false)}>
@@ -393,7 +414,7 @@ export default function MainPage() {
       )}
 
       <div className="main-content">
-        <Dashboard onImportSuccess={loadRecommendations} currentSchedule={currentCourses} irTaking={irTaking} />
+        <Dashboard onImportSuccess={loadRecommendations} currentSchedule={currentCourses} irTaking={irTaking} openImportSignal={openImportSignal} />
 
         <section className="schedule-section">
           <div className="plan-controls">

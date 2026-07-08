@@ -12,15 +12,18 @@ export async function GET(request) {
   }
 
   const supabase = getSupabaseAdmin();
-  const { data: user, error } = await supabase
-    .from('users')
-    .select('id, email, name, grade, student_id, role, semester')
-    .eq('id', auth.userId)
-    .maybeSingle();
+  const [{ data: user, error }, { data: meta }] = await Promise.all([
+    supabase
+      .from('users')
+      .select('id, email, name, grade, student_id, role, semester, last_ack_semester')
+      .eq('id', auth.userId)
+      .maybeSingle(),
+    supabase.from('app_meta').select('value').eq('key', 'synced_semester').maybeSingle(),
+  ]);
 
   if (error) return errorJson('서버 오류', 500);
   if (!user) return errorJson('유저 없음', 404);
-  return Response.json({ user });
+  return Response.json({ user, current_semester: meta?.value || null });
 }
 
 export async function PATCH(request) {
@@ -33,7 +36,7 @@ export async function PATCH(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { name, grade, student_id, semester } = body;
+  const { name, grade, student_id, semester, ack_semester } = body;
 
   const updates = {};
   if (name      !== undefined) updates.name       = String(name).trim();
@@ -47,6 +50,8 @@ export async function PATCH(request) {
     }
     updates.semester = s;
   }
+  // 새 학기 전환 알림 확인 처리 (배너 dismiss)
+  if (ack_semester !== undefined) updates.last_ack_semester = String(ack_semester).trim();
 
   if (Object.keys(updates).length === 0) return errorJson('수정할 항목이 없습니다.', 400);
 
@@ -55,7 +60,7 @@ export async function PATCH(request) {
     .from('users')
     .update(updates)
     .eq('id', auth.userId)
-    .select('id, email, name, grade, student_id, role, semester')
+    .select('id, email, name, grade, student_id, role, semester, last_ack_semester')
     .maybeSingle();
 
   if (error) return errorJson('서버 오류', 500);

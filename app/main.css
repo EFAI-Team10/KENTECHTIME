@@ -340,6 +340,42 @@
   letter-spacing: 0.01em;
 }
 
+/* 새 학기 전환 알림 배너 */
+.semester-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 32px;
+  background: #eef4fd;
+  border-bottom: 1px solid #c3d8f5;
+  font-size: 14px;
+  color: #2b5c9e;
+}
+
+.semester-notice-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.semester-notice-btns button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #4A90D9;
+  background: #4A90D9;
+  color: white;
+  font-weight: 500;
+}
+
+.semester-notice-close {
+  background: white !important;
+  color: #4A90D9 !important;
+}
+
 /* IR 토글 섹션 */
 .ir-section {
   display: flex;
