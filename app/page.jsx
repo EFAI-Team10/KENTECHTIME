@@ -26,6 +26,7 @@ import TimetableGrid from '@/components/Timetable/TimetableGrid';
 import Dashboard from '@/components/Dashboard/Dashboard';
 import Chat from '@/components/Chat/Chat';
 import Tracker from '@/components/Tracker/Tracker';
+import PastTimetable from '@/components/PastTimetable/PastTimetable';
 import { useTheme } from '@/contexts/ThemeContext';
 import SettingsModal from '@/components/Settings/SettingsModal';
 import { scheduleAPI, usersAPI, coursesAPI } from '@/lib/api-client';
@@ -228,6 +229,13 @@ export default function MainPage() {
     ]));
   };
 
+  // 대학원(EE) 과목의 이수예정 학점 포함 여부 토글
+  const handleToggleGradIncluded = (course, next) => {
+    if (view.type !== 'my') return;
+    runEdit(() => updateMyCourses(cs => cs.map(c =>
+      c.id === course.id ? { ...c, grad_included: next } : c)));
+  };
+
   // ── 복사/붙여넣기 (추천·내 시간표 모두 복사 가능) ──
   const copyCurrent = () => {
     setCopyBuffer(currentCourses);
@@ -275,7 +283,8 @@ export default function MainPage() {
     if (view.type !== 'my') return;
     const t = myTimetables[view.idx];
     try {
-      await scheduleAPI.save({ courseIds: t.courses.map(c => c.id), semester, slot: t.slot });
+      const gradIncluded = Object.fromEntries(t.courses.map(c => [c.id, c.grad_included !== false]));
+      await scheduleAPI.save({ courseIds: t.courses.map(c => c.id), semester, slot: t.slot, gradIncluded });
       setSavedSlots(prev => new Set(prev).add(t.slot));
       alert('내 시간표가 저장되었습니다.');
     } catch {
@@ -532,6 +541,8 @@ export default function MainPage() {
             <button className="tab-add" onClick={addMyTimetable} title="내 시간표 추가">＋</button>
           </div>
 
+          <PastTimetable />
+
           <TimetableGrid
             courses={currentCourses}
             allCourses={allCourses}
@@ -542,6 +553,7 @@ export default function MainPage() {
             onAdd={handleAddCourse}
             onRemove={handleRemoveCourse}
             onReplace={handleReplaceCourse}
+            onToggleGradIncluded={handleToggleGradIncluded}
             coursesLoading={coursesLoading}
             readOnly={isRec}
           />

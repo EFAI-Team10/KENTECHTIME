@@ -72,6 +72,16 @@ function parseTimeslots(str) {
   return slots;
 }
 
+// '강의실' 열 원본 예: "행정강의동(A Zone)_A-205 / 행정강의동(A Zone)_A-205" (슬롯 수만큼 반복 + zone 괄호)
+// → "행정강의동_A-205" 형태로 정리 (동_알파벳-호실), 중복 제거
+function parseRoom(str) {
+  if (!str) return null;
+  const rooms = [...new Set(
+    String(str).split('/').map(s => s.trim().replace(/\([^)]*\)/g, '')).filter(Boolean)
+  )];
+  return rooms.join(' / ') || null;
+}
+
 function parseGrade(gradeStr) {
   if (!gradeStr) return 0;
   const m = String(gradeStr).match(/(\d)학년/);
@@ -86,14 +96,14 @@ async function seed() {
     process.exit(1);
   }
 
-  const FILE_REGEX = /^개설교과목 리스트_(\d{4})_(1학기|2학기|하계|동계)\.xlsx$/;
+  const FILE_REGEX = /^개설교과목 리스트_(\d{4})_(1학기|2학기|하계|동계)(_대학원)?\.xlsx$/;
 
   const files = fs.readdirSync(classlistDir)
     .map(filename => {
-      const m = filename.match(FILE_REGEX);
+      const m = filename.normalize('NFC').match(FILE_REGEX);
       if (!m) return null;
       const semester = `${m[1]}-${SEMESTER_MAP[m[2]]}`;
-      return { path: path.join(classlistDir, filename), filename, semester };
+      return { path: path.join(classlistDir, filename), filename, semester, isGraduate: !!m[3] };
     })
     .filter(Boolean)
     .sort((a, b) => a.semester.localeCompare(b.semester));
@@ -114,19 +124,22 @@ async function seed() {
 
       // \r\n 정규화 (엑셀 셀 내 줄바꿈이 OS마다 \r\n / \n 혼용)
       const headers = rows[0].map(h => (h ? String(h).replace(/\r/g, '') : h));
+      // 대학원 과목 파일(_대학원)은 학부 파일과 헤더 구성이 달라
+      // '교과목명(국문)'/'대표교수명' 대신 '교과목명'/'교수명'을 쓰고, 수강학년 열이 없음
       const col = {
         code:      headers.indexOf('교과목코드'),
-        name:      headers.indexOf('교과목명(국문)'),
+        name:      headers.indexOf('교과목명(국문)') !== -1 ? headers.indexOf('교과목명(국문)') : headers.indexOf('교과목명'),
         category:  headers.indexOf('영역\n구분'),
         timetable: headers.indexOf('시간표'),
         credits:   headers.indexOf('학점'),
         section:   headers.indexOf('분반'),
-        professor: headers.indexOf('대표교수명'),
-        grade:     1, // 수강학년 열은 항상 인덱스 1 (헤더가 null이라 indexOf 불가)
+        professor: headers.indexOf('대표교수명') !== -1 ? headers.indexOf('대표교수명') : headers.indexOf('교수명'),
+        room:      headers.indexOf('강의실'),
+        grade:     1, // 수강학년 열은 항상 인덱스 1 (헤더가 null이라 indexOf 불가; 대학원 파일은 해당 열이 없어 fileInfo.isGraduate로 별도 처리)
       };
 
       if (col.code === -1 || col.name === -1) {
-        console.error('  필수 열(교과목코드, 교과목명(국문))을 찾을 수 없음 — 건너뜀');
+        console.error('  필수 열(교과목코드, 교과목명)을 찾을 수 없음 — 건너뜀');
         continue;
       }
 
@@ -139,6 +152,7 @@ async function seed() {
         if (!code || !name) continue;
         const sectionRaw = col.section >= 0 ? row[col.section] : null;
         const professorRaw = col.professor >= 0 ? row[col.professor] : null;
+        const roomRaw = col.room >= 0 ? row[col.room] : null;
         records.push({
           code:         String(code).trim(),
           name:         String(name).trim(),
@@ -148,7 +162,8 @@ async function seed() {
           semester:     fileInfo.semester,
           section:      sectionRaw ? String(sectionRaw).trim().padStart(2, '0') : '01',
           professor:    professorRaw ? String(professorRaw).trim() : null,
-          target_grade: parseGrade(row[col.grade]),
+          room:         parseRoom(roomRaw),
+          target_grade: fileInfo.isGraduate ? 0 : parseGrade(row[col.grade]),
           timeslots:    parseTimeslots(row[col.timetable]),
         });
       }

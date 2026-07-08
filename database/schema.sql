@@ -20,15 +20,18 @@ CREATE TABLE courses (
   category      VARCHAR(10),
   semester      VARCHAR(20),
   target_grade  INTEGER,
-  timeslots     JSONB
+  timeslots     JSONB,
+  professor     VARCHAR(50),
+  room          VARCHAR(200)
 );
 
 
 CREATE TABLE completed_courses (
-  user_id   INTEGER REFERENCES users(id),
-  course_id INTEGER REFERENCES courses(id),
-  semester  VARCHAR(20),
-  grade     VARCHAR(5),
+  user_id       INTEGER REFERENCES users(id),
+  course_id     INTEGER REFERENCES courses(id),
+  semester      VARCHAR(20),
+  grade         VARCHAR(5),
+  grad_included BOOLEAN NOT NULL DEFAULT true,
   PRIMARY KEY (user_id, course_id)
 );
 
@@ -38,10 +41,12 @@ CREATE TABLE user_preferences (
 );
 
 CREATE TABLE planned_schedules (
-  user_id   INTEGER REFERENCES users(id),
-  course_id INTEGER REFERENCES courses(id),
-  semester  VARCHAR(20),
-  PRIMARY KEY (user_id, course_id, semester)
+  user_id       INTEGER REFERENCES users(id),
+  course_id     INTEGER REFERENCES courses(id),
+  semester      VARCHAR(20),
+  slot          SMALLINT NOT NULL DEFAULT 0,
+  grad_included BOOLEAN NOT NULL DEFAULT true,
+  PRIMARY KEY (user_id, course_id, semester, slot)
 );
 
 CREATE TABLE reviews (

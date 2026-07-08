@@ -126,6 +126,7 @@
   left: 0;
   right: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: white;
@@ -137,6 +138,20 @@
   z-index: 1;              /* 셀 경계선(흰 줄) 위로 */
   pointer-events: none;    /* 클릭은 아래 칸(해당 시간)으로 전달 */
 }
+
+.cell-sub {
+  display: block;
+  max-width: 100%;
+  margin-top: 2px;
+  font-size: 10px;
+  font-weight: 400;
+  opacity: 0.9;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 
 .cell.empty {
   color: #ccc;
@@ -262,6 +277,20 @@
 .pk-grade-text {
   font-size: 12px;
   color: #4A90D9;
+}
+
+.pk-grad-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #888;
+  cursor: pointer;
+}
+
+.pk-grad-toggle input {
+  cursor: pointer;
 }
 
 .pk-remove-btn {

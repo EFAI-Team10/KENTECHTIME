@@ -16,11 +16,14 @@ const DEFAULT_CAT_COLORS = {
   IR: '#EF8862', CAPS: '#D2634E', EN: '#6F55B8',
   FR: '#666666', RC: '#3F8881', GR: '#CA6F1E', GS: '#00186E',
 };
-const CATEGORIES = ['EF', 'EL', 'VC', 'MN', 'HASS', 'ESP', 'IR', 'GR', 'CAPS', 'EN', 'RC', 'FR', 'GS'];
+const CATEGORIES = ['EF', 'EL', 'VC', 'MN', 'HASS', 'ESP', 'IR', 'GR', 'CAPS', 'EN', 'RC', 'FR', 'GS', 'EE'];
 const CAT_ORDER = ['EF', 'VC', 'EL', 'MN', 'HASS', 'EN', 'IR', 'CAPS', 'ESP', 'RC', 'FR', 'GR'];
 
 
 const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
+
+// 대학원 과목(EE)만 졸업학점 포함 여부를 선택할 수 있음
+const isGraduateCourse = (code) => /^EE/.test(code || '');
 
 // ESP 시작 레벨 → 시작 이전(자동 기수강) 과목 코드 (입력은 설정에서만)
 const ESP_PRIOR_CODES = { 1: [], 2: ['ES1001'], 3: ['ES1001', 'ES1002'] };
@@ -56,8 +59,9 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [efSubRequired, setEfSubRequired] = useState({ math: 8, physics: 4, chem: 4, dl: 4 });
   const [elUpperCount, setElUpperCount] = useState(0);
 
-  // 시간표 과목 → 카테고리별 계획 학점 (졸업학점 미포함 과목 제외)
-  const gradCounted = (currentSchedule || []).filter(c => !c.grad_excluded);
+  // 시간표 과목 → 카테고리별 계획 학점 (졸업학점 미포함 과목 제외, 대학원 과목은 사용자 선택 반영)
+  const gradCounted = (currentSchedule || []).filter(c =>
+    !c.grad_excluded && !(isGraduateCourse(c.code) && c.grad_included === false));
   const planned = {};
   for (const c of gradCounted) {
     const cat = c.category || 'EL';
@@ -295,6 +299,17 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
       loadRequirements();
     } catch {
       alert('삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleToggleGradIncluded = async (courseId, next) => {
+    setHistory(h => h.map(c => c.id === courseId ? { ...c, grad_included: next } : c));
+    try {
+      await coursesAPI.setGradIncluded(courseId, next);
+      loadRequirements();
+    } catch {
+      alert('변경 중 오류가 발생했습니다.');
+      setHistory(h => h.map(c => c.id === courseId ? { ...c, grad_included: !next } : c));
     }
   };
 
@@ -556,6 +571,16 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                         </span>
                         <span className="history-name">{course.name}</span>
                         <span className="history-credits">{course.credits}학점</span>
+                        {isGraduateCourse(course.code) && (
+                          <label className="history-grad-toggle" title="대학원 과목: 졸업학점 포함 여부">
+                            <input
+                              type="checkbox"
+                              checked={course.grad_included !== false}
+                              onChange={(e) => handleToggleGradIncluded(course.id, e.target.checked)}
+                            />
+                            졸업학점 포함
+                          </label>
+                        )}
                         <button className="history-del" onClick={() => handleDeleteCourse(course.id)}>삭제</button>
                       </div>
                     ))}
@@ -799,7 +824,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                           value={extForm.category}
                           onChange={e => setExtForm(f => ({ ...f, category: e.target.value }))}
                         >
-                          {CATEGORIES.filter(c => c !== 'GS').map(c => <option key={c} value={c}>{c}</option>)}
+                          {CATEGORIES.filter(c => c !== 'GS' && c !== 'EE').map(c => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </div>
                     </div>

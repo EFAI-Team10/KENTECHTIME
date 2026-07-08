@@ -90,13 +90,16 @@ export async function POST(request) {
 
   // completed_courses에 일괄 등록
   if (matched.length > 0) {
+    // 기존 이력의 대학원 과목 졸업학점 포함 여부(사용자 설정)를 재등록 시에도 보존
+    const { data: existing } = await supabase
+      .from('completed_courses')
+      .select('course_id, semester, grad_included')
+      .eq('user_id', auth.userId);
+    const prevGradIncluded = new Map((existing || []).map(r => [r.course_id, r.grad_included]));
+
     // replace=true: 기존 포털 import 이력 전체 교체 (수동 추가 과목은 유지)
     // 포털 출처 판별: semester='imported' 또는 YYYY-(spring|fall|summer|winter) 형식
     if (replace) {
-      const { data: existing } = await supabase
-        .from('completed_courses')
-        .select('course_id, semester')
-        .eq('user_id', auth.userId);
       const portalIds = (existing || [])
         .filter(r => r.semester === 'imported' || /^\d{4}-(spring|fall|summer|winter)$/.test(r.semester || ''))
         .map(r => r.course_id);
@@ -111,6 +114,7 @@ export async function POST(request) {
       course_id: c.id,
       semester: courseMap.get(c.code)?.semester || 'imported',
       grade: 'P',
+      grad_included: prevGradIncluded.has(c.id) ? prevGradIncluded.get(c.id) : true,
     }));
     await supabase
       .from('completed_courses')

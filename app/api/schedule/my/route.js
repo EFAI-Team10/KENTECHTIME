@@ -17,7 +17,7 @@ export async function GET(request) {
   const [{ data, error }, activeRes, metaRes] = await Promise.all([
     supabase
       .from('planned_schedules')
-      .select('slot, courses(id, code, name, credits, timeslots, track, category, target_grade, grad_excluded)')
+      .select('slot, grad_included, courses(id, code, name, credits, timeslots, track, category, target_grade, grad_excluded, professor, room, section)')
       .eq('user_id', auth.userId)
       .eq('semester', semester),
     supabase
@@ -46,7 +46,7 @@ export async function GET(request) {
   for (const row of data || []) {
     const slot = row.slot ?? 0;
     if (!bySlot[slot]) bySlot[slot] = [];
-    if (row.courses?.id) bySlot[slot].push(row.courses);
+    if (row.courses?.id) bySlot[slot].push({ ...row.courses, grad_included: row.grad_included !== false });
   }
   const timetables = Object.keys(bySlot)
     .map(Number)

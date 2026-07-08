@@ -1,10 +1,12 @@
 import { requireAuth, errorJson, AuthError } from '@/lib/server/auth';
 import { getSupabaseAdmin } from '@/lib/server/supabase';
+import { isGraduateCourse } from '@/lib/server/parser';
 
 const PREFIX_TO_CAT = {
   EF:'EF', EL:'EL', EN:'EN', ES:'ESP', FR:'FR', GR:'GR',
   HA:'HASS', IR:'IR', MN:'MN', RC:'RC', VC:'VC', CA:'CAPS',
   GS:'GS',
+  EE:'FR', // 대학원 과목 (학부생 수강 시 자유학점으로 인정)
 };
 function resolveCategory(code, stored) {
   // AP 학점 코드(예: F000017)는 저장 카테고리와 무관하게 EF로 인정
@@ -56,7 +58,7 @@ export async function GET(request) {
   const [{ data, error }, userRes] = await Promise.all([
     supabase
       .from('completed_courses')
-      .select('courses(code, category, credits, grad_excluded)')
+      .select('grad_included, courses(code, category, credits, grad_excluded)')
       .eq('user_id', auth.userId),
     supabase.from('users').select('student_id').eq('id', auth.userId).maybeSingle(),
   ]);
@@ -83,6 +85,7 @@ export async function GET(request) {
     if (!code || seenCodes.has(code)) continue;
     seenCodes.add(code);
     if (grad_excluded) continue; // 비고 '졸업학점 미포함' 과목은 졸업학점 계산에서 제외
+    if (isGraduateCourse(code) && row.grad_included === false) continue; // 대학원 과목: 사용자가 졸업학점 미포함으로 선택
     const category = resolveCategory(code, storedCat);
 
     let cr = Number(rawCredits) || 0;

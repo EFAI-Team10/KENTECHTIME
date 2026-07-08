@@ -14,7 +14,7 @@ export async function GET(request) {
   const supabase = getSupabaseAdmin();
   const { data, error } = await supabase
     .from('completed_courses')
-    .select('course_id, semester, grade, courses(id, code, name, credits, category)')
+    .select('course_id, semester, grade, grad_included, courses(id, code, name, credits, category)')
     .eq('user_id', auth.userId);
 
   if (error) return errorJson('서버 오류', 500);
@@ -24,8 +24,36 @@ export async function GET(request) {
     category: getCategoryFromCode(r.courses?.code) || r.courses?.category || 'EL',
     semester: r.semester,
     grade: r.grade,
+    grad_included: r.grad_included !== false,
   }));
   return NextResponse.json({ courses }, { status: 200 });
+}
+
+// 대학원 과목의 졸업학점 포함 여부 사용자 토글
+export async function PATCH(request) {
+  let auth;
+  try { auth = requireAuth(request); }
+  catch (err) {
+    if (err instanceof AuthError) return errorJson(err.message, err.status);
+    return errorJson('인증 오류', 401);
+  }
+
+  const body = await request.json().catch(() => ({}));
+  const courseId = body.courseId;
+  const gradIncluded = body.grad_included;
+  if (!courseId || typeof gradIncluded !== 'boolean') {
+    return errorJson('잘못된 요청입니다.', 400);
+  }
+
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from('completed_courses')
+    .update({ grad_included: gradIncluded })
+    .eq('user_id', auth.userId)
+    .eq('course_id', courseId);
+
+  if (error) return errorJson('서버 오류', 500);
+  return NextResponse.json({ success: true }, { status: 200 });
 }
 
 export async function DELETE(request) {
@@ -65,6 +93,13 @@ export async function POST(request) {
 
   const supabase = getSupabaseAdmin();
 
+  // 전체 교체 전, 대학원 과목 졸업학점 포함 여부(사용자 설정)를 보존
+  const { data: prevRows } = await supabase
+    .from('completed_courses')
+    .select('course_id, grad_included')
+    .eq('user_id', auth.userId);
+  const prevGradIncluded = new Map((prevRows || []).map(r => [r.course_id, r.grad_included]));
+
   await supabase.from('completed_courses').delete().eq('user_id', auth.userId);
 
   if (courses.length > 0) {
@@ -73,6 +108,7 @@ export async function POST(request) {
       course_id: c.course_id,
       semester: c.semester || '2025-fall',
       grade: c.grade || 'P',
+      grad_included: prevGradIncluded.has(c.course_id) ? prevGradIncluded.get(c.course_id) : true,
     }));
     const { error } = await supabase
       .from('completed_courses')

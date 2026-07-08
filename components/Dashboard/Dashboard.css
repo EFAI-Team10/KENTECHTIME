@@ -418,6 +418,21 @@
   text-align: right;
 }
 
+.history-grad-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #888;
+  font-size: 11px;
+  flex-shrink: 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.history-grad-toggle input {
+  cursor: pointer;
+}
+
 .history-del {
   background: none;
   border: 1px solid #e0e0e0;

@@ -44,6 +44,12 @@ function slotsConflict(a = [], b = []) {
   return a.some(sa => b.some(sb => sa.day === sb.day && sa.start < sb.end && sb.start < sa.end));
 }
 
+// 대학원(EE) 과목 여부 — 이수예정 학점 미리보기에 포함할지 사용자가 선택 가능
+const isGraduateCourse = (code) => /^EE/.test(code || '');
+
+// 강의실 표시 정리 — "행정강의동(A Zone)_A-205" → "행정강의동_A-205" (zone 괄호 제거)
+const cleanRoom = (room) => room ? String(room).replace(/\([^)]*\)/g, '').trim() : room;
+
 function sortCourses(courses, userGrade, trackOrder) {
   const keyOf = (c) => {
     const gradeMatch  = c.target_grade === userGrade;
@@ -93,7 +99,7 @@ function sortCourses(courses, userGrade, trackOrder) {
   });
 }
 
-export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, onReplace, coursesLoading = false, readOnly = false }) {
+export default function TimetableGrid({ courses = [], allCourses = [], userGrade = 1, completedCodes = new Set(), trackOrder = [], onTrackOrderChange, onAdd, onRemove, onReplace, onToggleGradIncluded, coursesLoading = false, readOnly = false }) {
   const { theme } = useTheme();
   const CAT_COLORS  = theme?.catColors   ?? DEFAULT_CAT_COLORS;
   const TRACK_COLOR = theme?.trackColors ?? DEFAULT_TRACK_COLOR;
@@ -156,12 +162,17 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                   key={day}
                   className={`cell ${course ? 'occupied' : 'empty'} ${isActive ? 'active-cell' : ''} ${readOnly ? 'read-only' : ''}`}
                   onClick={readOnly ? undefined : () => setPickerSlot({ day, hour })}
-                  title={course?.name}
+                  title={course ? [course.name, course.professor, cleanRoom(course.room)].filter(Boolean).join(' · ') : undefined}
                 >
                   {showBlock
                     ? (
                       <div className="cell-fill" style={fillStyle}>
                         <span className="cell-text">{course.name}</span>
+                        {(course.professor || course.room) && (
+                          <span className="cell-sub">
+                            {[course.professor, cleanRoom(course.room)].filter(Boolean).join(' · ')}
+                          </span>
+                        )}
                       </div>
                     )
                     : (!course && !readOnly && <span className="cell-plus">+</span>)
@@ -195,9 +206,22 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                     </span>
                   )}
                   <div className="pk-name">{pickerCourse.name}</div>
-                  <div className="pk-meta">{pickerCourse.code} · {pickerCourse.credits}학점</div>
+                  <div className="pk-meta">
+                    {pickerCourse.code}{pickerCourse.section ? ` (${pickerCourse.section}분반)` : ''} · {pickerCourse.credits}학점
+                    {pickerCourse.professor ? ` · ${pickerCourse.professor}` : ''}
+                  </div>
                   {pickerCourse.target_grade > 0 && (
                     <div className="pk-grade-text">{pickerCourse.target_grade}학년 권장</div>
+                  )}
+                  {isGraduateCourse(pickerCourse.code) && (
+                    <label className="pk-grad-toggle">
+                      <input
+                        type="checkbox"
+                        checked={pickerCourse.grad_included !== false}
+                        onChange={(e) => onToggleGradIncluded?.(pickerCourse, e.target.checked)}
+                      />
+                      이수예정 학점에 포함
+                    </label>
                   )}
                   <button
                     className="pk-remove-btn"
@@ -244,7 +268,10 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                           {added && <span className="pk-status added">추가됨</span>}
                         </div>
                         <div className="pk-item-name">{c.name}</div>
-                        <div className="pk-item-meta">{c.code}{c.section ? ` (${c.section}분반)` : ''}{c.professor ? ` · ${c.professor}` : ''} · {c.credits}학점</div>
+                        <div className="pk-item-meta">
+                          {c.code}{c.section ? ` (${c.section}분반)` : ''} · {c.credits}학점
+                          {c.professor ? ` · ${c.professor}` : ''}
+                        </div>
                       </li>
                     );
                   })}

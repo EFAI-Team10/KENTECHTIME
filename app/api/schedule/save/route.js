@@ -11,7 +11,7 @@ export async function POST(request) {
   }
 
   const body = await request.json().catch(() => ({}));
-  const { courseIds, semester } = body;
+  const { courseIds, semester, gradIncluded } = body; // gradIncluded: { [courseId]: boolean } — EE 과목 이수예정 포함 여부
   const slot = Number.isInteger(body.slot) ? body.slot : 0; // 어느 '내 시간표'인지
 
   if (!Array.isArray(courseIds) || !semester) {
@@ -33,6 +33,7 @@ export async function POST(request) {
       course_id,
       semester,
       slot,
+      grad_included: gradIncluded?.[course_id] ?? true,
     }));
     const { error } = await supabase
       .from('planned_schedules')

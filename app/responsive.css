@@ -46,6 +46,8 @@
     font-size: 10px; line-height: 1.15;
     word-break: break-all; white-space: normal;
   }
+  /* 교수님·강의실 — 한 줄로 축약, 좁은 칸에 맞춰 폰트 축소 */
+  .timetable-grid .cell-sub { font-size: 8px; margin-top: 1px; }
   .track-selector { gap: 6px; }
 
   /* 설정 모달 — 가로 스크롤 방지 */
@@ -86,5 +88,6 @@
   .timetable-grid .day-col,
   .timetable-grid .cell { font-size: 10px; min-height: 38px; }
   .timetable-grid .cell-text { font-size: 9px; line-height: 1.12; word-break: break-all; white-space: normal; }
+  .timetable-grid .cell-sub { font-size: 7px; margin-top: 1px; }
   .plan-tabs button { padding: 6px 12px; font-size: 13px; }
 }
