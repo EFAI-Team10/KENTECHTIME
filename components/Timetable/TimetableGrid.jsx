@@ -50,6 +50,9 @@ const isGraduateCourse = (code) => /^EE/.test(code || '');
 // 강의실 표시 정리 — "행정강의동(A Zone)_A-205" → "행정강의동_A-205" (zone 괄호 제거)
 const cleanRoom = (room) => room ? String(room).replace(/\([^)]*\)/g, '').trim() : room;
 
+// 모바일용 축약 — "행정강의동_C-304" → "C-304" (건물명 생략, 알파벳-호실만)
+const roomCode = (room) => room ? String(room).split('/').map(r => r.trim().split('_').pop().trim()).join(' / ') : room;
+
 function sortCourses(courses, userGrade, trackOrder) {
   const keyOf = (c) => {
     const gradeMatch  = c.target_grade === userGrade;
@@ -169,9 +172,11 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                       <div className="cell-fill" style={fillStyle}>
                         <span className="cell-text">{course.name}</span>
                         {(course.professor || course.room) && (
-                          <span className="cell-sub">
-                            {[course.professor, cleanRoom(course.room)].filter(Boolean).join(' · ')}
-                          </span>
+                          <span
+                            className="cell-sub"
+                            data-full={[course.professor, cleanRoom(course.room)].filter(Boolean).join(' · ')}
+                            data-short={[course.professor, roomCode(cleanRoom(course.room))].filter(Boolean).join(' · ')}
+                          />
                         )}
                       </div>
                     )

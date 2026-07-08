@@ -46,8 +46,9 @@
     font-size: 10px; line-height: 1.15;
     word-break: break-all; white-space: normal;
   }
-  /* 교수님·강의실 — 한 줄로 축약, 좁은 칸에 맞춰 폰트 축소 */
+  /* 교수님·강의실 — 한 줄로 축약, 좁은 칸에 맞춰 폰트 축소 + 건물명 생략(알파벳-호실만) */
   .timetable-grid .cell-sub { font-size: 8px; margin-top: 1px; }
+  .timetable-grid .cell-sub::before { content: attr(data-short); }
   .track-selector { gap: 6px; }
 
   /* 설정 모달 — 가로 스크롤 방지 */

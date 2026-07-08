@@ -152,6 +152,11 @@
   white-space: nowrap;
 }
 
+/* 데스크톱: 건물명 포함 전체 강의실 표기. 모바일에서는 responsive.css가 data-short로 전환 */
+.cell-sub::before {
+  content: attr(data-full);
+}
+
 
 .cell.empty {
   color: #ccc;
