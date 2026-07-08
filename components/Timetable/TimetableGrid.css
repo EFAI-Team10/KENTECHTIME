@@ -140,20 +140,27 @@
 }
 
 .cell-sub {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   max-width: 100%;
   margin-top: 2px;
   font-size: 10px;
   font-weight: 400;
   opacity: 0.9;
   line-height: 1.15;
+}
+
+.cell-prof,
+.cell-room {
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 /* 데스크톱: 건물명 포함 전체 강의실 표기. 모바일에서는 responsive.css가 data-short로 전환 */
-.cell-sub::before {
+.cell-room::before {
   content: attr(data-full);
 }
 

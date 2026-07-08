@@ -46,9 +46,13 @@
     font-size: 10px; line-height: 1.15;
     word-break: break-all; white-space: normal;
   }
-  /* 교수님·강의실 — 한 줄로 축약, 좁은 칸에 맞춰 폰트 축소 + 건물명 생략(알파벳-호실만) */
+  /* 교수님/강의실이 별도 줄로 붙는 칸은 세로 공간이 부족해 과목명을 1줄로 말줄임 */
+  .timetable-grid .cell-fill:has(.cell-sub) .cell-text {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+  }
+  /* 교수님·강의실 — 좁은 칸에 맞춰 폰트 축소 + 강의실은 건물명 생략(알파벳-호실만) */
   .timetable-grid .cell-sub { font-size: 8px; margin-top: 1px; }
-  .timetable-grid .cell-sub::before { content: attr(data-short); }
+  .timetable-grid .cell-room::before { content: attr(data-short); }
   .track-selector { gap: 6px; }
 
   /* 설정 모달 — 가로 스크롤 방지 */

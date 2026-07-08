@@ -172,11 +172,16 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                       <div className="cell-fill" style={fillStyle}>
                         <span className="cell-text">{course.name}</span>
                         {(course.professor || course.room) && (
-                          <span
-                            className="cell-sub"
-                            data-full={[course.professor, cleanRoom(course.room)].filter(Boolean).join(' · ')}
-                            data-short={[course.professor, roomCode(cleanRoom(course.room))].filter(Boolean).join(' · ')}
-                          />
+                          <span className="cell-sub">
+                            {course.professor && <span className="cell-prof">{course.professor}</span>}
+                            {course.room && (
+                              <span
+                                className="cell-room"
+                                data-full={cleanRoom(course.room)}
+                                data-short={roomCode(cleanRoom(course.room))}
+                              />
+                            )}
+                          </span>
                         )}
                       </div>
                     )
