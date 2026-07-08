@@ -78,8 +78,8 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
 
   // EL 바: 학점 기준 fill — 왼쪽 80%가 학점 영역(오른쪽 20%는 EL4/5 슬롯 전용)
   // → 0~80% 범위로 매핑해 EL4/5 존과 겹쳐 중복 표기되지 않도록 함
-  const elEarnedPct = Math.min(80, (earned.EL / REQUIRED.EL) * 80);
-  const elPlanPct = Math.min(80, ((earned.EL + plannedElCredits) / REQUIRED.EL) * 80);
+  const elEarnedPct = Math.min(80, (earned.EL / REQUIRED.EL) * 100);
+  const elPlanPct = Math.min(80, ((earned.EL + plannedElCredits) / REQUIRED.EL) * 100);
 
   // 시간표 추가 시 각 카테고리 초과분 → FR 미리보기
   const plannedFRExtra = Object.entries(CAT_OVERFLOW_TARGET).reduce((sum, [cat, req]) => {
