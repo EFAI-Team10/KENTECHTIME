@@ -573,6 +573,65 @@
   font-size: 17px;
 }
 
+.ext-grad-status {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  color: #888;
+}
+
+.ext-grad-change {
+  border: none;
+  background: none;
+  color: #4A90D9;
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.grad-confirm-modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 320px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.grad-confirm-modal h3 {
+  margin: 0 0 8px;
+  color: #2c3e50;
+  font-size: 16px;
+}
+
+.grad-confirm-modal p {
+  margin: 0 0 18px;
+  color: #555;
+  font-size: 13px;
+}
+
+.grad-confirm-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.grad-confirm-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  color: #555;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.grad-confirm-btn.selected {
+  border-color: #4A90D9;
+  background: #4A90D9;
+  color: white;
+}
+
 .bookmarklet-guide {
   background: #f8f9fa;
   border-radius: 8px;

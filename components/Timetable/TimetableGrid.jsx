@@ -45,7 +45,7 @@ function slotsConflict(a = [], b = []) {
 }
 
 // 대학원(EE) 과목 여부 — 이수예정 학점 미리보기에 포함할지 사용자가 선택 가능
-const isGraduateCourse = (code) => /^EE/.test(code || '');
+const isGraduateCourse = (code, category) => /^EE/.test(code || '') || category === 'EE';
 
 // 강의실 표시 정리 — "행정강의동(A Zone)_A-205" → "행정강의동_A-205" (zone 괄호 제거)
 const cleanRoom = (room) => room ? String(room).replace(/\([^)]*\)/g, '').trim() : room;
@@ -108,6 +108,7 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
   const TRACK_COLOR = theme?.trackColors ?? DEFAULT_TRACK_COLOR;
 
   const [pickerSlot, setPickerSlot] = useState(null);
+  const [gradPrompt, setGradPrompt] = useState(null); // { course, mode: 'add'|'replace' } — EE 과목 추가 시 졸업학점 반영 여부 확인
 
   const colorMap = {};
   courses.forEach(c => { colorMap[c.id] = CAT_COLORS[c.category] || '#4A90D9'; });
@@ -134,6 +135,16 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
         trackOrder
       )
     : [];
+
+  // 대학원(EE) 과목 추가/교체 확정 — 메시지 박스에서 반영 여부를 고른 뒤 실행
+  const resolveGradPrompt = (included) => {
+    if (!gradPrompt) return;
+    const course = { ...gradPrompt.course, grad_included: included };
+    if (gradPrompt.mode === 'replace') onReplace?.(course);
+    else onAdd?.(course);
+    setGradPrompt(null);
+    setPickerSlot(null);
+  };
 
   return (
     <div className="timetable-wrapper">
@@ -223,7 +234,7 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                   {pickerCourse.target_grade > 0 && (
                     <div className="pk-grade-text">{pickerCourse.target_grade}학년 권장</div>
                   )}
-                  {isGraduateCourse(pickerCourse.code) && (
+                  {isGraduateCourse(pickerCourse.code, pickerCourse.category) && (
                     <label className="pk-grad-toggle">
                       <input
                         type="checkbox"
@@ -261,6 +272,10 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
                         className={`pk-item ${conflict ? 'pk-conflict' : ''} ${added ? 'pk-added' : ''}`}
                         onClick={() => {
                           if (added) return;
+                          if (isGraduateCourse(c.code, c.category)) {
+                            setGradPrompt({ course: c, mode: conflict ? 'replace' : 'add' });
+                            return;
+                          }
                           if (conflict) onReplace?.(c);   // 충돌 과목 교체
                           else onAdd?.(c);
                           setPickerSlot(null);
@@ -290,6 +305,19 @@ export default function TimetableGrid({ courses = [], allCourses = [], userGrade
             </div>
           </div>
         </>
+      )}
+
+      {gradPrompt && (
+        <div className="modal-overlay" onClick={() => setGradPrompt(null)}>
+          <div className="grad-confirm-modal" onClick={e => e.stopPropagation()}>
+            <h3>대학원 과목 추가</h3>
+            <p>&quot;{gradPrompt.course.name}&quot;을(를) 학부 졸업학점에 반영할까요?</p>
+            <div className="grad-confirm-btns">
+              <button className="grad-confirm-btn" onClick={() => resolveGradPrompt(true)}>반영</button>
+              <button className="grad-confirm-btn" onClick={() => resolveGradPrompt(false)}>반영 안 함</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

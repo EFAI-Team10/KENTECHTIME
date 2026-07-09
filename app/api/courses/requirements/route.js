@@ -16,6 +16,8 @@ function resolveCategory(code, stored) {
     const mapped = PREFIX_TO_CAT[fullPrefix.slice(0, len)];
     if (mapped) return mapped;
   }
+  // 기타 직접입력 대학원 과목(코드가 EE로 시작하지 않음)도 자유학점(FR)으로 인정
+  if (stored === 'EE') return 'FR';
   return stored ?? 'EL';
 }
 
@@ -85,7 +87,7 @@ export async function GET(request) {
     if (!code || seenCodes.has(code)) continue;
     seenCodes.add(code);
     if (grad_excluded) continue; // 비고 '졸업학점 미포함' 과목은 졸업학점 계산에서 제외
-    if (isGraduateCourse(code) && row.grad_included === false) continue; // 대학원 과목: 사용자가 졸업학점 미포함으로 선택
+    if (isGraduateCourse(code, storedCat) && row.grad_included === false) continue; // 대학원 과목: 사용자가 졸업학점 미포함으로 선택
     const category = resolveCategory(code, storedCat);
 
     let cr = Number(rawCredits) || 0;

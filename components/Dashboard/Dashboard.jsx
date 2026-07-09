@@ -23,7 +23,7 @@ const CAT_ORDER = ['EF', 'VC', 'EL', 'MN', 'HASS', 'EN', 'IR', 'CAPS', 'ESP', 'R
 const EMPTY_EXT = { name: '', source: '', credits: '', category: 'EL' };
 
 // 대학원 과목(EE)만 졸업학점 포함 여부를 선택할 수 있음
-const isGraduateCourse = (code) => /^EE/.test(code || '');
+const isGraduateCourse = (code, category) => /^EE/.test(code || '') || category === 'EE';
 
 // ESP 시작 레벨 → 시작 이전(자동 기수강) 과목 코드 (입력은 설정에서만)
 const ESP_PRIOR_CODES = { 1: [], 2: ['ES1001'], 3: ['ES1001', 'ES1002'] };
@@ -61,10 +61,11 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
 
   // 시간표 과목 → 카테고리별 계획 학점 (졸업학점 미포함 과목 제외, 대학원 과목은 사용자 선택 반영)
   const gradCounted = (currentSchedule || []).filter(c =>
-    !c.grad_excluded && !(isGraduateCourse(c.code) && c.grad_included === false));
+    !c.grad_excluded && !(isGraduateCourse(c.code, c.category) && c.grad_included === false));
   const planned = {};
   for (const c of gradCounted) {
-    const cat = c.category || 'EL';
+    // 대학원(EE) 과목은 자유학점(FR)으로 집계 (서버 쪽 이수학점 계산과 동일한 규칙)
+    const cat = c.category === 'EE' ? 'FR' : (c.category || 'EL');
     planned[cat] = (planned[cat] || 0) + Number(c.credits || 0);
   }
 
@@ -106,6 +107,8 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
   const [importDone, setImportDone] = useState(false);
   const [extForm, setExtForm] = useState(EMPTY_EXT);
   const [extDone, setExtDone] = useState(false);
+  const [extGradIncluded, setExtGradIncluded] = useState(true); // 대학원(EE) 직접입력 과목의 졸업학점 포함 여부
+  const [extGradModal, setExtGradModal] = useState(false);      // 위 선택을 묻는 메시지 박스
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -258,6 +261,8 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
     setImportDone(false);
     setExtForm(EMPTY_EXT);
     setExtDone(false);
+    setExtGradIncluded(true);
+    setExtGradModal(false);
     setCheckDone(false);
     setCheckSearch('');
   };
@@ -271,6 +276,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
         source: extForm.source.trim(),
         credits: parseFloat(extForm.credits),
         category: extForm.category,
+        ...(extForm.category === 'EE' ? { grad_included: extGradIncluded } : {}),
       });
       setExtDone(true);
       loadRequirements();
@@ -575,7 +581,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                         </span>
                         <span className="history-name">{course.name}</span>
                         <span className="history-credits">{course.credits}학점</span>
-                        {isGraduateCourse(course.code) && (
+                        {isGraduateCourse(course.code, course.category) && (
                           <label className="history-grad-toggle" title="대학원 과목: 졸업학점 포함 여부">
                             <input
                               type="checkbox"
@@ -782,7 +788,7 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                 <>
                   <p className="import-success">과목이 수강이력에 등록되었습니다.</p>
                   <div className="import-modal-btns">
-                    <button onClick={() => { setExtForm(EMPTY_EXT); setExtDone(false); }}>추가 입력</button>
+                    <button onClick={() => { setExtForm(EMPTY_EXT); setExtDone(false); setExtGradIncluded(true); }}>추가 입력</button>
                     <button className="confirm-import-btn" onClick={handleClose}>완료</button>
                   </div>
                 </>
@@ -826,12 +832,23 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                         <label>영역 <span className="required">*</span></label>
                         <select
                           value={extForm.category}
-                          onChange={e => setExtForm(f => ({ ...f, category: e.target.value }))}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setExtForm(f => ({ ...f, category: val }));
+                            if (val === 'EE') setExtGradModal(true);
+                          }}
                         >
-                          {CATEGORIES.filter(c => c !== 'GS' && c !== 'EE').map(c => <option key={c} value={c}>{c}</option>)}
+                          {CATEGORIES.filter(c => c !== 'GS').map(c => <option key={c} value={c}>{c === 'EE' ? 'EE (대학원)' : c}</option>)}
                         </select>
                       </div>
                     </div>
+
+                    {extForm.category === 'EE' && (
+                      <p className="ext-grad-status">
+                        졸업학점 {extGradIncluded ? '포함' : '미포함'}으로 등록됩니다.{' '}
+                        <button type="button" className="ext-grad-change" onClick={() => setExtGradModal(true)}>변경</button>
+                      </p>
+                    )}
                   </div>
                   <div className="import-modal-btns">
                     <button onClick={handleClose}>취소</button>
@@ -846,6 +863,29 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
                 </>
               )
             )}
+          </div>
+        </div>
+      )}
+
+      {extGradModal && (
+        <div className="modal-overlay" onClick={() => setExtGradModal(false)}>
+          <div className="grad-confirm-modal" onClick={e => e.stopPropagation()}>
+            <h3>대학원 과목 등록</h3>
+            <p>이 과목을 학부 졸업학점에 반영할까요?</p>
+            <div className="grad-confirm-btns">
+              <button
+                className={`grad-confirm-btn ${extGradIncluded ? 'selected' : ''}`}
+                onClick={() => { setExtGradIncluded(true); setExtGradModal(false); }}
+              >
+                반영
+              </button>
+              <button
+                className={`grad-confirm-btn ${!extGradIncluded ? 'selected' : ''}`}
+                onClick={() => { setExtGradIncluded(false); setExtGradModal(false); }}
+              >
+                반영 안 함
+              </button>
+            </div>
           </div>
         </div>
       )}

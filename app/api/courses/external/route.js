@@ -11,7 +11,7 @@ export async function POST(request) {
     return errorJson('인증 오류', 401);
   }
 
-  const { name, source, credits, category } = await request.json();
+  const { name, source, credits, category, grad_included } = await request.json();
   if (!name || !source || !credits || !category) {
     return errorJson('name, source, credits, category는 필수입니다.', 400);
   }
@@ -27,9 +27,13 @@ export async function POST(request) {
 
   if (courseErr) return errorJson('과목 생성 실패: ' + courseErr.message, 500);
 
+  // 대학원(EE) 과목: 입력 시 선택한 졸업학점 포함 여부를 반영, 그 외는 기본값(포함) 사용
+  const row = { user_id: auth.userId, course_id: course.id, semester: source, grade: 'P' };
+  if (category === 'EE' && typeof grad_included === 'boolean') row.grad_included = grad_included;
+
   const { error: ccErr } = await supabase
     .from('completed_courses')
-    .upsert({ user_id: auth.userId, course_id: course.id, semester: source, grade: 'P' }, { onConflict: 'user_id,course_id' });
+    .upsert(row, { onConflict: 'user_id,course_id' });
 
   if (ccErr) return errorJson('수강이력 등록 실패: ' + ccErr.message, 500);
 
