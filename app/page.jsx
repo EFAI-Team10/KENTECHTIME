@@ -143,6 +143,8 @@ export default function MainPage() {
   };
 
   // '새 추천' — 추천만 다시 생성 (내 시간표 유지)
+  // 수강이력 입력(import) 성공 콜백으로도 쓰이므로 completedCodes도 같이 새로고침
+  // (안 하면 새로 완료한 과목이 반영 안 돼 시간표 직접수정 피커의 ESP 단계 잠금 등이 서버(추천)와 어긋남)
   const loadRecommendations = async () => {
     setLoading(true);
     try {
@@ -150,6 +152,11 @@ export default function MainPage() {
       try {
         const prefRes = await usersAPI.getPreferences();
         if (prefRes.data.preferences) { prefs = prefRes.data.preferences; setPreferences(prefs); }
+      } catch {}
+      try {
+        const completedRes = await coursesAPI.getCompleted();
+        const codes = new Set((completedRes.data.courses || []).map(c => c.code).filter(Boolean));
+        setCompletedCodes(codes);
       } catch {}
       const res = await scheduleAPI.recommend({
         semester,

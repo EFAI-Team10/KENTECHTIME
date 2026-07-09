@@ -219,7 +219,11 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
       ];
     });
   const totalPct = Math.round((earned.total / REQUIRED.total) * 100);
-  const plannedTotal = Object.values(planned).reduce((s, v) => s + v, 0);
+  // planned['FR']는 다른 카테고리 초과분을 미리보기 용으로 중복 반영한 값이라
+  // Object.values(planned) 합산에 그대로 쓰면 실제 신청 학점보다 부풀려짐 →
+  // 실제 시간표 학점(중복 없음) + IR 토글 학점으로 총계 계산
+  const plannedTotal = gradCounted.reduce((s, c) => s + Number(c.credits || 0), 0)
+    + (irTaking.ir1 ? 4 : 0) + (irTaking.ir2 ? 4 : 0);
 
   const handleParse = () => {
     const { toImport, external } = parseGradeData(pasteText);
