@@ -8,6 +8,7 @@ import './onboarding.css';
 
 const STEPS = ['기본 정보', '기수강 과목', '선호도'];
 const TRACKS = ['전기/전자', '재료/화학', '인공지능'];
+const CATEGORIES = ['VC', 'EF', 'EL', 'MN', 'HASS', 'ESP', 'IR', 'GR', 'CAPS', 'EN', 'RC', 'FR', 'GS'];
 const ELECTIVE_OPTIONS = [
   { value: 'EN',   label: 'EN (창업)' },
   { value: 'HASS', label: 'HASS (인문사회)' },
@@ -157,7 +158,7 @@ export default function OnboardingPage() {
   const filteredCourses = allCourses.filter(c =>
     c.name.includes(courseSearch) || c.code.includes(courseSearch)
   );
-  const coursesByCategory = ['VC', 'EF', 'EL'].reduce((acc, cat) => {
+  const coursesByCategory = CATEGORIES.reduce((acc, cat) => {
     acc[cat] = filteredCourses.filter(c => c.category === cat);
     return acc;
   }, {});
@@ -329,7 +330,7 @@ export default function OnboardingPage() {
                   <p className="empty-msg">아직 개설 과목 데이터가 없습니다.<br/>관리자가 추가한 후 마이페이지에서 설정할 수 있습니다.</p>
                 ) : (
                   <div className="course-list">
-                    {['VC', 'EF', 'EL'].map(cat => coursesByCategory[cat].length > 0 && (
+                    {CATEGORIES.map(cat => coursesByCategory[cat].length > 0 && (
                       <div key={cat} className="course-category">
                         <h3 className={`cat-title cat-${cat}`}>{cat}</h3>
                         {coursesByCategory[cat].map(course => (

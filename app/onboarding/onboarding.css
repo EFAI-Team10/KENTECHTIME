@@ -164,9 +164,19 @@
   display: inline-block;
 }
 
-.cat-title.cat-VC { background: #EBF5FB; color: #2980B9; }
-.cat-title.cat-EF { background: #EAFAF1; color: #27AE60; }
-.cat-title.cat-EL { background: #FEF9E7; color: #F39C12; }
+.cat-title.cat-VC   { background: #EBF5FB; color: #2980B9; }
+.cat-title.cat-EF   { background: #EAFAF1; color: #27AE60; }
+.cat-title.cat-EL   { background: #FEF9E7; color: #F39C12; }
+.cat-title.cat-MN   { background: #F4EBF9; color: #8E44AD; }
+.cat-title.cat-HASS { background: #F1EFF9; color: #6C5CB5; }
+.cat-title.cat-ESP  { background: #FCEBF4; color: #C2417F; }
+.cat-title.cat-IR   { background: #FDF0E9; color: #E67E22; }
+.cat-title.cat-GR   { background: #FBF0E4; color: #B8650A; }
+.cat-title.cat-CAPS { background: #FBEAE7; color: #C0392B; }
+.cat-title.cat-EN   { background: #EFEBFA; color: #5B3FA8; }
+.cat-title.cat-RC   { background: #E9F6F4; color: #16897A; }
+.cat-title.cat-FR   { background: #F0F0F0; color: #666666; }
+.cat-title.cat-GS   { background: #EAEDF7; color: #2C3E8C; }
 
 .course-item {
   display: flex;
