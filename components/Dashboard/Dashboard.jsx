@@ -75,9 +75,10 @@ export default function Dashboard({ onImportSuccess, currentSchedule = [], irTak
     const level = parseInt(String(c.code || '').replace(/^EL/, '')[0]);
     return level >= 4;
   };
-  // 왼쪽 학점 바에는 EL4/5를 제외 (EL4/5는 오른쪽 슬롯으로만 표기)
+  // EL4/5도 EL 40학점 총량에는 포함되어야 하므로 제외하지 않고 합산
+  // (오른쪽 슬롯 표기는 plannedElUpper로 별도 처리되어 중복되지 않음)
   const plannedElCredits = gradCounted
-    .filter(c => c.category === 'EL' && !isElUpper(c))
+    .filter(c => c.category === 'EL')
     .reduce((s, c) => s + Number(c.credits || 0), 0);
   const plannedElUpper = gradCounted.filter(isElUpper).length;
 
