@@ -1,52 +1,13 @@
 (function(){
-  var SKIP=/^(영역구분|교과목코드|교과목명|합계|소계|인정|이수|취득|신청|평균|비고|학점|제목|작성일|작성자|구분|일자|결재명|진행상태|요청제목|요청일시|\*|-)$/;
-  var seen=new Set(),out=[],done=new Set(),currentSemester='';
-  function txt(c){var t=(c.innerText||'').trim().replace(/\s+/g,' ');if(!t){var inp=c.querySelector('input');if(inp)t=(inp.value||inp.getAttribute('value')||'').trim();}if(!t){var a=c.getAttribute('aria-label')||'';t=a.replace(/^\d+행 \d+열\s*/,'').trim();}return t;}
-  function isCode(s){return s&&s.length>=4&&s.length<=12&&!/[ㄱ-ㅎ가-힣]/.test(s)&&/[A-Za-z]/.test(s)&&/\d/.test(s);}
-  function parseSem(text){var m=text.match(/(\d{4})(?:학년도?|년도?)?\s*(\d)\s*학기/);if(m)return m[1]+(m[2]==='1'?'-spring':'-fall');m=text.match(/(\d{4})(?:학년도?|년도?)?\s*(하계|동계)(?:계절)?학기/);if(m)return m[1]+(m[2]==='하계'?'-summer':'-winter');return null;}
-  function extract(){document.querySelectorAll('tr,[role="row"]').forEach(function(r){var rowText=(r.innerText||r.textContent||'').trim().replace(/\s+/g,' ');var rowSem=parseSem(rowText);if(rowSem){currentSemester=rowSem;return;}var cells=Array.from(r.querySelectorAll('[role="gridcell"],td'));if(!cells.length)cells=Array.from(r.children).filter(function(el){return el.tagName==='DIV'||el.tagName==='TD';});if(cells.length<3)return;var texts=cells.map(txt);var ci=-1;for(var i=0;i<Math.min(texts.length,8);i++){if(isCode(texts[i])){ci=i;break;}}if(ci===-1){var fb=texts[1];if(fb&&fb.length>=4&&fb.length<=15&&!/^\d+$/.test(fb)&&!SKIP.test(fb)&&!/[가-힣]/.test(fb))ci=1;else return;}var code=texts[ci];if(!code||SKIP.test(code)||/^\d+$/.test(code)||/[가-힣]/.test(code))return;if(seen.has(code))return;seen.add(code);out.push([(ci>0?texts[ci-1]:''),code,texts[ci+1]||'',texts[ci+2]||'',texts[ci+3]||'',currentSemester].join('\t'));});}
-  // 진행 표시 버튼 (시작 즉시 생성, 완료 시 복사 버튼으로 전환)
+  var seen=new Set(),out=[];
+  function txt(e){return e?(e.innerText||e.textContent||'').trim():'';}
+  function parseSem(t){t=t.replace(/\s+/g,' ').trim();var m=t.match(/(\d{4})(?:학년도)?\s*(\d)\s*학기/);if(m)return m[1]+(m[2]==='1'?'-spring':'-fall');m=t.match(/(\d{4})(?:학년도)?\s*(하계|동계)계절학기/);if(m)return m[1]+(m[2]==='하계'?'-summer':'-winter');return null;}
+  function cellTxt(c){var t=c.querySelector('.cl-text');return txt(t||c);}
+  function findSem(g){var s=g.previousElementSibling,h=0;while(s&&h<6){var sem=parseSem(txt(s));if(sem)return sem;s=s.previousElementSibling;h++;}return '';}
+  function extractGrid(g){var sem=findSem(g);if(!sem)return;g.querySelectorAll('[role="row"]').forEach(function(r){var cm={};r.querySelectorAll('[role="gridcell"]').forEach(function(c){var i=parseInt(c.getAttribute('aria-colindex'),10);if(i)cm[i]=cellTxt(c);});var code=cm[2];if(!code||seen.has(code))return;seen.add(code);out.push([cm[1]||'',code,cm[3]||'',cm[4]||'',cm[5]||'',sem].join('\t'));});}
+  function extractAll(){document.querySelectorAll('[role="grid"]').forEach(extractGrid);}
   var btn=document.createElement('button');btn.id='__kt_btn';btn.textContent='⏳ 과목 수집 중… 스크롤 건드리지 마세요';btn.style.cssText='position:fixed;bottom:24px;right:24px;z-index:2147483647;padding:14px 22px;background:#6b7280;color:#fff;border:none;border-radius:10px;cursor:default;font-size:15px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.3);';document.body.appendChild(btn);
   function finish(){var old=document.getElementById('__kt_btn');if(old)old.parentNode.removeChild(old);if(!out.length){alert('과목 정보를 찾을 수 없습니다.\n전체성적조회 페이지에서 실행해주세요.');return;}var text=out.join('\n');var b=document.createElement('button');b.id='__kt_btn';b.textContent=out.length+'개 과목 수집 완료 — 클릭해서 복사';b.style.cssText='position:fixed;bottom:24px;right:24px;z-index:2147483647;padding:14px 22px;background:#2563eb;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:15px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.3);';b.onclick=function(){navigator.clipboard.writeText(text).then(function(){b.textContent='✓ 복사됨! KENTECHTIME에 붙여넣기 하세요';b.style.background='#16a34a';setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},3000);}).catch(function(){var ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;top:0;left:0;width:2px;height:2px;';document.body.appendChild(ta);ta.focus();ta.select();try{document.execCommand('copy');}catch(e){}document.body.removeChild(ta);b.textContent='✓ 복사됨!';b.style.background='#16a34a';setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},3000);});};document.body.appendChild(b);}
-  function scan(){var all=[];document.querySelectorAll('[role="row"]').forEach(function(r){var p=r.parentElement;while(p&&p!==document.body){if(p.scrollHeight>p.clientHeight+10&&p.clientHeight>0&&all.indexOf(p)===-1)all.push(p);p=p.parentElement;}});all.sort(function(a,b){if(a.contains(b))return -1;if(b.contains(a))return 1;return 0;});return all;}
-  function scrollFully(c,cb){if(done.has(c)){cb();return;}done.add(c);extract();if(c.scrollHeight<=c.clientHeight+10){cb();return;}try{c.scrollIntoView({block:'nearest',inline:'nearest'});}catch(e){}setTimeout(function(){extract();var prevSize=seen.size;var stableAtBottom=0;var safetyCount=0;function step(){safetyCount++;if(safetyCount>120){cb();return;}c.scrollTop+=40;c.dispatchEvent(new Event('scroll',{bubbles:true}));setTimeout(function(){extract();var atBottom=c.scrollTop>=c.scrollHeight-c.clientHeight-5;var currSize=seen.size;if(currSize>prevSize){stableAtBottom=0;prevSize=currSize;}if(atBottom)stableAtBottom++;if(atBottom&&stableAtBottom>=2){cb();}else{step();}},80);}step();},100);}
-  function drainKids(outer,q,cb){var kids=q.filter(function(x){return outer.contains(x)&&!done.has(x);});kids.forEach(function(x){q.splice(q.indexOf(x),1);});var i=0;function next(){if(i>=kids.length){cb();return;}scrollFully(kids[i++],next);}next();}
-  // 시작 전 모든 스크롤을 맨 위로 리셋 (사용자 초기 위치 무력화)
-  scan().forEach(function(c){c.scrollTop=0;c.dispatchEvent(new Event('scroll',{bubbles:true}));});
-  setTimeout(function(){
-    extract();
-    var q=scan();
-    if(!q.length){finish();return;}
-    function go(){
-      if(!q.length){finish();return;}
-      var c=q.shift();
-      if(done.has(c)){go();return;}
-      var isOuter=q.some(function(x){return c.contains(x);});
-      if(!isOuter){
-        scrollFully(c,function(){
-          scan().forEach(function(nc){if(!done.has(nc)&&q.indexOf(nc)===-1)q.push(nc);});
-          go();
-        });
-      } else {
-        done.add(c);
-        drainKids(c,q,function startScroll(){
-          function outerStep(){
-            if(c.scrollHeight<=c.clientHeight+10){go();return;}
-            c.scrollTop+=Math.max(60,Math.floor(c.clientHeight*0.3));
-            c.dispatchEvent(new Event('scroll',{bubbles:true}));
-            setTimeout(function(){
-              extract();
-              scan().forEach(function(nc){if(!done.has(nc)&&q.indexOf(nc)===-1)q.unshift(nc);});
-              drainKids(c,q,function(){
-                if(c.scrollTop<c.scrollHeight-c.clientHeight-5){outerStep();}
-                else{go();}
-              });
-            },150);
-          }
-          outerStep();
-        });
-      }
-    }
-    go();
-  },200);
+  function scrollInner(cb){var ps=Array.from(document.querySelectorAll('[role="grid"] .cl-scrollbar')).filter(function(p){return p.scrollHeight>p.clientHeight+5;});var i=0;function next(){if(i>=ps.length){cb();return;}var p=ps[i++];var safety=0;function step(){safety++;extractAll();if(safety>60||p.scrollTop>=p.scrollHeight-p.clientHeight-5){next();return;}p.scrollTop+=100;p.dispatchEvent(new Event('scroll',{bubbles:true}));setTimeout(step,60);}step();}next();}
+  setTimeout(function(){extractAll();var grids=document.querySelectorAll('[role="grid"]');var outer=grids.length?grids[0].closest('.cl-layout.cl-scrollbar[role="layout"]'):null;if(!outer)outer=document.querySelector('.cl-layout.cl-scrollbar[role="layout"]');function outerStep(safety){safety=(safety||0)+1;extractAll();if(!outer||safety>200||outer.scrollTop>=outer.scrollHeight-outer.clientHeight-5){scrollInner(finish);return;}outer.scrollTop+=Math.max(200,Math.floor(outer.clientHeight*0.8));outer.dispatchEvent(new Event('scroll',{bubbles:true}));setTimeout(function(){outerStep(safety);},150);}outerStep(0);},200);
 })();
